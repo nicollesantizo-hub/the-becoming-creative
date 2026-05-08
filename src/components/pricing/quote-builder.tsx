@@ -13,12 +13,13 @@ function fmt(value: number): string {
 }
 
 function calcSessionPrice(
-  session: Pick<SessionType, "travel_miles" | "travel_rate_per_mile" | "studio_hourly_rate" | "duration_hours" | "profit_margin">,
+  session: Pick<SessionType, "travel_miles" | "travel_rate_per_mile" | "studio_hourly_rate" | "editing_hourly_rate" | "editing_hours" | "duration_hours" | "profit_margin">,
   codb: CODBResults
 ): number {
   const travelCost = session.travel_miles * session.travel_rate_per_mile;
   const studioCost = (session.studio_hourly_rate ?? 0) * session.duration_hours;
-  return (codb.minimumPerSession + travelCost + studioCost) * (1 + session.profit_margin / 100);
+  const editingCost = (session.editing_hourly_rate ?? 0) * session.editing_hours;
+  return (codb.minimumPerSession + travelCost + studioCost + editingCost) * (1 + session.profit_margin / 100);
 }
 
 const STATUS_LABELS: Record<Quote["status"], string> = {

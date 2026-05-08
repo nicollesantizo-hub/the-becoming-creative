@@ -36,6 +36,7 @@ export interface SessionType {
   travel_miles: number;
   travel_rate_per_mile: number;
   studio_hourly_rate: number;
+  editing_hourly_rate: number;
   profit_margin: number;
   created_at?: string;
 }

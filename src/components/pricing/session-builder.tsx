@@ -20,6 +20,7 @@ const EMPTY_SESSION: Omit<SessionType, "id" | "user_id" | "created_at"> = {
   travel_miles: 0,
   travel_rate_per_mile: 0.67,
   studio_hourly_rate: 0,
+  editing_hourly_rate: 0,
   profit_margin: 30,
 };
 
@@ -34,7 +35,8 @@ function fmt(value: number): string {
 function calcSessionPrice(session: typeof EMPTY_SESSION, codb: CODBResults): number {
   const travelCost = session.travel_miles * session.travel_rate_per_mile;
   const studioCost = (session.studio_hourly_rate ?? 0) * session.duration_hours;
-  const base = codb.minimumPerSession + travelCost + studioCost;
+  const editingCost = (session.editing_hourly_rate ?? 0) * session.editing_hours;
+  const base = codb.minimumPerSession + travelCost + studioCost + editingCost;
   return base * (1 + session.profit_margin / 100);
 }
 
@@ -70,6 +72,7 @@ export function SessionBuilder({
       travel_miles: session.travel_miles,
       travel_rate_per_mile: session.travel_rate_per_mile,
       studio_hourly_rate: session.studio_hourly_rate ?? 0,
+      editing_hourly_rate: session.editing_hourly_rate ?? 0,
       profit_margin: session.profit_margin,
     });
     setEditingId(session.id ?? null);
@@ -122,6 +125,7 @@ export function SessionBuilder({
   const previewPrice = codb ? calcSessionPrice(form, codb) : null;
   const travelCost = form.travel_miles * form.travel_rate_per_mile;
   const studioCost = (form.studio_hourly_rate ?? 0) * form.duration_hours;
+  const editingCost = (form.editing_hourly_rate ?? 0) * form.editing_hours;
 
   return (
     <div className="max-w-2xl">
@@ -386,6 +390,34 @@ export function SessionBuilder({
               </div>
             </div>
 
+            {/* Editing rate */}
+            <div className="flex flex-col gap-1.5">
+              <label
+                className="text-xs uppercase tracking-wider opacity-50"
+                style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+              >
+                Editing hourly rate ($/hr — leave 0 to skip)
+              </label>
+              <input
+                type="number"
+                min={0}
+                step={5}
+                value={form.editing_hourly_rate || ""}
+                placeholder="0"
+                onChange={(e) => updateForm("editing_hourly_rate", parseFloat(e.target.value) || 0)}
+                className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors"
+                style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
+                onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+              />
+              <p
+                className="text-xs opacity-40"
+                style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+              >
+                Multiplied by editing hours — add this if you want editing billed separately on top of your CODB minimum
+              </p>
+            </div>
+
             {/* Studio rental */}
             <div className="flex flex-col gap-1.5">
               <label
@@ -485,6 +517,16 @@ export function SessionBuilder({
                     </span>
                     <span className="text-sm" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
                       {fmt(studioCost)}
+                    </span>
+                  </div>
+                )}
+                {editingCost > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-sm opacity-60" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                      Editing (${form.editing_hourly_rate}/hr × {form.editing_hours}h)
+                    </span>
+                    <span className="text-sm" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                      {fmt(editingCost)}
                     </span>
                   </div>
                 )}
