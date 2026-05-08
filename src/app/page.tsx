@@ -1,65 +1,287 @@
-import Image from "next/image";
+import { Logo } from "@/components/logo";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <main className="flex flex-col">
+
+      {/* Nav */}
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6">
+        <Logo className="text-[var(--cream)]" />
+        <a
+          href="#join"
+          className="nav-join-btn text-sm uppercase px-5 py-2"
+          style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em" }}
+        >
+          Join
+        </a>
+      </nav>
+
+      {/* Hero */}
+      <section
+        className="relative min-h-screen flex flex-col items-center justify-center px-8 text-center"
+        style={{ backgroundColor: "var(--charcoal)" }}
+      >
+        <div className="max-w-4xl mx-auto">
+          <p
+            className="text-sm uppercase mb-10 opacity-40"
+            style={{ color: "var(--cream)", fontFamily: "var(--font-body)", letterSpacing: "0.25em" }}
+          >
+            a space for creatives
+          </p>
+          <h1
+            className="text-6xl md:text-8xl lg:text-9xl leading-[0.95] font-light italic mb-12"
+            style={{ color: "var(--cream)", fontFamily: "var(--font-heading)" }}
+          >
+            You are not
+            <br />
+            <span className="not-italic font-normal">finished</span>
+            <br />
+            becoming.
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+          <p
+            className="text-base md:text-lg max-w-md mx-auto leading-relaxed mb-16"
+            style={{ color: "var(--cream)", fontFamily: "var(--font-body)", fontWeight: 300, opacity: 0.55 }}
+          >
+            And that is exactly where this begins.
+          </p>
+          <a
+            href="#what-this-is"
+            className="inline-block text-sm uppercase px-8 py-4 transition-opacity duration-300 hover:opacity-75"
+            style={{
+              backgroundColor: "var(--clay)",
+              color: "var(--cream)",
+              fontFamily: "var(--font-body)",
+              letterSpacing: "0.2em",
+            }}
+          >
+            Enter the space
+          </a>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-25">
+          <div className="w-px h-16" style={{ backgroundColor: "var(--cream)" }} />
+        </div>
+      </section>
+
+      {/* The Honest Part */}
+      <section
+        className="py-32 px-8"
+        style={{ backgroundColor: "var(--cream)" }}
+      >
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-20 items-center">
+          <div>
+            <h2
+              className="text-4xl md:text-5xl leading-tight italic font-light"
+              style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              &ldquo;You&apos;ve started things.
+              <br />
+              Left them unfinished.
+              <br />
+              Wondered if you&apos;re really
+              <br />
+              an artist, or just someone
+              <br />
+              who wishes they were.&rdquo;
+            </h2>
+          </div>
+          <div className="flex flex-col gap-8">
+            <p
+              className="text-base md:text-lg leading-loose"
+              style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 400 }}
             >
-              Learning
-            </a>{" "}
-            center.
+              That wondering? That is the work.
+            </p>
+            <p
+              className="text-base md:text-lg leading-loose"
+              style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 300, opacity: 0.8 }}
+            >
+              The Becoming Creative was built for the in-between. For the artist
+              who isn&apos;t sure yet. For the maker who keeps starting over. For
+              the dreamer who needs somewhere to land.
+            </p>
+            <p
+              className="text-base md:text-lg leading-loose"
+              style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 300, opacity: 0.8 }}
+            >
+              This is that place.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Divider */}
+      <div className="w-full h-px" style={{ backgroundColor: "var(--border)" }} />
+
+      {/* What Lives Here */}
+      <section
+        id="what-this-is"
+        className="py-32 px-8"
+        style={{ backgroundColor: "var(--sand)" }}
+      >
+        <div className="max-w-6xl mx-auto">
+          <p
+            className="text-sm uppercase mb-4 opacity-50"
+            style={{ fontFamily: "var(--font-body)", color: "var(--charcoal)", letterSpacing: "0.25em" }}
+          >
+            what lives here
+          </p>
+          <h2
+            className="text-4xl md:text-6xl font-light mb-20"
+            style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}
+          >
+            Everything you need
+            <br />
+            to keep going.
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-12">
+            {[
+              {
+                title: "Inspiration",
+                description:
+                  "Curated content, stories from real creatives, and honest conversations about the messy middle of making something.",
+                mark: "01",
+              },
+              {
+                title: "Community",
+                description:
+                  "A forum built for depth. Share your work, ask hard questions, find the people who understand what it means to create.",
+                mark: "02",
+              },
+              {
+                title: "Resources",
+                description:
+                  "Tools, guides, and calculators built for working creatives. Business of art, event hosting, ways to sell — all in one place.",
+                mark: "03",
+              },
+            ].map((item) => (
+              <div
+                key={item.mark}
+                className="flex flex-col gap-6 pt-8"
+                style={{ borderTop: "1px solid var(--border)" }}
+              >
+                <span
+                  className="text-xs tracking-widest opacity-40"
+                  style={{ fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                >
+                  {item.mark}
+                </span>
+                <h3
+                  className="text-3xl font-light italic"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}
+                >
+                  {item.title}
+                </h3>
+                <p
+                  className="text-base leading-loose"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 300, opacity: 0.75 }}
+                >
+                  {item.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pull Quote */}
+      <section
+        className="py-40 px-8 text-center"
+        style={{ backgroundColor: "var(--clay)" }}
+      >
+        <div className="max-w-3xl mx-auto">
+          <h2
+            className="text-5xl md:text-7xl font-light italic leading-tight"
+            style={{ color: "var(--cream)", fontFamily: "var(--font-heading)" }}
+          >
+            Come as you are.
+            <br />
+            Stay as you grow.
+          </h2>
+          <div
+            className="w-12 h-px mx-auto mt-12 opacity-40"
+            style={{ backgroundColor: "var(--cream)" }}
+          />
+        </div>
+      </section>
+
+      {/* CTA / Join */}
+      <section
+        id="join"
+        className="py-40 px-8"
+        style={{ backgroundColor: "var(--cream)" }}
+      >
+        <div className="max-w-xl mx-auto text-center flex flex-col items-center gap-8">
+          <p
+            className="text-sm uppercase opacity-50"
+            style={{ fontFamily: "var(--font-body)", color: "var(--charcoal)", letterSpacing: "0.25em" }}
+          >
+            ready to begin
+          </p>
+          <h2
+            className="text-4xl md:text-6xl font-light"
+            style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}
+          >
+            Join the community.
+          </h2>
+          <p
+            className="text-base leading-loose opacity-70"
+            style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 300 }}
+          >
+            Free to start. No perfection required.
+          </p>
+
+          <form className="w-full flex flex-col sm:flex-row gap-3 mt-4">
+            <input
+              type="email"
+              placeholder="your@email.com"
+              className="flex-1 px-5 py-4 text-sm outline-none"
+              style={{
+                backgroundColor: "var(--sand)",
+                color: "var(--charcoal)",
+                fontFamily: "var(--font-body)",
+                border: "1px solid var(--border)",
+              }}
+            />
+            <button
+              type="submit"
+              className="px-8 py-4 text-sm uppercase transition-opacity hover:opacity-80"
+              style={{
+                backgroundColor: "var(--charcoal)",
+                color: "var(--cream)",
+                fontFamily: "var(--font-body)",
+                letterSpacing: "0.18em",
+              }}
+            >
+              Begin
+            </button>
+          </form>
+
+          <p
+            className="text-xs opacity-40"
+            style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+          >
+            No spam. Unsubscribe any time.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </section>
+
+      {/* Footer */}
+      <footer
+        className="py-12 px-8 flex flex-col sm:flex-row items-center justify-between gap-6"
+        style={{ backgroundColor: "var(--charcoal)" }}
+      >
+        <Logo className="text-[var(--cream)] opacity-60" />
+        <p
+          className="text-xs opacity-30"
+          style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}
+        >
+          © {new Date().getFullYear()} The Becoming Creative. All rights reserved.
+        </p>
+      </footer>
+
+    </main>
   );
 }
