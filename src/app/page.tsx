@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Logo } from "@/components/logo";
 
 export default function Home() {
@@ -16,14 +17,28 @@ export default function Home() {
         </a>
       </nav>
 
-      {/* Hero */}
-      <section
-        className="relative min-h-screen flex flex-col items-center justify-center px-8 text-center"
-        style={{ backgroundColor: "var(--charcoal)" }}
-      >
-        <div className="max-w-4xl mx-auto">
+      {/* Hero — full bleed photo */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-8 text-center overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/images/AV_stephanie-6488.jpg"
+            alt=""
+            fill
+            className="object-cover object-center"
+            priority
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(42,33,24,0.25) 0%, rgba(42,33,24,0.6) 55%, rgba(42,33,24,0.88) 100%)",
+            }}
+          />
+        </div>
+
+        <div className="relative z-10 max-w-4xl mx-auto">
           <p
-            className="text-sm uppercase mb-10 opacity-40"
+            className="text-sm uppercase mb-10 opacity-60"
             style={{ color: "var(--cream)", fontFamily: "var(--font-body)", letterSpacing: "0.25em" }}
           >
             a space for creatives
@@ -40,7 +55,7 @@ export default function Home() {
           </h1>
           <p
             className="text-base md:text-lg max-w-md mx-auto leading-relaxed mb-16"
-            style={{ color: "var(--cream)", fontFamily: "var(--font-body)", fontWeight: 300, opacity: 0.55 }}
+            style={{ color: "var(--cream)", fontFamily: "var(--font-body)", fontWeight: 300, opacity: 0.7 }}
           >
             And that is exactly where this begins.
           </p>
@@ -58,19 +73,15 @@ export default function Home() {
           </a>
         </div>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-25">
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 opacity-25">
           <div className="w-px h-16" style={{ backgroundColor: "var(--cream)" }} />
         </div>
       </section>
 
       {/* The Honest Part */}
-      <section
-        className="py-32 px-8"
-        style={{ backgroundColor: "var(--cream)" }}
-      >
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-20 items-center">
-          <div>
+      <section className="py-32 px-8" style={{ backgroundColor: "var(--cream)" }}>
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+          <div className="flex flex-col gap-8">
             <h2
               className="text-4xl md:text-5xl leading-tight italic font-light"
               style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}
@@ -85,8 +96,6 @@ export default function Home() {
               <br />
               who wishes they were.&rdquo;
             </h2>
-          </div>
-          <div className="flex flex-col gap-8">
             <p
               className="text-base md:text-lg leading-loose"
               style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 400 }}
@@ -108,11 +117,35 @@ export default function Home() {
               This is that place.
             </p>
           </div>
+
+          <div className="relative h-[560px] md:h-[680px] overflow-hidden">
+            <Image
+              src="/images/AV_michelle-7879.jpg"
+              alt=""
+              fill
+              className="object-cover object-center"
+            />
+          </div>
         </div>
       </section>
 
-      {/* Divider */}
-      <div className="w-full h-px" style={{ backgroundColor: "var(--border)" }} />
+      {/* Photo strip */}
+      <div className="grid grid-cols-3" style={{ height: "55vh" }}>
+        {[
+          { src: "/images/AV_michelle-7599.jpg", position: "object-center" },
+          { src: "/images/AV_michelle-7896.jpg", position: "object-center" },
+          { src: "/images/AV_stephanie-6460.jpg", position: "object-center" },
+        ].map((img) => (
+          <div key={img.src} className="relative overflow-hidden">
+            <Image
+              src={img.src}
+              alt=""
+              fill
+              className={`object-cover ${img.position} transition-transform duration-700 hover:scale-105`}
+            />
+          </div>
+        ))}
+      </div>
 
       {/* What Lives Here */}
       <section
@@ -186,12 +219,37 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pull Quote */}
-      <section
-        className="py-40 px-8 text-center"
-        style={{ backgroundColor: "var(--clay)" }}
-      >
-        <div className="max-w-3xl mx-auto">
+      {/* Full-width dramatic image — reaching up */}
+      <div className="relative overflow-hidden" style={{ height: "75vh" }}>
+        <Image
+          src="/images/AV_michelle-7926.jpg"
+          alt=""
+          fill
+          className="object-cover object-top"
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(to top, rgba(42,33,24,0.5) 0%, transparent 60%)",
+          }}
+        />
+      </div>
+
+      {/* Pull Quote — photo background */}
+      <section className="relative py-40 px-8 text-center overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/images/AV_stephanie-6704.jpg"
+            alt=""
+            fill
+            className="object-cover object-center"
+          />
+          <div
+            className="absolute inset-0"
+            style={{ backgroundColor: "rgba(180, 100, 60, 0.82)" }}
+          />
+        </div>
+        <div className="relative z-10 max-w-3xl mx-auto">
           <h2
             className="text-5xl md:text-7xl font-light italic leading-tight"
             style={{ color: "var(--cream)", fontFamily: "var(--font-heading)" }}
@@ -201,18 +259,14 @@ export default function Home() {
             Stay as you grow.
           </h2>
           <div
-            className="w-12 h-px mx-auto mt-12 opacity-40"
+            className="w-12 h-px mx-auto mt-12 opacity-50"
             style={{ backgroundColor: "var(--cream)" }}
           />
         </div>
       </section>
 
       {/* CTA / Join */}
-      <section
-        id="join"
-        className="py-40 px-8"
-        style={{ backgroundColor: "var(--cream)" }}
-      >
+      <section id="join" className="py-40 px-8" style={{ backgroundColor: "var(--cream)" }}>
         <div className="max-w-xl mx-auto text-center flex flex-col items-center gap-8">
           <p
             className="text-sm uppercase opacity-50"
