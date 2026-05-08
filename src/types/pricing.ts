@@ -46,6 +46,7 @@ export interface Quote {
   id?: string;
   user_id?: string;
   session_type_id?: string | null;
+  quote_name: string;
   client_name: string;
   client_email: string;
   session_date: string;

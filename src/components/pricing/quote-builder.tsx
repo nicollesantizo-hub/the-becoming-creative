@@ -62,6 +62,7 @@ export function QuoteBuilder({
   const [taxRate, setTaxRate] = useState(0);
   const [discountType, setDiscountType] = useState<"none" | "percentage" | "flat">("none");
   const [discountValue, setDiscountValue] = useState(0);
+  const [quoteName, setQuoteName] = useState("");
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
   const [sessionDate, setSessionDate] = useState("");
@@ -108,11 +109,13 @@ export function QuoteBuilder({
     setClientEmail("");
     setSessionDate("");
     setNotes("");
+    setQuoteName("");
     setEditingQuoteId(null);
     setShowForm(false);
   }
 
   function loadQuoteIntoForm(quote: Quote) {
+    setQuoteName(quote.quote_name ?? "");
     setClientName(quote.client_name ?? "");
     setClientEmail(quote.client_email ?? "");
     setSessionDate(quote.session_date ?? "");
@@ -134,6 +137,7 @@ export function QuoteBuilder({
       .insert({
         user_id: userId,
         session_type_id: quote.session_type_id,
+        quote_name: quote.quote_name ? `${quote.quote_name} (copy)` : "",
         client_name: `${quote.client_name} (copy)`,
         client_email: quote.client_email,
         session_date: quote.session_date,
@@ -166,6 +170,7 @@ export function QuoteBuilder({
     const quote: Omit<Quote, "id" | "created_at"> = {
       user_id: userId,
       session_type_id: selectedSessionId || null,
+      quote_name: quoteName,
       client_name: clientName,
       client_email: clientEmail,
       session_date: sessionDate,
@@ -235,13 +240,13 @@ export function QuoteBuilder({
                     className="text-base font-medium"
                     style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
                   >
-                    {quote.client_name || "Unnamed client"}
+                    {quote.quote_name || quote.client_name || "Unnamed quote"}
                   </p>
                   <p
                     className="text-xs opacity-50"
                     style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
                   >
-                    {quote.session_date || "No date"} · {fmt(quote.final_price)}
+                    {quote.quote_name ? `${quote.client_name} · ` : ""}{quote.session_date || "No date"} · {fmt(quote.final_price)}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -336,6 +341,26 @@ export function QuoteBuilder({
           </h2>
 
           <div className="flex flex-col gap-5 mb-8">
+            {/* Quote name */}
+            <div className="flex flex-col gap-1.5">
+              <label
+                className="text-xs uppercase tracking-wider opacity-50"
+                style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+              >
+                Quote Label (optional)
+              </label>
+              <input
+                type="text"
+                value={quoteName}
+                onChange={(e) => setQuoteName(e.target.value)}
+                placeholder="e.g. Summer Portraits, Wedding Inquiry, Senior Session…"
+                className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors"
+                style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
+                onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+              />
+            </div>
+
             {/* Client info */}
             <div className="flex flex-col gap-1.5">
               <label
