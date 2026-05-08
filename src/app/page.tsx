@@ -9,13 +9,22 @@ export default function Home() {
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6">
         <Logo className="text-[var(--cream)]" />
-        <a
-          href="#join"
-          className="nav-join-btn text-sm uppercase px-5 py-2"
-          style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em" }}
-        >
-          Join
-        </a>
+        <div className="flex items-center gap-4">
+          <a
+            href="/resources"
+            className="text-sm uppercase px-5 py-2 transition-opacity hover:opacity-70"
+            style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em", color: "var(--cream)", opacity: 0.7 }}
+          >
+            Resources
+          </a>
+          <a
+            href="#join"
+            className="nav-join-btn text-sm uppercase px-5 py-2"
+            style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em" }}
+          >
+            Join
+          </a>
+        </div>
       </nav>
 
       {/* Hero — full bleed photo */}
