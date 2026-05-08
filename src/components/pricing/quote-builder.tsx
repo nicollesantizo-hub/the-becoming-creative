@@ -54,6 +54,7 @@ export function QuoteBuilder({
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState<string>("");
   const [customTravel, setCustomTravel] = useState(0);
   const [customTravelRate, setCustomTravelRate] = useState(0.67);
@@ -107,7 +108,51 @@ export function QuoteBuilder({
     setClientEmail("");
     setSessionDate("");
     setNotes("");
+    setEditingQuoteId(null);
     setShowForm(false);
+  }
+
+  function loadQuoteIntoForm(quote: Quote) {
+    setClientName(quote.client_name ?? "");
+    setClientEmail(quote.client_email ?? "");
+    setSessionDate(quote.session_date ?? "");
+    setNotes(quote.notes ?? "");
+    setSelectedSessionId(quote.session_type_id ?? "");
+    setTaxRate(quote.tax_rate ?? 0);
+    setDiscountType(quote.discount_type ?? "none");
+    setDiscountValue(quote.discount_value ?? 0);
+    setCustomTravel(quote.travel_miles ?? 0);
+    setEditingQuoteId(quote.id ?? null);
+    setShowForm(true);
+    setSaveError("");
+  }
+
+  async function duplicateQuote(quote: Quote) {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("quotes")
+      .insert({
+        user_id: userId,
+        session_type_id: quote.session_type_id,
+        client_name: `${quote.client_name} (copy)`,
+        client_email: quote.client_email,
+        session_date: quote.session_date,
+        location_type: quote.location_type,
+        duration_hours: quote.duration_hours,
+        editing_hours: quote.editing_hours,
+        travel_miles: quote.travel_miles,
+        tax_rate: quote.tax_rate,
+        discount_type: quote.discount_type,
+        discount_value: quote.discount_value,
+        minimum_price: quote.minimum_price,
+        suggested_price: quote.suggested_price,
+        final_price: quote.final_price,
+        notes: quote.notes,
+        status: "draft",
+      })
+      .select()
+      .single();
+    if (!error && data) setQuotes((prev) => [data, ...prev]);
   }
 
   async function handleSave() {
@@ -137,17 +182,25 @@ export function QuoteBuilder({
       notes,
       status: "draft",
     };
-    const { data, error } = await supabase
-      .from("quotes")
-      .insert(quote)
-      .select()
-      .single();
-    if (error) {
-      setSaveError(error.message);
-      setSaving(false);
-      return;
+    if (editingQuoteId) {
+      const { data, error } = await supabase
+        .from("quotes")
+        .update(quote)
+        .eq("id", editingQuoteId)
+        .eq("user_id", userId)
+        .select()
+        .single();
+      if (error) { setSaveError(error.message); setSaving(false); return; }
+      if (data) setQuotes((prev) => prev.map((q) => (q.id === editingQuoteId ? data : q)));
+    } else {
+      const { data, error } = await supabase
+        .from("quotes")
+        .insert(quote)
+        .select()
+        .single();
+      if (error) { setSaveError(error.message); setSaving(false); return; }
+      if (data) setQuotes((prev) => [data, ...prev]);
     }
-    if (data) setQuotes((prev) => [data, ...prev]);
     setSaving(false);
     setSaveError("");
     resetForm();
@@ -191,24 +244,40 @@ export function QuoteBuilder({
                     {quote.session_date || "No date"} · {fmt(quote.final_price)}
                   </p>
                 </div>
-                <select
-                  value={quote.status}
-                  onChange={(e) =>
-                    quote.id && updateStatus(quote.id, e.target.value as Quote["status"])
-                  }
-                  className="text-xs uppercase tracking-wider px-3 py-1.5 border outline-none bg-white"
-                  style={{
-                    fontFamily: "var(--font-body)",
-                    color: STATUS_COLORS[quote.status],
-                    borderColor: "var(--border)",
-                  }}
-                >
-                  {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex items-center gap-3">
+                  <select
+                    value={quote.status}
+                    onChange={(e) =>
+                      quote.id && updateStatus(quote.id, e.target.value as Quote["status"])
+                    }
+                    className="text-xs uppercase tracking-wider px-3 py-1.5 border outline-none bg-white"
+                    style={{
+                      fontFamily: "var(--font-body)",
+                      color: STATUS_COLORS[quote.status],
+                      borderColor: "var(--border)",
+                    }}
+                  >
+                    {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => loadQuoteIntoForm(quote)}
+                    className="text-xs uppercase tracking-wider opacity-40 hover:opacity-80 transition-opacity"
+                    style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => duplicateQuote(quote)}
+                    className="text-xs uppercase tracking-wider opacity-40 hover:opacity-80 transition-opacity"
+                    style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                  >
+                    Duplicate
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -559,7 +628,7 @@ export function QuoteBuilder({
                   className="px-8 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80 disabled:opacity-40"
                   style={{ backgroundColor: "var(--clay)", color: "var(--cream)", fontFamily: "var(--font-body)", letterSpacing: "0.15em" }}
                 >
-                  {saving ? "Saving…" : "Save quote"}
+                  {saving ? "Saving…" : editingQuoteId ? "Update quote" : "Save quote"}
                 </button>
                 {saveError && (
                   <p className="text-xs" style={{ color: "var(--destructive)", fontFamily: "var(--font-body)" }}>
