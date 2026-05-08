@@ -13,13 +13,14 @@ function fmt(value: number): string {
 }
 
 function calcSessionPrice(
-  session: Pick<SessionType, "travel_miles" | "travel_rate_per_mile" | "studio_hourly_rate" | "editing_hourly_rate" | "editing_hours" | "duration_hours" | "profit_margin">,
+  session: Pick<SessionType, "travel_miles" | "travel_rate_per_mile" | "studio_hourly_rate" | "editing_hourly_rate" | "shooting_hourly_rate" | "editing_hours" | "duration_hours" | "profit_margin">,
   codb: CODBResults
 ): number {
   const travelCost = session.travel_miles * session.travel_rate_per_mile;
   const studioCost = (session.studio_hourly_rate ?? 0) * session.duration_hours;
   const editingCost = (session.editing_hourly_rate ?? 0) * session.editing_hours;
-  return (codb.minimumPerSession + travelCost + studioCost + editingCost) * (1 + session.profit_margin / 100);
+  const shootingCost = (session.shooting_hourly_rate ?? 0) * session.duration_hours;
+  return (codb.minimumPerSession + travelCost + studioCost + editingCost + shootingCost) * (1 + session.profit_margin / 100);
 }
 
 const STATUS_LABELS: Record<Quote["status"], string> = {
@@ -563,8 +564,20 @@ export function QuoteBuilder({
               </div>
             )}
             <button
-              onClick={resetForm}
+              onClick={() => {
+                setClientName(""); setClientEmail(""); setSessionDate("");
+                setSelectedSessionId(""); setTaxRate(0);
+                setDiscountType("none"); setDiscountValue(0); setNotes("");
+                setCustomTravel(0); setCustomMargin(30);
+              }}
               className="px-6 py-3 text-sm uppercase tracking-wider opacity-40 hover:opacity-70 transition-opacity"
+              style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+            >
+              Clear
+            </button>
+            <button
+              onClick={resetForm}
+              className="px-6 py-3 text-sm uppercase tracking-wider opacity-30 hover:opacity-60 transition-opacity"
               style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
             >
               Cancel

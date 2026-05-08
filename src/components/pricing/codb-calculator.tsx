@@ -432,19 +432,28 @@ export function CODBCalculator({
         </div>
       </section>
 
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        className="px-8 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80 disabled:opacity-50"
-        style={{
-          backgroundColor: "var(--clay)",
-          color: "var(--cream)",
-          fontFamily: "var(--font-body)",
-          letterSpacing: "0.15em",
-        }}
-      >
-        {saving ? "Saving…" : saved ? "Saved ✓" : "Save your numbers"}
-      </button>
+      <div className="flex gap-3 items-center">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="px-8 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80 disabled:opacity-50"
+          style={{
+            backgroundColor: "var(--clay)",
+            color: "var(--cream)",
+            fontFamily: "var(--font-body)",
+            letterSpacing: "0.15em",
+          }}
+        >
+          {saving ? "Saving…" : saved ? "Saved ✓" : "Save your numbers"}
+        </button>
+        <button
+          onClick={() => { setConfig(DEFAULTS); setSaved(false); }}
+          className="px-6 py-3 text-sm uppercase tracking-wider opacity-40 hover:opacity-70 transition-opacity"
+          style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+        >
+          Clear
+        </button>
+      </div>
 
       {saved && (
         <p

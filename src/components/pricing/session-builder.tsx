@@ -21,6 +21,7 @@ const EMPTY_SESSION: Omit<SessionType, "id" | "user_id" | "created_at"> = {
   travel_rate_per_mile: 0.67,
   studio_hourly_rate: 0,
   editing_hourly_rate: 0,
+  shooting_hourly_rate: 0,
   profit_margin: 30,
 };
 
@@ -36,7 +37,8 @@ function calcSessionPrice(session: typeof EMPTY_SESSION, codb: CODBResults): num
   const travelCost = session.travel_miles * session.travel_rate_per_mile;
   const studioCost = (session.studio_hourly_rate ?? 0) * session.duration_hours;
   const editingCost = (session.editing_hourly_rate ?? 0) * session.editing_hours;
-  const base = codb.minimumPerSession + travelCost + studioCost + editingCost;
+  const shootingCost = (session.shooting_hourly_rate ?? 0) * session.duration_hours;
+  const base = codb.minimumPerSession + travelCost + studioCost + editingCost + shootingCost;
   return base * (1 + session.profit_margin / 100);
 }
 
@@ -73,6 +75,7 @@ export function SessionBuilder({
       travel_rate_per_mile: session.travel_rate_per_mile,
       studio_hourly_rate: session.studio_hourly_rate ?? 0,
       editing_hourly_rate: session.editing_hourly_rate ?? 0,
+      shooting_hourly_rate: session.shooting_hourly_rate ?? 0,
       profit_margin: session.profit_margin,
     });
     setEditingId(session.id ?? null);
@@ -126,6 +129,7 @@ export function SessionBuilder({
   const travelCost = form.travel_miles * form.travel_rate_per_mile;
   const studioCost = (form.studio_hourly_rate ?? 0) * form.duration_hours;
   const editingCost = (form.editing_hourly_rate ?? 0) * form.editing_hours;
+  const shootingCost = (form.shooting_hourly_rate ?? 0) * form.duration_hours;
 
   return (
     <div className="max-w-2xl">
@@ -228,6 +232,37 @@ export function SessionBuilder({
 
       {showForm && (
         <div>
+          {/* Approach explainer */}
+          <div
+            className="p-5 mb-8"
+            style={{ backgroundColor: "var(--sand)" }}
+          >
+            <p
+              className="text-xs uppercase tracking-widest opacity-50 mb-3"
+              style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+            >
+              How pricing works — choose your approach
+            </p>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium mb-1" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                  Approach 1 — CODB-based
+                </p>
+                <p className="text-xs opacity-60 leading-relaxed" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                  Set your income goal in the Calculator. Leave shooting &amp; editing rates at $0 — your CODB minimum already covers all your time spread across sessions.
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium mb-1" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                  Approach 2 — Hourly billing
+                </p>
+                <p className="text-xs opacity-60 leading-relaxed" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                  Set desired income to $0 in the Calculator (expenses only). Use shooting + editing rates here to charge for your time explicitly per session.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <h2
             className="text-xl font-light italic mb-6"
             style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}
@@ -418,6 +453,34 @@ export function SessionBuilder({
               </p>
             </div>
 
+            {/* Shooting rate */}
+            <div className="flex flex-col gap-1.5">
+              <label
+                className="text-xs uppercase tracking-wider opacity-50"
+                style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+              >
+                Shooting hourly rate ($/hr — leave 0 to skip)
+              </label>
+              <input
+                type="number"
+                min={0}
+                step={5}
+                value={form.shooting_hourly_rate || ""}
+                placeholder="0"
+                onChange={(e) => updateForm("shooting_hourly_rate", parseFloat(e.target.value) || 0)}
+                className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors"
+                style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
+                onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+              />
+              <p
+                className="text-xs opacity-40"
+                style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+              >
+                Multiplied by shoot duration — use with Approach 2 (set desired income to $0 in Calculator)
+              </p>
+            </div>
+
             {/* Studio rental */}
             <div className="flex flex-col gap-1.5">
               <label
@@ -520,6 +583,16 @@ export function SessionBuilder({
                     </span>
                   </div>
                 )}
+                {shootingCost > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-sm opacity-60" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                      Shooting (${form.shooting_hourly_rate}/hr × {form.duration_hours}h)
+                    </span>
+                    <span className="text-sm" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                      {fmt(shootingCost)}
+                    </span>
+                  </div>
+                )}
                 {editingCost > 0 && (
                   <div className="flex justify-between">
                     <span className="text-sm opacity-60" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
@@ -580,8 +653,15 @@ export function SessionBuilder({
               {saving ? "Saving…" : editingId ? "Update session" : "Save session"}
             </button>
             <button
-              onClick={cancelForm}
+              onClick={() => setForm(EMPTY_SESSION)}
               className="px-6 py-3 text-sm uppercase tracking-wider opacity-40 hover:opacity-70 transition-opacity"
+              style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+            >
+              Clear
+            </button>
+            <button
+              onClick={cancelForm}
+              className="px-6 py-3 text-sm uppercase tracking-wider opacity-30 hover:opacity-60 transition-opacity"
               style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
             >
               Cancel
