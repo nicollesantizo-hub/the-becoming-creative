@@ -53,6 +53,7 @@ export function QuoteBuilder({
   const [quotes, setQuotes] = useState<Quote[]>(savedQuotes);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [selectedSessionId, setSelectedSessionId] = useState<string>("");
   const [customTravel, setCustomTravel] = useState(0);
   const [customTravelRate, setCustomTravelRate] = useState(0.67);
@@ -141,8 +142,14 @@ export function QuoteBuilder({
       .insert(quote)
       .select()
       .single();
-    if (!error && data) setQuotes((prev) => [data, ...prev]);
+    if (error) {
+      setSaveError(error.message);
+      setSaving(false);
+      return;
+    }
+    if (data) setQuotes((prev) => [data, ...prev]);
     setSaving(false);
+    setSaveError("");
     resetForm();
   }
 
@@ -545,14 +552,26 @@ export function QuoteBuilder({
 
           <div className="flex gap-3">
             {isPro ? (
-              <button
-                onClick={handleSave}
-                disabled={saving || !clientName.trim() || !codb}
-                className="px-8 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80 disabled:opacity-40"
-                style={{ backgroundColor: "var(--clay)", color: "var(--cream)", fontFamily: "var(--font-body)", letterSpacing: "0.15em" }}
-              >
-                {saving ? "Saving…" : "Save quote"}
-              </button>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={handleSave}
+                  disabled={saving || !clientName.trim() || !codb}
+                  className="px-8 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80 disabled:opacity-40"
+                  style={{ backgroundColor: "var(--clay)", color: "var(--cream)", fontFamily: "var(--font-body)", letterSpacing: "0.15em" }}
+                >
+                  {saving ? "Saving…" : "Save quote"}
+                </button>
+                {saveError && (
+                  <p className="text-xs" style={{ color: "var(--destructive)", fontFamily: "var(--font-body)" }}>
+                    Error: {saveError}
+                  </p>
+                )}
+                {!clientName.trim() && (
+                  <p className="text-xs opacity-50" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                    Client name is required to save.
+                  </p>
+                )}
+              </div>
             ) : (
               <div className="flex flex-col gap-2">
                 <p
