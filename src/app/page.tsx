@@ -132,9 +132,9 @@ export default function Home() {
       {/* Photo strip */}
       <div className="grid grid-cols-3" style={{ height: "55vh" }}>
         {[
-          { src: "/images/AV_michelle-7599.jpg", position: "object-center" },
-          { src: "/images/AV_michelle-7896.jpg", position: "object-center" },
-          { src: "/images/AV_stephanie-6460.jpg", position: "object-center" },
+          { src: "/images/AV_michelle-7599.jpg", position: "object-[55%_40%]" },
+          { src: "/images/AV_michelle-7896.jpg", position: "object-[50%_30%]" },
+          { src: "/images/AV_stephanie-6460.jpg", position: "object-[50%_70%]" },
         ].map((img) => (
           <div key={img.src} className="relative overflow-hidden">
             <Image
@@ -246,7 +246,7 @@ export default function Home() {
           />
           <div
             className="absolute inset-0"
-            style={{ backgroundColor: "rgba(180, 100, 60, 0.82)" }}
+            style={{ backgroundColor: "rgba(85, 95, 80, 0.70)" }}
           />
         </div>
         <div className="relative z-10 max-w-3xl mx-auto">
