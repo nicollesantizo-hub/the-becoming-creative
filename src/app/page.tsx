@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Logo } from "@/components/logo";
+import { WaitlistForm } from "@/components/waitlist-form";
 
 export default function Home() {
   return (
@@ -287,31 +288,7 @@ export default function Home() {
             Free to start. No perfection required.
           </p>
 
-          <form className="w-full flex flex-col sm:flex-row gap-3 mt-4">
-            <input
-              type="email"
-              placeholder="your@email.com"
-              className="flex-1 px-5 py-4 text-sm outline-none"
-              style={{
-                backgroundColor: "var(--sand)",
-                color: "var(--charcoal)",
-                fontFamily: "var(--font-body)",
-                border: "1px solid var(--border)",
-              }}
-            />
-            <button
-              type="submit"
-              className="px-8 py-4 text-sm uppercase transition-opacity hover:opacity-80"
-              style={{
-                backgroundColor: "var(--charcoal)",
-                color: "var(--cream)",
-                fontFamily: "var(--font-body)",
-                letterSpacing: "0.18em",
-              }}
-            >
-              Begin
-            </button>
-          </form>
+          <WaitlistForm />
 
           <p
             className="text-xs opacity-40"
