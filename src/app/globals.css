@@ -78,6 +78,15 @@
 }
 
 @layer components {
+  .pricing-card {
+    border-color: var(--border);
+    background-color: white;
+    transition: border-color 0.2s;
+  }
+  .pricing-card:hover {
+    border-color: var(--clay);
+  }
+
   .nav-join-btn {
     color: var(--cream);
     border: 1px solid rgba(247, 243, 237, 0.35);

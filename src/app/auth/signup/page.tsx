@@ -1,0 +1,178 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase";
+import { Logo } from "@/components/logo";
+
+export default function SignUpPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    const supabase = createClient();
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+      return;
+    }
+
+    setSuccess(true);
+    setLoading(false);
+  }
+
+  if (success) {
+    return (
+      <main
+        className="min-h-screen flex flex-col items-center justify-center px-8 py-16"
+        style={{ backgroundColor: "var(--cream)" }}
+      >
+        <div className="w-full max-w-sm text-center flex flex-col gap-8 items-center">
+          <Link href="/">
+            <Logo className="text-[var(--charcoal)]" />
+          </Link>
+          <div className="flex flex-col gap-4">
+            <h1
+              className="text-4xl font-light italic"
+              style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}
+            >
+              Check your email.
+            </h1>
+            <p
+              className="text-sm leading-relaxed opacity-60"
+              style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+            >
+              We sent a confirmation link to{" "}
+              <span className="opacity-100" style={{ color: "var(--charcoal)" }}>
+                {email}
+              </span>
+              . Click it to activate your account.
+            </p>
+          </div>
+          <Link
+            href="/auth/signin"
+            className="text-sm uppercase tracking-wider"
+            style={{ color: "var(--clay)", fontFamily: "var(--font-body)" }}
+          >
+            Back to sign in →
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main
+      className="min-h-screen flex flex-col items-center justify-center px-8 py-16"
+      style={{ backgroundColor: "var(--cream)" }}
+    >
+      <div className="w-full max-w-sm flex flex-col gap-10">
+        <div className="flex flex-col items-center gap-6">
+          <Link href="/">
+            <Logo className="text-[var(--charcoal)]" />
+          </Link>
+          <div className="text-center">
+            <h1
+              className="text-4xl font-light italic"
+              style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}
+            >
+              Start here.
+            </h1>
+            <p
+              className="text-sm mt-2 opacity-60"
+              style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+            >
+              Create your free account — tools, community &amp; more
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full px-4 py-3 text-sm bg-white border outline-none transition-colors"
+            style={{
+              borderColor: "var(--border)",
+              fontFamily: "var(--font-body)",
+              color: "var(--charcoal)",
+            }}
+            onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
+            onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+          />
+          <input
+            type="password"
+            placeholder="Password (min 6 characters)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+            className="w-full px-4 py-3 text-sm bg-white border outline-none transition-colors"
+            style={{
+              borderColor: "var(--border)",
+              fontFamily: "var(--font-body)",
+              color: "var(--charcoal)",
+            }}
+            onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
+            onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+          />
+
+          {error && (
+            <p
+              className="text-sm"
+              style={{ color: "var(--destructive)", fontFamily: "var(--font-body)" }}
+            >
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80 disabled:opacity-50 mt-2"
+            style={{
+              backgroundColor: "var(--clay)",
+              color: "var(--cream)",
+              fontFamily: "var(--font-body)",
+              letterSpacing: "0.15em",
+            }}
+          >
+            {loading ? "Creating account…" : "Create free account"}
+          </button>
+        </form>
+
+        <p
+          className="text-center text-sm opacity-60"
+          style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+        >
+          Already have an account?{" "}
+          <Link
+            href="/auth/signin"
+            className="underline"
+            style={{ color: "var(--clay)", opacity: 1 }}
+          >
+            Sign in
+          </Link>
+        </p>
+      </div>
+    </main>
+  );
+}
