@@ -61,7 +61,30 @@ export function PricingNav({ profile }: { profile: UserProfile | null }) {
         </div>
 
         <div className="flex flex-col gap-4">
-          {profile?.tier === "free" && (
+          {profile?.tier === "pro" ? (
+            <div
+              className="flex items-center gap-2 px-3 py-2"
+              style={{ backgroundColor: "rgba(247,243,237,0.08)" }}
+            >
+              <span
+                className="text-xs px-2 py-0.5 uppercase tracking-widest"
+                style={{
+                  backgroundColor: "var(--clay)",
+                  color: "var(--cream)",
+                  fontFamily: "var(--font-body)",
+                  letterSpacing: "0.15em",
+                }}
+              >
+                Pro
+              </span>
+              <p
+                className="text-xs opacity-40"
+                style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}
+              >
+                Full access
+              </p>
+            </div>
+          ) : (
             <div
               className="p-3 rounded-sm"
               style={{ backgroundColor: "rgba(247,243,237,0.06)" }}
