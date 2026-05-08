@@ -277,6 +277,18 @@ export function QuoteBuilder({
                   >
                     Duplicate
                   </button>
+                  <button
+                    onClick={async () => {
+                      if (!quote.id) return;
+                      const supabase = createClient();
+                      const { error } = await supabase.from("quotes").delete().eq("id", quote.id).eq("user_id", userId);
+                      if (!error) setQuotes((prev) => prev.filter((q) => q.id !== quote.id));
+                    }}
+                    className="text-xs uppercase tracking-wider opacity-30 hover:opacity-70 transition-opacity"
+                    style={{ color: "var(--destructive)", fontFamily: "var(--font-body)" }}
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             ))}
