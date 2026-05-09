@@ -53,13 +53,13 @@ export function PricingNav({ profile }: { profile: UserProfile | null }) {
         >
           {pageTitle}
         </span>
-        <button
-          onClick={signOut}
+        <Link
+          href="/pricing/settings"
           className="text-xs uppercase tracking-wider opacity-30 hover:opacity-60 transition-opacity"
           style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}
         >
-          Sign out
-        </button>
+          Settings
+        </Link>
       </header>
 
       {/* Sidebar — desktop */}

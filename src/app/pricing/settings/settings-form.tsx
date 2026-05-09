@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 
 interface Props {
@@ -18,6 +19,14 @@ export function SettingsForm({ userId, email, initialValues }: Props) {
   const [values, setValues] = useState(initialValues);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const router = useRouter();
+
+  async function signOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/");
+    router.refresh();
+  }
 
   function set(key: keyof typeof values, val: string) {
     setValues((v) => ({ ...v, [key]: val }));
@@ -137,6 +146,16 @@ export function SettingsForm({ userId, email, initialValues }: Props) {
             Saved.
           </p>
         )}
+      </div>
+
+      <div className="pt-8 mt-4 border-t" style={{ borderColor: "var(--border)" }}>
+        <button
+          onClick={signOut}
+          className="text-xs uppercase tracking-wider opacity-30 hover:opacity-60 transition-opacity"
+          style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+        >
+          Sign out
+        </button>
       </div>
     </div>
   );
