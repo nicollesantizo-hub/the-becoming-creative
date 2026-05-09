@@ -189,8 +189,8 @@ export function PricingNav({ profile }: { profile: UserProfile | null }) {
         {profile?.tier !== "pro" && (
           <Link
             href="/pricing/upgrade"
-            className="flex flex-col items-center"
-            style={{ fontFamily: "var(--font-body)", color: "var(--clay)" }}
+            className="flex flex-col items-center px-3 py-1 rounded-sm"
+            style={{ fontFamily: "var(--font-body)", color: "var(--cream)", backgroundColor: "var(--clay)" }}
           >
             <span className="text-xs uppercase tracking-wider">Upgrade</span>
           </Link>

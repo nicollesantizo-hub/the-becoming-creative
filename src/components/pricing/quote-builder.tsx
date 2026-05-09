@@ -309,8 +309,15 @@ export function QuoteBuilder({
             className="text-sm opacity-70"
             style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
           >
-            Free plan: generate quotes and view the breakdown, but quote history
-            requires Pro.
+            Free plan: generate quotes and view the breakdown, but quote history requires{" "}
+            <a
+              href="/pricing/upgrade"
+              className="underline opacity-100 hover:opacity-70 transition-opacity"
+              style={{ color: "var(--clay)" }}
+            >
+              Pro
+            </a>
+            .
           </p>
         </div>
       )}
@@ -748,7 +755,15 @@ export function QuoteBuilder({
                   className="text-xs opacity-50"
                   style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
                 >
-                  Saving quotes requires Pro. You can use the summary above for reference.
+                  Saving quotes requires{" "}
+                  <a
+                    href="/pricing/upgrade"
+                    className="underline opacity-100 hover:opacity-70 transition-opacity"
+                    style={{ color: "var(--clay)" }}
+                  >
+                    Pro
+                  </a>
+                  . You can use the summary above for reference.
                 </p>
               </div>
             )}

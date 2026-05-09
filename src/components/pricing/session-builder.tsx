@@ -210,7 +210,15 @@ export function SessionBuilder({
             className="text-sm opacity-70"
             style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
           >
-            Free plan includes 1 session type. Upgrade to Pro for unlimited.
+            Free plan includes 1 session type.{" "}
+            <a
+              href="/pricing/upgrade"
+              className="underline opacity-100 hover:opacity-70 transition-opacity"
+              style={{ color: "var(--clay)" }}
+            >
+              Upgrade to Pro
+            </a>{" "}
+            for unlimited.
           </p>
         </div>
       )}
