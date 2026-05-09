@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 import { PostEditor } from "@/components/post-editor";
+import { useWarnOnLeave } from "@/hooks/use-warn-on-leave";
 
 function toSlug(title: string) {
   return title.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-");
@@ -29,6 +30,14 @@ export function EditPostForm({ post }: { post: Post }) {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
+
+  const isDirty =
+    title !== post.title ||
+    body !== post.body ||
+    type !== post.type ||
+    published !== post.published ||
+    coverImage !== (post.cover_image ?? "");
+  useWarnOnLeave(isDirty);
 
   async function handleSave() {
     if (!title.trim() || !body.trim()) return;

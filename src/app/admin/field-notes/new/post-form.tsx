@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 import { PostEditor } from "@/components/post-editor";
+import { useWarnOnLeave } from "@/hooks/use-warn-on-leave";
 
 function toSlug(title: string) {
   return title.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-");
@@ -18,6 +19,9 @@ export function PostForm() {
   const [coverImage, setCoverImage] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  const isDirty = title.trim() !== "" || body.trim() !== "";
+  useWarnOnLeave(isDirty);
 
   async function handleSave() {
     if (!title.trim() || !body.trim()) return;
