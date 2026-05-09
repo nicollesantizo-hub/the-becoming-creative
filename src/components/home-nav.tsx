@@ -50,7 +50,7 @@ export function HomeNav() {
             Resources
           </a>
           <a
-            href={loggedIn ? "/pricing" : "/auth/signin"}
+            href={loggedIn ? "/resources" : "/auth/signin"}
             className="text-sm uppercase transition-opacity hover:opacity-60"
             style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em", color: textColor, opacity: 0.65 }}
           >
@@ -94,7 +94,7 @@ export function HomeNav() {
             Resources
           </a>
           <a
-            href={loggedIn ? "/pricing" : "/auth/signin"}
+            href={loggedIn ? "/resources" : "/auth/signin"}
             className="text-2xl uppercase tracking-widest"
             style={{ color: "var(--paper)", fontFamily: "var(--font-body)", opacity: 0.75 }}
           >
