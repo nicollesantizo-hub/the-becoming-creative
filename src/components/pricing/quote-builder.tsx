@@ -281,6 +281,15 @@ export function QuoteBuilder({
                   >
                     Duplicate
                   </button>
+                  <a
+                    href={`/print/quote/${quote.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs uppercase tracking-wider opacity-40 hover:opacity-80 transition-opacity"
+                    style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                  >
+                    PDF
+                  </a>
                   <button
                     onClick={async () => {
                       if (!quote.id) return;

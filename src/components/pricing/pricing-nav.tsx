@@ -16,6 +16,7 @@ const pageTitles: Record<string, string> = {
   "/pricing/calculator": "Calculator",
   "/pricing/sessions": "Sessions",
   "/pricing/quotes": "Quotes",
+  "/pricing/settings": "Settings",
   "/pricing": "Price My Work",
 };
 
@@ -103,6 +104,17 @@ export function PricingNav({ profile }: { profile: UserProfile | null }) {
               </Link>
             );
           })}
+          <Link
+            href="/pricing/settings"
+            className="px-3 py-2 text-sm rounded-sm transition-colors"
+            style={{
+              fontFamily: "var(--font-body)",
+              color: pathname === "/pricing/settings" ? "var(--cream)" : "rgba(247,243,237,0.45)",
+              backgroundColor: pathname === "/pricing/settings" ? "rgba(247,243,237,0.1)" : "transparent",
+            }}
+          >
+            Settings
+          </Link>
         </div>
 
         <div className="flex flex-col gap-4">
