@@ -1,11 +1,12 @@
 interface LogoProps {
   className?: string;
   markOnly?: boolean;
+  style?: React.CSSProperties;
 }
 
-export function Logo({ className = "", markOnly = false }: LogoProps) {
+export function Logo({ className = "", markOnly = false, style }: LogoProps) {
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
+    <div className={`flex items-center gap-3 ${className}`} style={style}>
       <svg
         width="28"
         height="36"

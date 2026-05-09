@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, DM_Sans } from "next/font/google";
+import { Space_Grotesk, Caveat, DM_Sans } from "next/font/google";
 import "./globals.css";
 
-const heading = Cormorant_Garamond({
+const heading = Space_Grotesk({
   variable: "--font-heading",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  style: ["normal", "italic"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+});
+
+const accent = Caveat({
+  variable: "--font-accent",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
@@ -32,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${heading.variable} ${body.variable} h-full`}>
+    <html lang="en" className={`${heading.variable} ${accent.variable} ${body.variable} h-full`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
