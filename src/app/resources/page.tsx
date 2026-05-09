@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { InstallBanner } from "@/components/install-banner";
 
 export const metadata = {
   title: "Resources — The Becoming Creative",
@@ -159,6 +160,8 @@ export default function ResourcesPage() {
           </div>
         </div>
       </section>
+
+      <InstallBanner />
 
       {/* Footer */}
       <footer
