@@ -8,7 +8,7 @@ interface Comment {
   body: string;
   created_at: string;
   user_id: string;
-  profiles: { email: string } | null;
+  profiles: { email: string }[] | null;
 }
 
 interface Props {
@@ -71,7 +71,7 @@ export function CommentSection({ postId, initialComments, currentUserId }: Props
                 className="text-xs opacity-35"
                 style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
               >
-                {comment.profiles?.email?.split("@")[0] ?? "creative"} ·{" "}
+                {comment.profiles?.[0]?.email?.split("@")[0] ?? "creative"} ·{" "}
                 {new Date(comment.created_at).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",

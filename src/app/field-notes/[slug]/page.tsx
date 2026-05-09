@@ -95,7 +95,7 @@ export default async function PostPage({
           <div className="mt-12 pt-12 border-t" style={{ borderColor: "var(--border)" }}>
             <CommentSection
               postId={post.id}
-              initialComments={comments ?? []}
+              initialComments={(comments ?? []) as Parameters<typeof CommentSection>[0]["initialComments"]}
               currentUserId={user?.id ?? null}
             />
           </div>
