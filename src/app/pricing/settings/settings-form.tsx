@@ -148,7 +148,7 @@ export function SettingsForm({ userId, email, initialValues }: Props) {
         )}
       </div>
 
-      <div className="pt-8 mt-4 border-t" style={{ borderColor: "var(--border)" }}>
+      <div className="pt-8 mt-4 border-t flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
         <button
           onClick={signOut}
           className="text-xs uppercase tracking-wider opacity-30 hover:opacity-60 transition-opacity"
@@ -156,6 +156,15 @@ export function SettingsForm({ userId, email, initialValues }: Props) {
         >
           Sign out
         </button>
+        {email === "aida@aidavisuals.com" && (
+          <a
+            href="/admin"
+            className="text-xs uppercase tracking-wider opacity-30 hover:opacity-60 transition-opacity"
+            style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+          >
+            Admin →
+          </a>
+        )}
       </div>
     </div>
   );

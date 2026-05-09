@@ -48,17 +48,6 @@ export default async function SettingsPage() {
         }}
       />
 
-      {user.email === "aida@aidavisuals.com" && (
-        <div className="mt-12 pt-6 border-t" style={{ borderColor: "var(--border)" }}>
-          <Link
-            href="/admin"
-            className="text-xs uppercase tracking-widest opacity-30 hover:opacity-60 transition-opacity"
-            style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
-          >
-            Admin →
-          </Link>
-        </div>
-      )}
     </div>
   );
 }
