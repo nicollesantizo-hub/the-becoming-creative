@@ -12,7 +12,7 @@ export default function Home() {
       <section className="relative min-h-screen flex flex-col items-center justify-center px-8 text-center overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="/images/AV_stephanie-6488.jpg"
+            src="/images/AV_michelle-7172.jpg"
             alt=""
             fill
             className="object-cover object-center grayscale"
