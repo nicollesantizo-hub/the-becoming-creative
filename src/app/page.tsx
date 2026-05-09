@@ -1,31 +1,12 @@
 import Image from "next/image";
-import { Logo } from "@/components/logo";
+import { HomeNav } from "@/components/home-nav";
 import { WaitlistForm } from "@/components/waitlist-form";
 
 export default function Home() {
   return (
     <main className="flex flex-col">
 
-      {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6">
-        <Logo className="text-[var(--cream)]" />
-        <div className="flex items-center gap-4">
-          <a
-            href="/resources"
-            className="text-sm uppercase px-5 py-2 transition-opacity hover:opacity-70"
-            style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em", color: "var(--cream)", opacity: 0.7 }}
-          >
-            Resources
-          </a>
-          <a
-            href="#join"
-            className="nav-join-btn text-sm uppercase px-5 py-2"
-            style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em" }}
-          >
-            Join
-          </a>
-        </div>
-      </nav>
+      <HomeNav />
 
       {/* Hero — full bleed photo */}
       <section className="relative min-h-screen flex flex-col items-center justify-center px-8 text-center overflow-hidden">

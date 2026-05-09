@@ -12,6 +12,13 @@ const navItems = [
   { href: "/pricing/quotes", label: "Quotes" },
 ];
 
+const pageTitles: Record<string, string> = {
+  "/pricing/calculator": "Calculator",
+  "/pricing/sessions": "Sessions",
+  "/pricing/quotes": "Quotes",
+  "/pricing": "Price My Work",
+};
+
 export function PricingNav({ profile }: { profile: UserProfile | null }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -23,16 +30,54 @@ export function PricingNav({ profile }: { profile: UserProfile | null }) {
     router.refresh();
   }
 
+  const pageTitle = pageTitles[pathname] ?? "Price My Work";
+
   return (
     <>
+      {/* Top bar — mobile only */}
+      <header
+        className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-5 py-4"
+        style={{ backgroundColor: "var(--charcoal)" }}
+      >
+        <Link
+          href="/resources"
+          className="flex items-center gap-2 text-xs uppercase tracking-wider opacity-50 hover:opacity-100 transition-opacity"
+          style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}
+        >
+          ← Resources
+        </Link>
+        <span
+          className="text-xs uppercase tracking-widest opacity-60"
+          style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}
+        >
+          {pageTitle}
+        </span>
+        <button
+          onClick={signOut}
+          className="text-xs uppercase tracking-wider opacity-30 hover:opacity-60 transition-opacity"
+          style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}
+        >
+          Sign out
+        </button>
+      </header>
+
       {/* Sidebar — desktop */}
       <aside
         className="hidden md:flex fixed top-0 left-0 bottom-0 w-52 flex-col py-8 px-5 gap-8 z-40"
         style={{ backgroundColor: "var(--charcoal)" }}
       >
-        <Link href="/">
-          <Logo className="text-[var(--cream)] opacity-70 hover:opacity-100 transition-opacity" />
-        </Link>
+        <div className="flex flex-col gap-3">
+          <Link href="/">
+            <Logo className="text-[var(--cream)] opacity-70 hover:opacity-100 transition-opacity" />
+          </Link>
+          <Link
+            href="/resources"
+            className="text-xs uppercase tracking-wider opacity-30 hover:opacity-60 transition-opacity px-1"
+            style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}
+          >
+            ← Resources
+          </Link>
+        </div>
 
         <div className="flex flex-col gap-1 flex-1">
           <p

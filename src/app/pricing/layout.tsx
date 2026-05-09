@@ -28,7 +28,7 @@ export default async function PricingLayout({
   return (
     <div className="min-h-screen" style={{ backgroundColor: "var(--cream)" }}>
       <PricingNav profile={profile} />
-      <main className="md:pl-52 pb-20 md:pb-0 min-h-screen">
+      <main className="md:pl-52 pt-14 md:pt-0 pb-20 md:pb-0 min-h-screen">
         {children}
       </main>
     </div>
