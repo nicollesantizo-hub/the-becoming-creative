@@ -61,6 +61,7 @@ export interface Quote {
   suggested_price: number;
   final_price: number;
   notes: string;
+  addons: { label: string; price: number }[];
   status: "draft" | "sent" | "accepted" | "declined";
   created_at?: string;
 }

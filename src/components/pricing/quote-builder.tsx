@@ -67,6 +67,7 @@ export function QuoteBuilder({
   const [clientEmail, setClientEmail] = useState("");
   const [sessionDate, setSessionDate] = useState("");
   const [notes, setNotes] = useState("");
+  const [addons, setAddons] = useState<{ label: string; price: number }[]>([]);
 
   const selectedSession = sessions.find((s) => s.id === selectedSessionId);
 
@@ -85,8 +86,9 @@ export function QuoteBuilder({
       ? (codb.minimumPerSession + travel * travelRate) * (1 + margin / 100)
       : 0;
 
-  const taxAmount = basePrice * (taxRate / 100);
-  const subtotal = basePrice + taxAmount;
+  const addonsTotal = addons.reduce((sum, a) => sum + (a.price || 0), 0);
+  const taxAmount = (basePrice + addonsTotal) * (taxRate / 100);
+  const subtotal = basePrice + addonsTotal + taxAmount;
 
   const discountAmount =
     discountType === "percentage"
@@ -109,6 +111,7 @@ export function QuoteBuilder({
     setClientEmail("");
     setSessionDate("");
     setNotes("");
+    setAddons([]);
     setQuoteName("");
     setEditingQuoteId(null);
     setShowForm(false);
@@ -125,6 +128,7 @@ export function QuoteBuilder({
     setDiscountType(quote.discount_type ?? "none");
     setDiscountValue(quote.discount_value ?? 0);
     setCustomTravel(quote.travel_miles ?? 0);
+    setAddons(quote.addons ?? []);
     setEditingQuoteId(quote.id ?? null);
     setShowForm(true);
     setSaveError("");
@@ -152,6 +156,7 @@ export function QuoteBuilder({
         suggested_price: quote.suggested_price,
         final_price: quote.final_price,
         notes: quote.notes,
+        addons: quote.addons ?? [],
         status: "draft",
       })
       .select()
@@ -185,6 +190,7 @@ export function QuoteBuilder({
       suggested_price: basePrice,
       final_price: finalPrice,
       notes,
+      addons,
       status: "draft",
     };
     if (editingQuoteId) {
@@ -573,6 +579,61 @@ export function QuoteBuilder({
               )}
             </div>
 
+            {/* Add-ons */}
+            <div className="flex flex-col gap-3">
+              <label
+                className="text-xs uppercase tracking-wider opacity-50"
+                style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+              >
+                Add-ons & extra charges
+              </label>
+              {addons.map((addon, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    placeholder="e.g. Props, Rush delivery, Extra hour…"
+                    value={addon.label}
+                    onChange={(e) => {
+                      const updated = [...addons];
+                      updated[i] = { ...updated[i], label: e.target.value };
+                      setAddons(updated);
+                    }}
+                    className="flex-1 px-3 py-2 text-sm bg-white border outline-none"
+                    style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                  />
+                  <input
+                    type="number"
+                    placeholder="$"
+                    min={0}
+                    value={addon.price || ""}
+                    onChange={(e) => {
+                      const updated = [...addons];
+                      updated[i] = { ...updated[i], price: parseFloat(e.target.value) || 0 };
+                      setAddons(updated);
+                    }}
+                    className="w-24 px-3 py-2 text-sm bg-white border outline-none"
+                    style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setAddons(addons.filter((_, idx) => idx !== i))}
+                    className="text-xs opacity-30 hover:opacity-60 transition-opacity px-2"
+                    style={{ color: "var(--destructive)", fontFamily: "var(--font-body)" }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setAddons([...addons, { label: "", price: 0 }])}
+                className="text-xs uppercase tracking-wider opacity-40 hover:opacity-70 transition-opacity text-left"
+                style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+              >
+                + Add line item
+              </button>
+            </div>
+
             {/* Notes */}
             <div className="flex flex-col gap-1.5">
               <label
@@ -615,6 +676,16 @@ export function QuoteBuilder({
                     {fmt(basePrice)}
                   </span>
                 </div>
+                {addons.filter(a => a.label || a.price).map((addon, i) => (
+                  <div key={i} className="flex justify-between">
+                    <span className="text-sm opacity-60" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                      {addon.label || "Add-on"}
+                    </span>
+                    <span className="text-sm" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                      {fmt(addon.price)}
+                    </span>
+                  </div>
+                ))}
                 {taxRate > 0 && (
                   <div className="flex justify-between">
                     <span className="text-sm opacity-60" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
