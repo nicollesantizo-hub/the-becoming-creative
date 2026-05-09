@@ -39,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${heading.variable} ${accent.variable} ${body.variable} h-full`}>
+    <html lang="en" className={`${heading.variable} ${accent.variable} ${body.variable} h-full`} style={{ colorScheme: "light" }}>
       <body className="min-h-full flex flex-col">
         {children}
         <Script src="/_vercel/insights/script.js" strategy="afterInteractive" />
