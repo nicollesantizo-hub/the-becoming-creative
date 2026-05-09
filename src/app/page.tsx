@@ -159,6 +159,7 @@ export default function Home() {
                 description:
                   "Curated content, stories from real creatives, and honest conversations about the messy middle of making something.",
                 mark: "01",
+                link: "/field-notes",
               },
               {
                 title: "Community",
