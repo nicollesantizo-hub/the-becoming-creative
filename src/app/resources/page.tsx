@@ -190,6 +190,39 @@ export default function ResourcesPage() {
                 </span>
               </div>
             </div>
+            {/* More coming */}
+            <div
+              className="md:col-span-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-8 border"
+              style={{ borderColor: "var(--border)", borderStyle: "dashed", backgroundColor: "transparent" }}
+            >
+              <div>
+                <span
+                  className="text-xs uppercase tracking-widest opacity-30 mb-2 block"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                >
+                  Coming soon
+                </span>
+                <p
+                  className="text-base font-light italic"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}
+                >
+                  More tools on the way.
+                </p>
+                <p
+                  className="text-sm opacity-40 mt-1"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 300 }}
+                >
+                  Contract templates, client guides, tax estimators, and more.
+                </p>
+              </div>
+              <Link
+                href="/#join"
+                className="text-xs uppercase tracking-widest opacity-50 hover:opacity-100 transition-opacity shrink-0"
+                style={{ color: "var(--clay)", fontFamily: "var(--font-body)" }}
+              >
+                Join the waitlist →
+              </Link>
+            </div>
           </div>
         </div>
       </section>
