@@ -43,6 +43,25 @@ export default function DeliveryPage() {
           Find out when you can realistically deliver — and stop overpromising.
         </p>
         <DeliveryEstimator />
+
+        <div
+          className="mt-12 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+          style={{ backgroundColor: "var(--sand)", borderLeft: "3px solid var(--clay)" }}
+        >
+          <p
+            className="text-sm opacity-60 leading-relaxed"
+            style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 300 }}
+          >
+            Want to price that shoot too?
+          </p>
+          <Link
+            href="/pricing"
+            className="text-xs uppercase tracking-widest transition-opacity hover:opacity-70 shrink-0"
+            style={{ color: "var(--clay)", fontFamily: "var(--font-body)" }}
+          >
+            Try Price My Work →
+          </Link>
+        </div>
       </div>
 
       <footer
