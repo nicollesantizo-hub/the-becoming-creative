@@ -48,12 +48,24 @@ export default function ResourcesPage() {
             Practical tools built for the business side of being an artist. Know your
             worth, price your work, grow with intention.
           </p>
+          <p
+            className="text-sm mt-4 opacity-40 max-w-xl"
+            style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 300 }}
+          >
+            Starting with photographers — tools for all creatives on the way.
+          </p>
         </div>
       </section>
 
       {/* Tools */}
       <section className="py-20 px-8" style={{ backgroundColor: "var(--sand)" }}>
         <div className="max-w-4xl mx-auto">
+          <p
+            className="text-xs uppercase tracking-widest opacity-30 mb-8"
+            style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+          >
+            Photography
+          </p>
           <div className="grid md:grid-cols-2 gap-6">
             {/* Gallery Delivery Estimator */}
             <div
