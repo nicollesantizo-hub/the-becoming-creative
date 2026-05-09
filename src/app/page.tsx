@@ -294,9 +294,20 @@ export default function Home() {
             the becoming creative
           </span>
         </div>
-        <p className="text-xs opacity-30" style={{ color: "var(--paper)", fontFamily: "var(--font-body)" }}>
-          © {new Date().getFullYear()} The Becoming Creative. All rights reserved.
-        </p>
+        <div className="flex items-center gap-6">
+          <a
+            href="https://www.instagram.com/thebecomingcreative"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs uppercase tracking-widest opacity-30 hover:opacity-60 transition-opacity"
+            style={{ color: "var(--paper)", fontFamily: "var(--font-body)" }}
+          >
+            Instagram
+          </a>
+          <p className="text-xs opacity-30" style={{ color: "var(--paper)", fontFamily: "var(--font-body)" }}>
+            © {new Date().getFullYear()} The Becoming Creative. All rights reserved.
+          </p>
+        </div>
       </footer>
 
     </main>
