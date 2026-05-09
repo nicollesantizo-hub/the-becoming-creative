@@ -186,6 +186,15 @@ export function PricingNav({ profile }: { profile: UserProfile | null }) {
             </Link>
           );
         })}
+        {profile?.tier !== "pro" && (
+          <Link
+            href="/pricing/upgrade"
+            className="flex flex-col items-center"
+            style={{ fontFamily: "var(--font-body)", color: "var(--clay)" }}
+          >
+            <span className="text-xs uppercase tracking-wider">Upgrade</span>
+          </Link>
+        )}
       </nav>
     </>
   );
