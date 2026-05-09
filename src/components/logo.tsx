@@ -8,79 +8,68 @@ export function Logo({ className = "", markOnly = false, style }: LogoProps) {
   return (
     <div className={`flex items-center gap-3 ${className}`} style={style}>
       <svg
-        width="22"
-        height="48"
-        viewBox="0 0 22 48"
+        width="24"
+        height="44"
+        viewBox="0 0 24 44"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
       >
-        {/* Organic bulb — smooth oval */}
+        {/* Partial bulb — upper arc only, open at base */}
         <path
-          d="M11,4 C15.5,4 18.5,7.5 18.5,12 C18.5,16.5 15.5,20.5 11,21.5 C6.5,20.5 3.5,16.5 3.5,12 C3.5,7.5 6.5,4 11,4Z"
+          d="M6,16 C5,12 6,8 8.5,6 C10.5,4 13.5,4 15.5,6 C18,8 19,12 18,16"
           stroke="currentColor"
           strokeWidth="1.2"
           fill="none"
+          strokeLinecap="round"
         />
-        {/* Organic filament — soft squiggle */}
+        {/* Soft filament */}
         <path
-          d="M8,13.5 C9,11.5 10,14.5 11,12.5 C12,10.5 13,13.5 14,11.5"
+          d="M10,12 C11,10 12,12.5 13,10.5"
           stroke="currentColor"
           strokeWidth="0.85"
           fill="none"
           strokeLinecap="round"
-          strokeLinejoin="round"
-          opacity="0.35"
+          opacity="0.38"
         />
-        {/* Calyx — curved cup wrapping base of bulb */}
+        {/* Throat — curved base connecting bulb to stem */}
         <path
-          d="M8,21.5 C8,24 9.5,26.5 11,27 C12.5,26.5 14,24 14,21.5"
+          d="M6,16 C7,19 9.5,20 12,20 C14.5,20 17,19 18,16"
           stroke="currentColor"
           strokeWidth="1.1"
           fill="none"
           strokeLinecap="round"
         />
-        {/* Left sepal */}
-        <path
-          d="M8,22 C6,23.5 5.5,26.5 7.5,28.5"
-          stroke="currentColor"
-          strokeWidth="1"
-          fill="none"
-          strokeLinecap="round"
-          opacity="0.55"
-        />
-        {/* Right sepal */}
-        <path
-          d="M14,22 C16,23.5 16.5,26.5 14.5,28.5"
-          stroke="currentColor"
-          strokeWidth="1"
-          fill="none"
-          strokeLinecap="round"
-          opacity="0.55"
-        />
         {/* Stem */}
         <line
-          x1="11"
-          y1="27"
-          x2="11"
-          y2="43"
+          x1="12"
+          y1="20"
+          x2="12"
+          y2="39"
           stroke="currentColor"
           strokeWidth="1.2"
           strokeLinecap="round"
         />
-        {/* Left leaf */}
+        {/* Left leaf — line art */}
         <path
-          d="M11 37 C11 37 4 33 2 26 C8 27 12 33 11 37Z"
-          fill="currentColor"
-          opacity="0.7"
+          d="M12,34 C10,31 6,28 3,23 C7,24 11,28 12,34Z"
+          stroke="currentColor"
+          strokeWidth="1.05"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
-        {/* Right leaf */}
+        {/* Right leaf — line art */}
         <path
-          d="M11 32 C11 32 18 28 20 21 C14 23 10 29 11 32Z"
-          fill="currentColor"
+          d="M12,28 C14,25 18,22 21,18 C17,19 13,23 12,28Z"
+          stroke="currentColor"
+          strokeWidth="1.05"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
-        {/* Root */}
-        <circle cx="11" cy="43" r="1.8" fill="currentColor" opacity="0.45" />
+        {/* Spark */}
+        <circle cx="12" cy="39" r="1.8" fill="currentColor" opacity="0.5" />
       </svg>
 
       {!markOnly && (
