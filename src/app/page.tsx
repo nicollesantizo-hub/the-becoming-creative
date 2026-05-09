@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Logo } from "@/components/logo";
 import { HomeNav } from "@/components/home-nav";
 import { WaitlistForm } from "@/components/waitlist-form";
 
