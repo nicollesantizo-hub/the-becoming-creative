@@ -41,7 +41,7 @@ export default async function SessionsPage() {
   const isPro = profile?.tier === "pro";
 
   return (
-    <div className="px-8 py-12">
+    <div className="px-5 md:px-8 py-10 md:py-12">
       <p
         className="text-xs uppercase tracking-widest opacity-40 mb-4"
         style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}

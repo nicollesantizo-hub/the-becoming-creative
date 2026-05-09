@@ -232,24 +232,35 @@ export function QuoteBuilder({
             {quotes.map((quote) => (
               <div
                 key={quote.id}
-                className="flex items-center justify-between p-5 border"
+                className="flex flex-col gap-4 p-5 border"
                 style={{ borderColor: "var(--border)", backgroundColor: "white" }}
               >
-                <div className="flex flex-col gap-1">
-                  <p
-                    className="text-base font-medium"
+                {/* Quote info */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-1">
+                    <p
+                      className="text-base font-medium"
+                      style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                    >
+                      {quote.quote_name || quote.client_name || "Unnamed quote"}
+                    </p>
+                    <p
+                      className="text-xs opacity-50"
+                      style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                    >
+                      {quote.quote_name ? `${quote.client_name} · ` : ""}{quote.session_date || "No date"}
+                    </p>
+                  </div>
+                  <span
+                    className="text-base font-medium shrink-0"
                     style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
                   >
-                    {quote.quote_name || quote.client_name || "Unnamed quote"}
-                  </p>
-                  <p
-                    className="text-xs opacity-50"
-                    style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
-                  >
-                    {quote.quote_name ? `${quote.client_name} · ` : ""}{quote.session_date || "No date"} · {fmt(quote.final_price)}
-                  </p>
+                    {fmt(quote.final_price)}
+                  </span>
                 </div>
-                <div className="flex items-center gap-3">
+
+                {/* Controls */}
+                <div className="flex items-center gap-3 flex-wrap">
                   <select
                     value={quote.status}
                     onChange={(e) =>

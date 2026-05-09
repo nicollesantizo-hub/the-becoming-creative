@@ -62,7 +62,7 @@ export default async function PricingDashboard() {
   ];
 
   return (
-    <div className="px-8 py-12 max-w-3xl">
+    <div className="px-5 md:px-8 py-10 md:py-12 max-w-3xl">
       <p
         className="text-xs uppercase tracking-widest opacity-40 mb-4"
         style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
