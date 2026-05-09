@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { createClient } from "@/lib/supabase-server";
 import { CommentSection } from "./comment-section";
+import { PostRenderer } from "./post-renderer";
 
 const TYPE_LABELS: Record<string, string> = {
   prompt: "Prompt",
@@ -73,6 +74,15 @@ export default async function PostPage({
             </span>
           </div>
 
+          {post.cover_image && (
+            <img
+              src={post.cover_image}
+              alt={post.title}
+              className="w-full object-cover mb-10"
+              style={{ maxHeight: "400px" }}
+            />
+          )}
+
           <h1
             className="text-4xl md:text-5xl font-light italic leading-tight mb-12"
             style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}
@@ -80,16 +90,7 @@ export default async function PostPage({
             {post.title}
           </h1>
 
-          <div
-            className="prose prose-sm max-w-none leading-relaxed"
-            style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 300 }}
-          >
-            {post.body.split("\n").filter(Boolean).map((para: string, i: number) => (
-              <p key={i} className="mb-5 opacity-70 leading-relaxed text-base">
-                {para}
-              </p>
-            ))}
-          </div>
+          <PostRenderer body={post.body} />
 
           <div className="mt-12 pt-12 border-t" style={{ borderColor: "var(--border)" }}>
             <CommentSection
