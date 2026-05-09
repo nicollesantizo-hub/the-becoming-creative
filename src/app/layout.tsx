@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Caveat, DM_Sans } from "next/font/google";
 import Script from "next/script";
+import { LastSeenTracker } from "@/components/last-seen-tracker";
 import "./globals.css";
 
 const heading = Space_Grotesk({
@@ -49,6 +50,7 @@ export default function RootLayout({
     <html lang="en" className={`${heading.variable} ${accent.variable} ${body.variable} h-full`} style={{ colorScheme: "light" }}>
       <body className="min-h-full flex flex-col">
         {children}
+        <LastSeenTracker />
         <Script src="/_vercel/insights/script.js" strategy="afterInteractive" />
       </body>
     </html>

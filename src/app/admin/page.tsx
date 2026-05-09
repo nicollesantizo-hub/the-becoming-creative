@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase-server";
+import { OnlineCount } from "./online-count";
 
 const ADMIN_EMAIL = "aida@aidavisuals.com";
 
@@ -74,7 +75,8 @@ export default async function AdminPage() {
 
       <div className="px-8 py-10 max-w-3xl">
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-12">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-12">
+          <OnlineCount />
           {[
             { label: "Members", value: memberCount ?? 0 },
             { label: "Waitlist", value: waitlistCount ?? 0 },
