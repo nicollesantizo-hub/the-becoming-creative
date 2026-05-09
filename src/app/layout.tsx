@@ -26,10 +26,14 @@ const body = DM_Sans({
 
 export const metadata: Metadata = {
   title: "The Becoming Creative",
-  description: "A space for creatives to find their rhythm, their voice, and each other.",
+  description: "For creatives figuring it out — resources, tools, and a space to find your rhythm, your worth, and each other.",
+  metadataBase: new URL("https://thebecomingcreative.com"),
   openGraph: {
     title: "The Becoming Creative",
-    description: "A space for creatives to find their rhythm, their voice, and each other.",
+    description: "For creatives figuring it out — resources, tools, and a space to find your rhythm, your worth, and each other.",
+    url: "https://thebecomingcreative.com",
+    siteName: "The Becoming Creative",
+    type: "website",
   },
 };
 
