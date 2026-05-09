@@ -5,10 +5,13 @@ import { useRouter } from "next/navigation";
 import { Logo } from "@/components/logo";
 import { createClient } from "@/lib/supabase";
 
+const ADMIN_EMAIL = "aida@aidavisuals.com";
+
 export function HomeNav() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -19,19 +22,24 @@ export function HomeNav() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => setLoggedIn(!!user));
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setLoggedIn(!!user);
+      setIsAdmin(user?.email === ADMIN_EMAIL);
+    });
   }, []);
 
   async function signOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
     setLoggedIn(false);
+    setIsAdmin(false);
     setOpen(false);
     router.refresh();
   }
 
   const textColor = scrolled ? "var(--ink)" : "var(--paper)";
   const joinClass = scrolled ? "nav-join-btn-dark" : "nav-join-btn";
+  const linkStyle = { fontFamily: "var(--font-body)", letterSpacing: "0.15em", color: textColor, opacity: 0.65 };
 
   return (
     <>
@@ -45,43 +53,39 @@ export function HomeNav() {
         <Logo style={{ color: textColor }} />
 
         <div className="hidden md:flex items-center gap-4">
-          <a
-            href="/field-notes"
-            className="text-sm uppercase transition-opacity hover:opacity-60"
-            style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em", color: textColor, opacity: 0.65 }}
-          >
+          <a href="/field-notes" className="text-sm uppercase transition-opacity hover:opacity-60" style={linkStyle}>
             Field Notes
           </a>
-          <a
-            href="/resources"
-            className="text-sm uppercase transition-opacity hover:opacity-60"
-            style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em", color: textColor, opacity: 0.65 }}
-          >
+          <a href="/resources" className="text-sm uppercase transition-opacity hover:opacity-60" style={linkStyle}>
             Resources
           </a>
-          <a
-            href={loggedIn ? "/resources" : "/auth/signin"}
-            className="text-sm uppercase transition-opacity hover:opacity-60"
-            style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em", color: textColor, opacity: 0.65 }}
-          >
-            {loggedIn ? "Dashboard" : "Sign in"}
-          </a>
           {loggedIn ? (
-            <button
-              onClick={signOut}
-              className="text-sm uppercase transition-opacity hover:opacity-60"
-              style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em", color: textColor, opacity: 0.65 }}
-            >
-              Sign out
-            </button>
+            <>
+              <a href="/pricing/settings" className="text-sm uppercase transition-opacity hover:opacity-60" style={linkStyle}>
+                Settings
+              </a>
+              {isAdmin && (
+                <a href="/admin" className="text-sm uppercase transition-opacity hover:opacity-60" style={linkStyle}>
+                  Admin
+                </a>
+              )}
+              <button onClick={signOut} className="text-sm uppercase transition-opacity hover:opacity-60" style={linkStyle}>
+                Sign out
+              </button>
+            </>
           ) : (
-            <a
-              href="#join"
-              className={`${joinClass} text-sm uppercase px-5 py-2`}
-              style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em" }}
-            >
-              Join
-            </a>
+            <>
+              <a href="/auth/signin" className="text-sm uppercase transition-opacity hover:opacity-60" style={linkStyle}>
+                Sign in
+              </a>
+              <a
+                href="#join"
+                className={`${joinClass} text-sm uppercase px-5 py-2`}
+                style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em" }}
+              >
+                Join
+              </a>
+            </>
           )}
         </div>
 
@@ -113,26 +117,34 @@ export function HomeNav() {
             style={{ color: "var(--paper)", fontFamily: "var(--font-body)", opacity: 0.75 }}>
             Resources
           </a>
-          <a
-            href={loggedIn ? "/resources" : "/auth/signin"}
-            className="text-2xl uppercase tracking-widest"
-            style={{ color: "var(--paper)", fontFamily: "var(--font-body)", opacity: 0.75 }}
-          >
-            {loggedIn ? "Dashboard" : "Sign in"}
-          </a>
           {loggedIn ? (
-            <button
-              onClick={signOut}
-              className="text-2xl uppercase tracking-widest"
-              style={{ color: "var(--paper)", fontFamily: "var(--font-body)", opacity: 0.75 }}
-            >
-              Sign out
-            </button>
+            <>
+              <a href="/pricing/settings" className="text-2xl uppercase tracking-widest"
+                style={{ color: "var(--paper)", fontFamily: "var(--font-body)", opacity: 0.75 }}>
+                Settings
+              </a>
+              {isAdmin && (
+                <a href="/admin" className="text-2xl uppercase tracking-widest"
+                  style={{ color: "var(--paper)", fontFamily: "var(--font-body)", opacity: 0.75 }}>
+                  Admin
+                </a>
+              )}
+              <button onClick={signOut} className="text-2xl uppercase tracking-widest"
+                style={{ color: "var(--paper)", fontFamily: "var(--font-body)", opacity: 0.75 }}>
+                Sign out
+              </button>
+            </>
           ) : (
-            <a href="#join" className="text-2xl uppercase tracking-widest"
-              style={{ color: "var(--paper)", fontFamily: "var(--font-body)" }}>
-              Join
-            </a>
+            <>
+              <a href="/auth/signin" className="text-2xl uppercase tracking-widest"
+                style={{ color: "var(--paper)", fontFamily: "var(--font-body)", opacity: 0.75 }}>
+                Sign in
+              </a>
+              <a href="#join" className="text-2xl uppercase tracking-widest"
+                style={{ color: "var(--paper)", fontFamily: "var(--font-body)" }}>
+                Join
+              </a>
+            </>
           )}
         </div>
       )}
