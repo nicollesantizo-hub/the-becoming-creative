@@ -146,12 +146,13 @@ export function PricingNav({ profile }: { profile: UserProfile | null }) {
               >
                 Upgrade for unlimited sessions, quote history &amp; exports.
               </p>
-              <p
-                className="text-xs mt-2"
-                style={{ color: "var(--clay)", fontFamily: "var(--font-body)" }}
+              <Link
+                href="/pricing/upgrade"
+                className="text-xs uppercase tracking-widest transition-opacity hover:opacity-80 text-center py-2"
+                style={{ backgroundColor: "var(--clay)", color: "var(--cream)", fontFamily: "var(--font-body)" }}
               >
-                Coming soon
-              </p>
+                Upgrade →
+              </Link>
             </div>
           )}
           <button
