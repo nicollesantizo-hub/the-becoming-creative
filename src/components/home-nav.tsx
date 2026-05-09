@@ -2,15 +2,22 @@
 
 import { useState, useEffect } from "react";
 import { Logo } from "@/components/logo";
+import { createClient } from "@/lib/supabase";
 
 export function HomeNav() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => setLoggedIn(!!user));
   }, []);
 
   const textColor = scrolled ? "var(--ink)" : "var(--paper)";
@@ -41,6 +48,13 @@ export function HomeNav() {
             style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em", color: textColor, opacity: 0.65 }}
           >
             Resources
+          </a>
+          <a
+            href={loggedIn ? "/pricing" : "/auth/signin"}
+            className="text-sm uppercase transition-opacity hover:opacity-60"
+            style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em", color: textColor, opacity: 0.65 }}
+          >
+            {loggedIn ? "Dashboard" : "Sign in"}
           </a>
           <a
             href="#join"
@@ -78,6 +92,13 @@ export function HomeNav() {
           <a href="/resources" className="text-2xl uppercase tracking-widest"
             style={{ color: "var(--paper)", fontFamily: "var(--font-body)", opacity: 0.75 }}>
             Resources
+          </a>
+          <a
+            href={loggedIn ? "/pricing" : "/auth/signin"}
+            className="text-2xl uppercase tracking-widest"
+            style={{ color: "var(--paper)", fontFamily: "var(--font-body)", opacity: 0.75 }}
+          >
+            {loggedIn ? "Dashboard" : "Sign in"}
           </a>
           <a href="#join" className="text-2xl uppercase tracking-widest"
             style={{ color: "var(--paper)", fontFamily: "var(--font-body)" }}>
