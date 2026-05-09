@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Price My Work — The Becoming Creative",
-    short_name: "Price My Work",
+    short_name: "The Becoming Creative",
     description: "Photography pricing and quoting tool for working photographers.",
     start_url: "/pricing",
     display: "standalone",
