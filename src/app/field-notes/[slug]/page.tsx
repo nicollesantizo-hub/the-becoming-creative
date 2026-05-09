@@ -5,6 +5,9 @@ import { createClient } from "@/lib/supabase-server";
 import { CommentSection } from "./comment-section";
 import { PostRenderer } from "./post-renderer";
 import { ShareButton } from "./share-button";
+import { AdminPostActions } from "./admin-post-actions";
+
+const ADMIN_EMAIL = "aida@aidavisuals.com";
 
 const TYPE_LABELS: Record<string, string> = {
   prompt: "Prompt",
@@ -109,6 +112,8 @@ export default async function PostPage({
           </div>
         </div>
       </article>
+
+      {user?.email === ADMIN_EMAIL && <AdminPostActions postId={post.id} />}
 
       <footer
         className="py-12 px-8 flex flex-col sm:flex-row items-center justify-between gap-6 mt-auto"

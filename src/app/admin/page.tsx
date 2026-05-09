@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase-server";
 import { OnlineCount } from "./online-count";
+import { DeletePostButton } from "./delete-post-button";
 
 const ADMIN_EMAIL = "aida@aidavisuals.com";
 
@@ -190,6 +191,7 @@ function PostRow({ post }: { post: { id: string; title: string; slug: string; ty
         >
           Edit
         </Link>
+        <DeletePostButton postId={post.id} />
         {post.published && (
           <Link
             href={`/field-notes/${post.slug}`}
