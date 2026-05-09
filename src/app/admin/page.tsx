@@ -16,10 +16,14 @@ export default async function AdminPage() {
 
   if (!user || user.email !== ADMIN_EMAIL) redirect("/");
 
-  const { data: posts } = await supabase
-    .from("posts")
-    .select("id, title, slug, type, published, created_at")
-    .order("created_at", { ascending: false });
+  const [{ data: posts }, { count: memberCount }, { count: waitlistCount }] = await Promise.all([
+    supabase
+      .from("posts")
+      .select("id, title, slug, type, published, created_at")
+      .order("created_at", { ascending: false }),
+    supabase.from("profiles").select("*", { count: "exact", head: true }),
+    supabase.from("waitlist").select("*", { count: "exact", head: true }),
+  ]);
 
   const published = posts?.filter((p) => p.published) ?? [];
   const drafts = posts?.filter((p) => !p.published) ?? [];
@@ -70,8 +74,10 @@ export default async function AdminPage() {
 
       <div className="px-8 py-10 max-w-3xl">
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-12">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-12">
           {[
+            { label: "Members", value: memberCount ?? 0 },
+            { label: "Waitlist", value: waitlistCount ?? 0 },
             { label: "Total posts", value: posts?.length ?? 0 },
             { label: "Published", value: published.length },
             { label: "Drafts", value: drafts.length },
