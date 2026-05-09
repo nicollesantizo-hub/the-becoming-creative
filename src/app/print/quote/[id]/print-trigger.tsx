@@ -2,10 +2,11 @@
 
 import { useEffect } from "react";
 
-export function PrintTrigger() {
+export function PrintTrigger({ title }: { title: string }) {
   useEffect(() => {
+    document.title = title;
     window.print();
-  }, []);
+  }, [title]);
 
   return null;
 }
