@@ -4,6 +4,7 @@ import { Logo } from "@/components/logo";
 import { createClient } from "@/lib/supabase-server";
 import { CommentSection } from "./comment-section";
 import { PostRenderer } from "./post-renderer";
+import { ShareButton } from "./share-button";
 
 const TYPE_LABELS: Record<string, string> = {
   prompt: "Prompt",
@@ -91,6 +92,13 @@ export default async function PostPage({
           </h1>
 
           <PostRenderer body={post.body} />
+
+          <div className="mt-10">
+            <ShareButton
+              title={post.title}
+              url={`https://thebecomingcreative.com/field-notes/${post.slug}`}
+            />
+          </div>
 
           <div className="mt-12 pt-12 border-t" style={{ borderColor: "var(--border)" }}>
             <CommentSection
