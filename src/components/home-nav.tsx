@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Logo } from "@/components/logo";
 import { createClient } from "@/lib/supabase";
 
@@ -8,6 +9,7 @@ export function HomeNav() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
@@ -19,6 +21,14 @@ export function HomeNav() {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => setLoggedIn(!!user));
   }, []);
+
+  async function signOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setLoggedIn(false);
+    setOpen(false);
+    router.refresh();
+  }
 
   const textColor = scrolled ? "var(--ink)" : "var(--paper)";
   const joinClass = scrolled ? "nav-join-btn-dark" : "nav-join-btn";
@@ -56,13 +66,23 @@ export function HomeNav() {
           >
             {loggedIn ? "Dashboard" : "Sign in"}
           </a>
-          <a
-            href="#join"
-            className={`${joinClass} text-sm uppercase px-5 py-2`}
-            style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em" }}
-          >
-            Join
-          </a>
+          {loggedIn ? (
+            <button
+              onClick={signOut}
+              className="text-sm uppercase transition-opacity hover:opacity-60"
+              style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em", color: textColor, opacity: 0.65 }}
+            >
+              Sign out
+            </button>
+          ) : (
+            <a
+              href="#join"
+              className={`${joinClass} text-sm uppercase px-5 py-2`}
+              style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em" }}
+            >
+              Join
+            </a>
+          )}
         </div>
 
         <button
@@ -100,10 +120,20 @@ export function HomeNav() {
           >
             {loggedIn ? "Dashboard" : "Sign in"}
           </a>
-          <a href="#join" className="text-2xl uppercase tracking-widest"
-            style={{ color: "var(--paper)", fontFamily: "var(--font-body)" }}>
-            Join
-          </a>
+          {loggedIn ? (
+            <button
+              onClick={signOut}
+              className="text-2xl uppercase tracking-widest"
+              style={{ color: "var(--paper)", fontFamily: "var(--font-body)", opacity: 0.75 }}
+            >
+              Sign out
+            </button>
+          ) : (
+            <a href="#join" className="text-2xl uppercase tracking-widest"
+              style={{ color: "var(--paper)", fontFamily: "var(--font-body)" }}>
+              Join
+            </a>
+          )}
         </div>
       )}
     </>
