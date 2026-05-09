@@ -1,11 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase-server";
 import type { Quote } from "@/types/pricing";
+import { fmt } from "@/lib/pricing";
 import { PrintTrigger } from "./print-trigger";
-
-function fmt(v: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v);
-}
 
 export default async function QuotePrintPage({
   params,

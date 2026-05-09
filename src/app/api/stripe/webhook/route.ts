@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+// Uses raw admin client (service role key) to bypass RLS — no user session available in webhook context
 import { createClient as createSupabaseAdmin } from "@supabase/supabase-js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
