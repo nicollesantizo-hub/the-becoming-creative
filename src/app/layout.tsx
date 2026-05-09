@@ -28,6 +28,9 @@ export const metadata: Metadata = {
   title: "The Becoming Creative",
   description: "For creatives figuring it out — resources, tools, and a space to find your rhythm, your worth, and each other.",
   metadataBase: new URL("https://thebecomingcreative.com"),
+  verification: {
+    google: "ipXzhrssHE3e2FmWE9f4gVapf8pPYn2x_acNJyXdLpk",
+  },
   openGraph: {
     title: "The Becoming Creative",
     description: "For creatives figuring it out — resources, tools, and a space to find your rhythm, your worth, and each other.",
