@@ -87,7 +87,7 @@ export default async function QuotePrintPage({
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "40px", paddingBottom: "24px", borderBottom: "1px solid #e5e1db" }}>
           <div>
             <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "18px", fontWeight: 400, color: "#1a1a1a", marginBottom: "4px" }}>
-              {biz?.business_name || "Price My Work"}
+              {biz?.business_name || biz?.contact_name || user.email}
             </p>
             {contactParts.length > 0 && (
               <p style={{ fontSize: "12px", color: "#1a1a1a", opacity: 0.45, lineHeight: 1.7 }}>
