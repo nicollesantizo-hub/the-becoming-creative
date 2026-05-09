@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase";
+import { calculateCODB as calculate, fmt } from "@/lib/pricing";
 import type { CODBConfig, CODBResults } from "@/types/pricing";
 
 type Frequency = "monthly" | "annual";
@@ -23,39 +24,6 @@ const DEFAULTS: CODBConfig = {
   shoots_per_year: 50,
 };
 
-function calculate(config: CODBConfig): CODBResults {
-  const totalExpenses =
-    config.equipment +
-    config.insurance +
-    config.software +
-    config.storage +
-    config.website +
-    config.marketing +
-    config.education +
-    config.studio +
-    config.other;
-
-  const grossIncomeNeeded =
-    config.tax_rate < 100
-      ? config.desired_income / (1 - config.tax_rate / 100)
-      : config.desired_income;
-
-  const totalRevenueNeeded = totalExpenses + grossIncomeNeeded;
-  const totalHoursPerYear = config.hours_per_week * config.weeks_per_year;
-  const hourlyRate = totalHoursPerYear > 0 ? totalRevenueNeeded / totalHoursPerYear : 0;
-  const minimumPerSession =
-    config.shoots_per_year > 0 ? totalRevenueNeeded / config.shoots_per_year : 0;
-
-  return { totalExpenses, grossIncomeNeeded, totalRevenueNeeded, totalHoursPerYear, hourlyRate, minimumPerSession };
-}
-
-function fmt(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
 
 const expenseFields: { key: keyof CODBConfig; label: string; hint: string }[] = [
   { key: "equipment", label: "Equipment & Gear", hint: "Cameras, lenses, lighting, accessories" },

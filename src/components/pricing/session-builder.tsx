@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase";
+import { fmt, calcSessionPrice } from "@/lib/pricing";
 import type { SessionType, CODBResults } from "@/types/pricing";
 
 const LOCATION_TYPES = [
@@ -25,22 +26,6 @@ const EMPTY_SESSION: Omit<SessionType, "id" | "user_id" | "created_at"> = {
   profit_margin: 30,
 };
 
-function fmt(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function calcSessionPrice(session: typeof EMPTY_SESSION, codb: CODBResults): number {
-  const travelCost = session.travel_miles * session.travel_rate_per_mile;
-  const studioCost = (session.studio_hourly_rate ?? 0) * session.duration_hours;
-  const editingCost = (session.editing_hourly_rate ?? 0) * session.editing_hours;
-  const shootingCost = (session.shooting_hourly_rate ?? 0) * session.duration_hours;
-  const base = codb.minimumPerSession + travelCost + studioCost + editingCost + shootingCost;
-  return base * (1 + session.profit_margin / 100);
-}
 
 export function SessionBuilder({
   initialSessions,

@@ -1,23 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase-server";
 import { SessionBuilder } from "@/components/pricing/session-builder";
-import type { CODBConfig, CODBResults } from "@/types/pricing";
-
-function calculateCODB(config: CODBConfig): CODBResults {
-  const totalExpenses =
-    config.equipment + config.insurance + config.software + config.storage +
-    config.website + config.marketing + config.education + config.studio + config.other;
-  const grossIncomeNeeded =
-    config.tax_rate < 100
-      ? config.desired_income / (1 - config.tax_rate / 100)
-      : config.desired_income;
-  const totalRevenueNeeded = totalExpenses + grossIncomeNeeded;
-  const totalHoursPerYear = config.hours_per_week * config.weeks_per_year;
-  const hourlyRate = totalHoursPerYear > 0 ? totalRevenueNeeded / totalHoursPerYear : 0;
-  const minimumPerSession =
-    config.shoots_per_year > 0 ? totalRevenueNeeded / config.shoots_per_year : 0;
-  return { totalExpenses, grossIncomeNeeded, totalRevenueNeeded, totalHoursPerYear, hourlyRate, minimumPerSession };
-}
+import { calculateCODB } from "@/lib/pricing";
 
 export default async function SessionsPage() {
   const supabase = await createClient();

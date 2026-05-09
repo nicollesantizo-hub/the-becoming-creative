@@ -50,7 +50,7 @@ export interface Quote {
   client_name: string;
   client_email: string;
   session_date: string;
-  location_type: string;
+  location_type: "outdoor" | "studio" | "travel" | "event" | "other";
   duration_hours: number;
   editing_hours: number;
   travel_miles: number;
