@@ -4,8 +4,8 @@ import { useState, useMemo } from "react";
 
 const PACE_PRESETS = [
   { label: "Light edit", value: 40, description: "Culling + basic adjustments" },
-  { label: "Standard", value: 20, description: "Color grade + selective retouching" },
-  { label: "Heavy retouch", value: 8, description: "Full retouch on most images" },
+  { label: "Standard", value: 15, description: "Color grade + selective retouching" },
+  { label: "Heavy retouch", value: 0.33, description: "Full retouch — ~3 hours per photo" },
 ];
 
 function addDays(start: Date, hours: number, hoursPerDay: number, skipWeekends: boolean): Date {
@@ -109,7 +109,7 @@ export function DeliveryEstimator() {
                   <p className="text-xs opacity-40 mt-0.5" style={{ color: "var(--charcoal)" }}>{preset.description}</p>
                 </div>
                 <span className="text-xs opacity-50 shrink-0 ml-4" style={{ color: "var(--charcoal)" }}>
-                  {preset.value} photos/hr
+                  {preset.value >= 1 ? `${preset.value} photos/hr` : `${Math.round(1 / preset.value)} hr/photo`}
                 </span>
               </button>
             ))}
