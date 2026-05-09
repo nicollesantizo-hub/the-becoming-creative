@@ -8,14 +8,14 @@ const PACE_PRESETS = [
   { label: "Heavy retouch", value: 8, description: "Full retouch on most images" },
 ];
 
-function addWorkingDays(start: Date, hours: number, hoursPerDay: number): Date {
+function addDays(start: Date, hours: number, hoursPerDay: number, skipWeekends: boolean): Date {
   const totalDays = Math.ceil(hours / hoursPerDay);
   const result = new Date(start);
   let added = 0;
   while (added < totalDays) {
     result.setDate(result.getDate() + 1);
     const day = result.getDay();
-    if (day !== 0 && day !== 6) added++;
+    if (!skipWeekends || (day !== 0 && day !== 6)) added++;
   }
   return result;
 }
@@ -32,6 +32,7 @@ export function DeliveryEstimator() {
   const [customPace, setCustomPace] = useState<number | null>(null);
   const [selectedPreset, setSelectedPreset] = useState(1);
   const [hoursPerDay, setHoursPerDay] = useState(3);
+  const [skipWeekends, setSkipWeekends] = useState(false);
 
   const pace = customPace ?? PACE_PRESETS[selectedPreset].value;
   const totalHours = photoCount / pace;
@@ -39,10 +40,10 @@ export function DeliveryEstimator() {
 
   const result = useMemo(() => {
     const start = shootDate ? new Date(shootDate + "T12:00:00") : new Date();
-    const realistic = addWorkingDays(start, totalHours, hoursPerDay);
-    const withBuffer = addWorkingDays(new Date(realistic), hoursPerDay * 2, hoursPerDay);
+    const realistic = addDays(start, totalHours, hoursPerDay, skipWeekends);
+    const withBuffer = addDays(new Date(realistic), hoursPerDay * 2, hoursPerDay, skipWeekends);
     return { realistic, withBuffer };
-  }, [shootDate, totalHours, hoursPerDay]);
+  }, [shootDate, totalHours, hoursPerDay, skipWeekends]);
 
   const inputClass = "w-full px-4 py-3 border outline-none text-sm";
   const inputStyle = {
@@ -160,6 +161,32 @@ export function DeliveryEstimator() {
             <span>10h</span>
           </div>
         </div>
+
+        <button
+          onClick={() => setSkipWeekends((v) => !v)}
+          className="flex items-center justify-between px-4 py-3 border transition-colors w-full text-left"
+          style={{
+            fontFamily: "var(--font-body)",
+            borderColor: skipWeekends ? "var(--clay)" : "var(--border)",
+            backgroundColor: skipWeekends ? "rgba(139,111,94,0.06)" : "white",
+          }}
+        >
+          <div>
+            <p className="text-sm" style={{ color: "var(--charcoal)" }}>Skip weekends</p>
+            <p className="text-xs opacity-40 mt-0.5" style={{ color: "var(--charcoal)" }}>
+              {skipWeekends ? "Counting weekdays only" : "Counting all 7 days"}
+            </p>
+          </div>
+          <div
+            className="w-10 h-5 rounded-full relative shrink-0 transition-colors"
+            style={{ backgroundColor: skipWeekends ? "var(--clay)" : "var(--border)" }}
+          >
+            <div
+              className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all"
+              style={{ left: skipWeekends ? "22px" : "2px" }}
+            />
+          </div>
+        </button>
       </div>
 
       {/* Result */}
@@ -192,7 +219,7 @@ export function DeliveryEstimator() {
               {formatDate(result.realistic)}
             </p>
             <p className="text-xs opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
-              Skips weekends — assumes you start editing right after the shoot.
+              {skipWeekends ? "Weekdays only — " : "All 7 days — "}assumes you start editing right after the shoot.
             </p>
           </div>
 
