@@ -76,6 +76,7 @@ export function EditPostForm({ post }: { post: Post }) {
         onChangePublished={setPublished}
         onChangeCoverImage={setCoverImage}
         slug={toSlug(title)}
+        postId={post.id}
       />
 
       {error && (

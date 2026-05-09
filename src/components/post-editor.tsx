@@ -15,6 +15,7 @@ interface Props {
   onChangePublished: (v: boolean) => void;
   onChangeCoverImage: (v: string) => void;
   slug?: string;
+  postId?: string;
 }
 
 function renderMarkdown(text: string) {
@@ -68,7 +69,7 @@ function applyInline(text: string) {
 export function PostEditor({
   title, body, type, published, coverImage,
   onChangeTitle, onChangeBody, onChangeType, onChangePublished, onChangeCoverImage,
-  slug,
+  slug, postId,
 }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [preview, setPreview] = useState(false);
@@ -222,13 +223,25 @@ export function PostEditor({
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <label className="text-xs uppercase tracking-widest opacity-40" style={labelStyle}>Body</label>
-          <button
-            onClick={() => setPreview((v) => !v)}
-            className="text-xs uppercase tracking-widest opacity-40 hover:opacity-70 transition-opacity"
-            style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
-          >
-            {preview ? "Edit" : "Preview"}
-          </button>
+          {postId ? (
+            <a
+              href={`/admin/field-notes/${postId}/preview`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs uppercase tracking-widest opacity-40 hover:opacity-70 transition-opacity"
+              style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+            >
+              Preview ↗
+            </a>
+          ) : (
+            <button
+              onClick={() => setPreview((v) => !v)}
+              className="text-xs uppercase tracking-widest opacity-40 hover:opacity-70 transition-opacity"
+              style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+            >
+              {preview ? "Edit" : "Preview"}
+            </button>
+          )}
         </div>
 
         {!preview && (
