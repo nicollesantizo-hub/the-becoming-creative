@@ -55,6 +55,73 @@ export default function ResourcesPage() {
       <section className="py-20 px-8" style={{ backgroundColor: "var(--sand)" }}>
         <div className="max-w-4xl mx-auto">
           <div className="grid md:grid-cols-2 gap-6">
+            {/* Gallery Delivery Estimator */}
+            <div
+              className="flex flex-col gap-6 p-8 border"
+              style={{ borderColor: "var(--border)", backgroundColor: "white" }}
+            >
+              <div>
+                <span
+                  className="text-xs uppercase tracking-widest opacity-30 mb-3 block"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                >
+                  Free Tool
+                </span>
+                <h2
+                  className="text-3xl font-light italic mb-3"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}
+                >
+                  Gallery Delivery
+                </h2>
+                <p
+                  className="text-sm leading-relaxed opacity-50"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 300 }}
+                >
+                  Find out when you can realistically deliver a gallery
+                  based on your editing pace and schedule — and stop
+                  overpromising clients.
+                </p>
+              </div>
+
+              <ul className="flex flex-col gap-2">
+                {[
+                  "Editing pace presets or custom speed",
+                  "Skips weekends automatically",
+                  "Recommended promise date with buffer",
+                ].map((feature) => (
+                  <li
+                    key={feature}
+                    className="flex items-center gap-2 text-sm opacity-50"
+                    style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                  >
+                    <span style={{ color: "var(--clay)" }}>—</span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="flex items-center gap-4 mt-auto">
+                <Link
+                  href="/resources/delivery"
+                  className="px-6 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80"
+                  style={{
+                    backgroundColor: "var(--charcoal)",
+                    color: "var(--cream)",
+                    fontFamily: "var(--font-body)",
+                    letterSpacing: "0.15em",
+                  }}
+                >
+                  Open tool →
+                </Link>
+                <span
+                  className="text-xs opacity-30"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                >
+                  No login needed
+                </span>
+              </div>
+            </div>
+
             {/* Price My Work — the main tool */}
             <div
               className="flex flex-col gap-6 p-8"
@@ -124,72 +191,6 @@ export default function ResourcesPage() {
               </div>
             </div>
 
-            {/* Gallery Delivery Estimator */}
-            <div
-              className="flex flex-col gap-6 p-8 border"
-              style={{ borderColor: "var(--border)", backgroundColor: "white" }}
-            >
-              <div>
-                <span
-                  className="text-xs uppercase tracking-widest opacity-30 mb-3 block"
-                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
-                >
-                  Free Tool
-                </span>
-                <h2
-                  className="text-3xl font-light italic mb-3"
-                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}
-                >
-                  Gallery Delivery
-                </h2>
-                <p
-                  className="text-sm leading-relaxed opacity-50"
-                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 300 }}
-                >
-                  Find out when you can realistically deliver a gallery
-                  based on your editing pace and schedule — and stop
-                  overpromising clients.
-                </p>
-              </div>
-
-              <ul className="flex flex-col gap-2">
-                {[
-                  "Editing pace presets or custom speed",
-                  "Skips weekends automatically",
-                  "Recommended promise date with buffer",
-                ].map((feature) => (
-                  <li
-                    key={feature}
-                    className="flex items-center gap-2 text-sm opacity-50"
-                    style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
-                  >
-                    <span style={{ color: "var(--clay)" }}>—</span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-
-              <div className="flex items-center gap-4 mt-auto">
-                <Link
-                  href="/resources/delivery"
-                  className="px-6 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80"
-                  style={{
-                    backgroundColor: "var(--charcoal)",
-                    color: "var(--cream)",
-                    fontFamily: "var(--font-body)",
-                    letterSpacing: "0.15em",
-                  }}
-                >
-                  Open tool →
-                </Link>
-                <span
-                  className="text-xs opacity-30"
-                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
-                >
-                  No login needed
-                </span>
-              </div>
-            </div>
             {/* More coming */}
             <div
               className="md:col-span-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-8 border"
