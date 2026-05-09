@@ -5,26 +5,69 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase";
 import { Logo } from "@/components/logo";
 
-export default function SignInPage() {
-  const [email, setEmail] = useState("");
+export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (password !== confirm) {
+      setError("Passwords don't match.");
+      return;
+    }
     setLoading(true);
     setError("");
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
-      setError("Invalid email or password.");
+      setError(error.message);
       setLoading(false);
       return;
     }
 
-    window.location.href = "/pricing";
+    setDone(true);
+    setLoading(false);
+  }
+
+  if (done) {
+    return (
+      <main
+        className="min-h-screen flex flex-col items-center justify-center px-8 py-16"
+        style={{ backgroundColor: "var(--cream)" }}
+      >
+        <div className="w-full max-w-sm text-center flex flex-col gap-8 items-center">
+          <Link href="/">
+            <Logo className="text-[var(--charcoal)]" />
+          </Link>
+          <div className="flex flex-col gap-4">
+            <h1
+              className="text-4xl font-light italic"
+              style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}
+            >
+              Password updated.
+            </h1>
+            <p
+              className="text-sm leading-relaxed opacity-60"
+              style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+            >
+              You&apos;re all set. Sign in with your new password.
+            </p>
+          </div>
+          <a
+            href="/auth/signin"
+            className="text-sm uppercase tracking-wider"
+            style={{ color: "var(--clay)", fontFamily: "var(--font-body)" }}
+          >
+            Sign in →
+          </a>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -42,67 +85,48 @@ export default function SignInPage() {
               className="text-4xl font-light italic"
               style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}
             >
-              Welcome back.
+              New password.
             </h1>
             <p
               className="text-sm mt-2 opacity-60"
               style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
             >
-              Sign in to The Becoming Creative
+              Choose a new password for your account.
             </p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="password"
+            placeholder="New password (min 6 characters)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required
+            minLength={6}
             className="w-full px-4 py-3 text-sm bg-white border outline-none transition-colors"
-            style={{
-              borderColor: "var(--border)",
-              fontFamily: "var(--font-body)",
-              color: "var(--charcoal)",
-            }}
+            style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
             onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
             onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
           />
           <input
             type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Confirm new password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
             required
+            minLength={6}
             className="w-full px-4 py-3 text-sm bg-white border outline-none transition-colors"
-            style={{
-              borderColor: "var(--border)",
-              fontFamily: "var(--font-body)",
-              color: "var(--charcoal)",
-            }}
+            style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
             onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
             onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
           />
 
           {error && (
-            <p
-              className="text-sm"
-              style={{ color: "var(--destructive)", fontFamily: "var(--font-body)" }}
-            >
+            <p className="text-sm" style={{ color: "var(--destructive)", fontFamily: "var(--font-body)" }}>
               {error}
             </p>
           )}
-
-          <div className="text-right">
-            <Link
-              href="/auth/forgot-password"
-              className="text-xs opacity-50 hover:opacity-80 transition-opacity"
-              style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
-            >
-              Forgot password?
-            </Link>
-          </div>
 
           <button
             type="submit"
@@ -115,23 +139,9 @@ export default function SignInPage() {
               letterSpacing: "0.15em",
             }}
           >
-            {loading ? "Signing in…" : "Sign in"}
+            {loading ? "Updating…" : "Update password"}
           </button>
         </form>
-
-        <p
-          className="text-center text-sm opacity-60"
-          style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
-        >
-          Don&apos;t have an account?{" "}
-          <Link
-            href="/auth/signup"
-            className="underline"
-            style={{ color: "var(--clay)", opacity: 1 }}
-          >
-            Create one free
-          </Link>
-        </p>
       </div>
     </main>
   );
