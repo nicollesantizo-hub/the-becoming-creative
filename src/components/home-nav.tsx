@@ -29,6 +29,13 @@ export function HomeNav() {
 
         <div className="hidden md:flex items-center gap-4">
           <a
+            href="/field-notes"
+            className="text-sm uppercase transition-opacity hover:opacity-60"
+            style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em", color: textColor, opacity: 0.65 }}
+          >
+            Field Notes
+          </a>
+          <a
             href="/resources"
             className="text-sm uppercase transition-opacity hover:opacity-60"
             style={{ fontFamily: "var(--font-body)", letterSpacing: "0.15em", color: textColor, opacity: 0.65 }}
@@ -64,6 +71,10 @@ export function HomeNav() {
           style={{ backgroundColor: "var(--ink)" }}
           onClick={() => setOpen(false)}
         >
+          <a href="/field-notes" className="text-2xl uppercase tracking-widest"
+            style={{ color: "var(--paper)", fontFamily: "var(--font-body)", opacity: 0.75 }}>
+            Field Notes
+          </a>
           <a href="/resources" className="text-2xl uppercase tracking-widest"
             style={{ color: "var(--paper)", fontFamily: "var(--font-body)", opacity: 0.75 }}>
             Resources
