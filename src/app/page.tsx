@@ -180,6 +180,7 @@ export default function Home() {
                 description:
                   "Tools, guides, and calculators built for working creatives. Business of art, event hosting, ways to sell — all in one place.",
                 mark: "03",
+                link: "/resources",
               },
             ].map((item) => (
               <div
@@ -205,6 +206,15 @@ export default function Home() {
                 >
                   {item.description}
                 </p>
+                {"link" in item && (
+                  <a
+                    href={item.link}
+                    className="text-xs uppercase tracking-widest transition-opacity hover:opacity-100"
+                    style={{ color: "var(--clay)", fontFamily: "var(--font-body)", opacity: 0.8 }}
+                  >
+                    Explore →
+                  </a>
+                )}
               </div>
             ))}
           </div>
