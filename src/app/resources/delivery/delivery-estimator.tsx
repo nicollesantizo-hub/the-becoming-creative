@@ -5,7 +5,7 @@ import { useState, useMemo } from "react";
 const PACE_PRESETS = [
   { label: "Light edit", value: 40, description: "Culling + basic adjustments" },
   { label: "Standard", value: 15, description: "Color grade + selective retouching" },
-  { label: "Heavy retouch", value: 0.33, description: "Full retouch — ~3 hours per photo" },
+  { label: "Heavy retouch", value: 5, description: "Full retouch on most images" },
 ];
 
 function addDays(start: Date, hours: number, hoursPerDay: number, skipWeekends: boolean): Date {
@@ -33,8 +33,11 @@ export function DeliveryEstimator() {
   const [selectedPreset, setSelectedPreset] = useState(1);
   const [hoursPerDay, setHoursPerDay] = useState(3);
   const [skipWeekends, setSkipWeekends] = useState(false);
+  const [customUnit, setCustomUnit] = useState<"per_hr" | "hr_per">("per_hr");
 
-  const pace = customPace ?? PACE_PRESETS[selectedPreset].value;
+  const pace = customPace !== null
+    ? (customUnit === "hr_per" ? 1 / customPace : customPace)
+    : PACE_PRESETS[selectedPreset].value;
   const totalHours = photoCount / pace;
   const totalDays = Math.ceil(totalHours / hoursPerDay);
 
@@ -109,19 +112,20 @@ export function DeliveryEstimator() {
                   <p className="text-xs opacity-40 mt-0.5" style={{ color: "var(--charcoal)" }}>{preset.description}</p>
                 </div>
                 <span className="text-xs opacity-50 shrink-0 ml-4" style={{ color: "var(--charcoal)" }}>
-                  {preset.value >= 1 ? `${preset.value} photos/hr` : `${Math.round(1 / preset.value)} hr/photo`}
+                  {preset.value} photos/hr
                 </span>
               </button>
             ))}
 
-            <div className="flex items-center gap-3">
+            <div className="flex gap-2">
               <input
                 type="number"
-                min={1}
-                placeholder="Custom photos/hr"
+                min={0.1}
+                step={0.1}
+                placeholder="Custom"
                 value={customPace ?? ""}
                 onChange={(e) => {
-                  const v = parseInt(e.target.value);
+                  const v = parseFloat(e.target.value);
                   setCustomPace(v > 0 ? v : null);
                 }}
                 className="flex-1 px-4 py-3 border outline-none text-sm"
@@ -131,9 +135,19 @@ export function DeliveryEstimator() {
                   backgroundColor: customPace !== null ? "rgba(139,111,94,0.06)" : "white",
                 }}
               />
-              <span className="text-xs opacity-40 shrink-0" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
-                photos / hr
-              </span>
+              <button
+                onClick={() => setCustomUnit((u) => u === "per_hr" ? "hr_per" : "per_hr")}
+                className="px-3 py-2 border text-xs shrink-0 transition-colors"
+                style={{
+                  fontFamily: "var(--font-body)",
+                  color: "var(--charcoal)",
+                  borderColor: customPace !== null ? "var(--clay)" : "var(--border)",
+                  backgroundColor: customPace !== null ? "rgba(139,111,94,0.06)" : "white",
+                  minWidth: "90px",
+                }}
+              >
+                {customUnit === "per_hr" ? "photos / hr" : "hrs / photo"}
+              </button>
             </div>
           </div>
         </div>
