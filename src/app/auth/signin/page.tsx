@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase";
 import { Logo } from "@/components/logo";
@@ -11,8 +10,6 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -27,8 +24,7 @@ export default function SignInPage() {
       return;
     }
 
-    router.push("/pricing");
-    router.refresh();
+    window.location.href = "/pricing";
   }
 
   return (
