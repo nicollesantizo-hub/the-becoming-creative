@@ -124,38 +124,71 @@ export default function ResourcesPage() {
               </div>
             </div>
 
-            {/* Coming soon placeholder */}
+            {/* Gallery Delivery Estimator */}
             <div
-              className="flex flex-col gap-4 p-8 border"
+              className="flex flex-col gap-6 p-8 border"
               style={{ borderColor: "var(--border)", backgroundColor: "white" }}
             >
-              <span
-                className="text-xs uppercase tracking-widest opacity-30"
-                style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
-              >
-                Coming soon
-              </span>
-              <h2
-                className="text-3xl font-light italic"
-                style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}
-              >
-                More tools on the way.
-              </h2>
-              <p
-                className="text-sm leading-relaxed opacity-50 flex-1"
-                style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 300 }}
-              >
-                Contract templates, client onboarding guides, gallery
-                delivery checklists, and more — built for photographers
-                and creatives.
-              </p>
-              <Link
-                href="/#join"
-                className="text-sm uppercase tracking-wider"
-                style={{ color: "var(--clay)", fontFamily: "var(--font-body)" }}
-              >
-                Join the waitlist →
-              </Link>
+              <div>
+                <span
+                  className="text-xs uppercase tracking-widest opacity-30 mb-3 block"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                >
+                  Free Tool
+                </span>
+                <h2
+                  className="text-3xl font-light italic mb-3"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}
+                >
+                  Gallery Delivery
+                </h2>
+                <p
+                  className="text-sm leading-relaxed opacity-50"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 300 }}
+                >
+                  Find out when you can realistically deliver a gallery
+                  based on your editing pace and schedule — and stop
+                  overpromising clients.
+                </p>
+              </div>
+
+              <ul className="flex flex-col gap-2">
+                {[
+                  "Editing pace presets or custom speed",
+                  "Skips weekends automatically",
+                  "Recommended promise date with buffer",
+                ].map((feature) => (
+                  <li
+                    key={feature}
+                    className="flex items-center gap-2 text-sm opacity-50"
+                    style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                  >
+                    <span style={{ color: "var(--clay)" }}>—</span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="flex items-center gap-4 mt-auto">
+                <Link
+                  href="/resources/delivery"
+                  className="px-6 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80"
+                  style={{
+                    backgroundColor: "var(--charcoal)",
+                    color: "var(--cream)",
+                    fontFamily: "var(--font-body)",
+                    letterSpacing: "0.15em",
+                  }}
+                >
+                  Open tool →
+                </Link>
+                <span
+                  className="text-xs opacity-30"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                >
+                  No login needed
+                </span>
+              </div>
             </div>
           </div>
         </div>
