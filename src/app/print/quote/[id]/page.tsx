@@ -329,7 +329,7 @@ export default async function QuotePrintPage({
           </div>
         )}
 
-        <div className="footer">thebecomingcreative.com · Price My Work</div>
+        <div className="footer">{biz?.website || businessHeader} · Price My Work</div>
       </div>
     </>
   );
