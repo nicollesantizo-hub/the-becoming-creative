@@ -206,13 +206,22 @@ export function SettingsForm({ userId, email, isPro, initialLogoUrl, initialValu
       </div>
 
       <div className="pt-8 mt-4 border-t flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
-        <button
-          onClick={signOut}
-          className="text-xs uppercase tracking-wider opacity-30 hover:opacity-60 transition-opacity"
-          style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
-        >
-          Sign out
-        </button>
+        <div className="flex items-center gap-6">
+          <button
+            onClick={signOut}
+            className="text-xs uppercase tracking-wider opacity-30 hover:opacity-60 transition-opacity"
+            style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+          >
+            Sign out
+          </button>
+          <a
+            href="/welcome"
+            className="text-xs uppercase tracking-wider opacity-30 hover:opacity-60 transition-opacity"
+            style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+          >
+            Getting started
+          </a>
+        </div>
         {email === "aida@aidavisuals.com" && (
           <a
             href="/admin"
