@@ -21,7 +21,7 @@ export default async function QuotePrintPage({
     supabase.from("quotes").select("*").eq("id", id).eq("user_id", user.id).single(),
     supabase
       .from("profiles")
-      .select("business_name, contact_name, phone, website, tier")
+      .select("business_name, contact_name, phone, website, tier, logo_url")
       .eq("id", user.id)
       .single(),
   ]);
@@ -35,6 +35,7 @@ export default async function QuotePrintPage({
     phone: string | null;
     website: string | null;
     tier: string | null;
+    logo_url: string | null;
   } | null;
 
   const isPro = biz?.tier === "pro";
@@ -267,6 +268,14 @@ export default async function QuotePrintPage({
         {/* Header */}
         <div className="header">
           <div>
+            {isPro && biz?.logo_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={biz.logo_url}
+                alt="Logo"
+                style={{ maxHeight: "48px", maxWidth: "160px", objectFit: "contain", marginBottom: "8px" }}
+              />
+            )}
             <p className="biz-name">{businessHeader}</p>
             <p className="biz-contact">
               {contactLine}

@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase";
 interface Props {
   userId: string;
   email: string;
+  isPro: boolean;
+  initialLogoUrl: string;
   initialValues: {
     business_name: string;
     contact_name: string;
@@ -15,8 +17,10 @@ interface Props {
   };
 }
 
-export function SettingsForm({ userId, email, initialValues }: Props) {
+export function SettingsForm({ userId, email, isPro, initialLogoUrl, initialValues }: Props) {
   const [values, setValues] = useState(initialValues);
+  const [logoUrl, setLogoUrl] = useState(initialLogoUrl);
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const router = useRouter();
@@ -31,6 +35,28 @@ export function SettingsForm({ userId, email, initialValues }: Props) {
   function set(key: keyof typeof values, val: string) {
     setValues((v) => ({ ...v, [key]: val }));
     setSaved(false);
+  }
+
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const supabase = createClient();
+    const ext = file.name.split(".").pop();
+    const path = `${userId}.${ext}`;
+    const { error } = await supabase.storage.from("logos").upload(path, file, { upsert: true });
+    if (!error) {
+      const { data } = supabase.storage.from("logos").getPublicUrl(path);
+      setLogoUrl(data.publicUrl);
+      await supabase.from("profiles").update({ logo_url: data.publicUrl }).eq("id", userId);
+    }
+    setUploading(false);
+  }
+
+  async function handleRemoveLogo() {
+    const supabase = createClient();
+    setLogoUrl("");
+    await supabase.from("profiles").update({ logo_url: null }).eq("id", userId);
   }
 
   async function handleSave() {
@@ -55,6 +81,40 @@ export function SettingsForm({ userId, email, initialValues }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Logo — pro only */}
+      {isPro && (
+        <div className="flex flex-col gap-2">
+          <label className="text-xs uppercase tracking-widest opacity-40" style={labelStyle}>
+            Logo
+          </label>
+          {logoUrl ? (
+            <div className="flex items-center gap-4">
+              <img src={logoUrl} alt="Logo" className="h-14 object-contain" style={{ maxWidth: "160px" }} />
+              <button
+                onClick={handleRemoveLogo}
+                className="text-xs uppercase tracking-widest opacity-30 hover:opacity-60 transition-opacity"
+                style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <label
+              className="flex items-center justify-center border-2 border-dashed cursor-pointer transition-colors hover:border-[var(--clay)]"
+              style={{ borderColor: "var(--border)", height: "90px" }}
+            >
+              <p className="text-sm opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                {uploading ? "Uploading…" : "Click to upload logo"}
+              </p>
+              <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+            </label>
+          )}
+          <p className="text-xs opacity-30" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+            Appears on your PDF quotes. PNG with transparent background works best.
+          </p>
+        </div>
+      )}
+
       <div className="flex flex-col gap-1">
         <label className="text-xs uppercase tracking-widest opacity-40" style={labelStyle}>
           Business name
@@ -139,10 +199,7 @@ export function SettingsForm({ userId, email, initialValues }: Props) {
           {saving ? "Saving…" : "Save"}
         </button>
         {saved && (
-          <p
-            className="text-xs opacity-50"
-            style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
-          >
+          <p className="text-xs opacity-50" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
             Saved.
           </p>
         )}

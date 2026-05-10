@@ -13,9 +13,11 @@ export default async function SettingsPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("business_name, contact_name, phone, website")
+    .select("business_name, contact_name, phone, website, logo_url, tier")
     .eq("id", user.id)
     .single();
+
+  const isPro = profile?.tier === "pro";
 
   return (
     <div className="px-5 md:px-10 py-10 max-w-lg">
@@ -40,12 +42,14 @@ export default async function SettingsPage() {
       <SettingsForm
         userId={user.id}
         email={user.email ?? ""}
+        isPro={isPro}
         initialValues={{
           business_name: profile?.business_name ?? "",
           contact_name: profile?.contact_name ?? "",
           phone: profile?.phone ?? "",
           website: profile?.website ?? "",
         }}
+        initialLogoUrl={profile?.logo_url ?? ""}
       />
 
     </div>
