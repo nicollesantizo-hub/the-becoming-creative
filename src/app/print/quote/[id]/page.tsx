@@ -21,7 +21,7 @@ export default async function QuotePrintPage({
     supabase.from("quotes").select("*").eq("id", id).eq("user_id", user.id).single(),
     supabase
       .from("profiles")
-      .select("business_name, contact_name, phone, website")
+      .select("business_name, contact_name, phone, website, tier")
       .eq("id", user.id)
       .single(),
   ]);
@@ -34,7 +34,10 @@ export default async function QuotePrintPage({
     contact_name: string | null;
     phone: string | null;
     website: string | null;
+    tier: string | null;
   } | null;
+
+  const isPro = biz?.tier === "pro";
 
   const discount =
     q.discount_type === "percentage"
@@ -329,7 +332,9 @@ export default async function QuotePrintPage({
           </div>
         )}
 
-        <div className="footer">{biz?.website || businessHeader} · Price My Work</div>
+        <div className="footer">
+          {isPro && biz?.website ? biz.website : "thebecomingcreative.com"} · Price My Work
+        </div>
       </div>
     </>
   );
