@@ -13,11 +13,13 @@ interface Comment {
 
 interface Props {
   postId: string;
+  postTitle: string;
+  postSlug: string;
   initialComments: Comment[];
   currentUserId: string | null;
 }
 
-export function CommentSection({ postId, initialComments, currentUserId }: Props) {
+export function CommentSection({ postId, postTitle, postSlug, initialComments, currentUserId }: Props) {
   const [comments, setComments] = useState<Comment[]>(initialComments);
   const [body, setBody] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -37,6 +39,12 @@ export function CommentSection({ postId, initialComments, currentUserId }: Props
     if (!error && data) {
       setComments((prev) => [...prev, data as Comment]);
       setBody("");
+      const commenterEmail = (data as Comment).profiles?.[0]?.email ?? "";
+      fetch("/api/email/new-comment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postTitle, postSlug, commentBody: body.trim(), commenterEmail }),
+      }).catch(() => {});
     }
     setSubmitting(false);
   }

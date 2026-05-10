@@ -10,6 +10,10 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // Send welcome email if this is a new signup (next=/welcome)
+      if (next === "/welcome") {
+        fetch(`${origin}/api/email/welcome`, { method: "POST" }).catch(() => {});
+      }
       return NextResponse.redirect(`${origin}${next}`);
     }
   }
