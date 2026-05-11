@@ -395,7 +395,7 @@ export default async function QuotePrintPage({
         <a href="/pricing/quotes" className="back">← Back to quotes</a>
 
         {/* Title + client */}
-        <h1 className="quote-title">{q.quote_name || q.event_name || q.client_name || "Quote"}</h1>
+        <h1 className="quote-title">{q.event_name || q.client_name || "Quote"}</h1>
         <p className="client-meta">
           {[q.event_name || null, q.client_business || null, q.client_name || null, q.client_email || null, sessionDateDisplay].filter(Boolean).join("  ·  ")}
         </p>
