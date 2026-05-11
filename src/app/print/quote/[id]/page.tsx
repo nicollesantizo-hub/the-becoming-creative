@@ -400,6 +400,12 @@ export default async function QuotePrintPage({
           {[q.event_name || null, q.client_business || null, q.client_name || null, q.client_email || null, sessionDateDisplay].filter(Boolean).join("  ·  ")}
         </p>
 
+        {q.notes && (
+          <div className="notes" style={{ marginTop: "20px" }}>
+            <div className="notes-body">{q.notes}</div>
+          </div>
+        )}
+
         {/* Location + point of contact — events only */}
         {(q.event_location || q.point_of_contact) && (
           <p style={{ fontSize: "12px", color: "#1c1917", opacity: 0.45, marginBottom: "36px", marginTop: "-32px", lineHeight: 1.9 }}>
@@ -618,13 +624,6 @@ export default async function QuotePrintPage({
           <span className="total-amount">{fmt(q.final_price)}</span>
         </div>
 
-        {/* Notes */}
-        {q.notes && (
-          <div className="notes">
-            <p className="section-label">Notes</p>
-            <div className="notes-body">{q.notes}</div>
-          </div>
-        )}
 
         {/* Payment terms */}
         {paymentTerms && (

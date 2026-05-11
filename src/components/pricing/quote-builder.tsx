@@ -482,6 +482,26 @@ export function QuoteBuilder({
               />
             </div>
 
+            {/* Personal note */}
+            <div className="flex flex-col gap-1.5">
+              <label
+                className="text-xs uppercase tracking-wider opacity-50"
+                style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+              >
+                Personal note to client (optional)
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Hi [name], thank you so much for reaching out! I'd love to work with you…"
+                rows={3}
+                className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors resize-none"
+                style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
+                onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+              />
+            </div>
+
             {/* Client name — hidden for events once business/POC are filled */}
             {!(isEventSession && (clientBusiness.trim() || pointOfContact.trim())) && (
               <div className="flex flex-col gap-1.5">
@@ -1079,26 +1099,6 @@ export function QuoteBuilder({
                 onChange={(e) => setGalleryTurnaround(e.target.value)}
                 placeholder="e.g. 2–3 weeks, 30 days, 6–8 weeks…"
                 className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors"
-                style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
-                onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
-                onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
-              />
-            </div>
-
-            {/* Notes */}
-            <div className="flex flex-col gap-1.5">
-              <label
-                className="text-xs uppercase tracking-wider opacity-50"
-                style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
-              >
-                Notes (optional)
-              </label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Package details, deliverables, special requests…"
-                rows={3}
-                className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors resize-none"
                 style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
                 onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
                 onBlur={(e) => (e.target.style.borderColor = "var(--border)")}

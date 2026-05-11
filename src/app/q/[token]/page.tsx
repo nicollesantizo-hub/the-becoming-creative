@@ -159,6 +159,10 @@ export default async function PublicQuotePage({
           ].filter(Boolean).join("  ·  ")}
         </p>
 
+        {q.notes?.trim() && (
+          <p style={{ fontSize: "14px", color: "rgba(28,25,23,0.75)", lineHeight: "1.8", whiteSpace: "pre-wrap", marginBottom: "32px", marginTop: "16px" }}>{q.notes}</p>
+        )}
+
         {/* Session details */}
         {(sessionType || dateDisplay) && (
           <div className="section">
@@ -307,13 +311,6 @@ export default async function PublicQuotePage({
           </div>
         </div>
 
-        {/* Notes */}
-        {q.notes?.trim() && (
-          <div className="section">
-            <p className="section-label">Notes</p>
-            <p style={{ fontSize: "13px", color: "rgba(28,25,23,0.7)", lineHeight: "1.7", whiteSpace: "pre-wrap" }}>{q.notes}</p>
-          </div>
-        )}
 
         {/* Payment terms */}
         {paymentTerms && (
