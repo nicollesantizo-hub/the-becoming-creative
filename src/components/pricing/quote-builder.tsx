@@ -294,7 +294,7 @@ export function QuoteBuilder({
   return (
     <div className="max-w-2xl">
       {/* Quote history (pro only) */}
-      {isPro && quotes.length > 0 && (
+      {isPro && quotes.length > 0 && !showForm && (
         <div className="mb-10">
           <h2
             className="text-xl font-light italic mb-5"
@@ -445,11 +445,20 @@ export function QuoteBuilder({
 
       {showForm && (
         <div>
+          {editingQuoteId && quotes.length > 0 && (
+            <button
+              onClick={resetForm}
+              className="text-xs uppercase tracking-wider opacity-40 hover:opacity-80 transition-opacity mb-5 block"
+              style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+            >
+              ← Back to quotes
+            </button>
+          )}
           <h2
             className="text-xl font-light italic mb-6"
             style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}
           >
-            New Quote
+            {editingQuoteId ? `Editing: ${quotes.find(q => q.id === editingQuoteId)?.quote_name || quotes.find(q => q.id === editingQuoteId)?.client_name || "Quote"}` : "New Quote"}
           </h2>
 
           <div className="flex flex-col gap-5 mb-8">
