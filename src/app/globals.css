@@ -115,3 +115,9 @@
     color: var(--paper);
   }
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
