@@ -78,6 +78,7 @@ export interface Quote {
   gallery_turnaround?: string;
   event_days?: number;
   status: "draft" | "sent" | "accepted" | "declined";
+  share_token?: string;
   created_at?: string;
 }
 

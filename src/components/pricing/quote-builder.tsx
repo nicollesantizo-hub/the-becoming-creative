@@ -261,7 +261,7 @@ export function QuoteBuilder({
     } else {
       const { data, error } = await supabase
         .from("quotes")
-        .insert(quote)
+        .insert({ ...quote, share_token: crypto.randomUUID() })
         .select()
         .single();
       if (error) { setSaveError(error.message); setSaving(false); return; }
@@ -363,6 +363,17 @@ export function QuoteBuilder({
                   >
                     PDF
                   </a>
+                  {quote.share_token && (
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/q/${quote.share_token}`);
+                      }}
+                      className="text-xs uppercase tracking-wider opacity-40 hover:opacity-80 transition-opacity"
+                      style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                    >
+                      Copy Link
+                    </button>
+                  )}
                   <button
                     onClick={async () => {
                       if (!quote.id) return;
