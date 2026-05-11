@@ -68,14 +68,18 @@ export function QuoteBuilder({
   const isEventSession = selectedSession?.location_type === "event";
   const isMultiDay = isEventSession && (quoteEventDays > 1 || !!eventEndDate);
 
-  const travel = selectedSession ? selectedSession.travel_miles : customTravel;
+  const travel = customTravel;
   const travelRate = selectedSession ? selectedSession.travel_rate_per_mile : customTravelRate;
   const margin = selectedSession ? selectedSession.profit_margin : customMargin;
 
   // Override session type's event_days with the quote-level value
-  const effectiveSession = selectedSession && isEventSession
-    ? { ...selectedSession, event_days: Math.max(1, quoteEventDays) }
-    : selectedSession;
+  const effectiveSession = selectedSession
+    ? {
+        ...selectedSession,
+        travel_miles: customTravel,
+        ...(isEventSession ? { event_days: Math.max(1, quoteEventDays) } : {}),
+      }
+    : null;
 
   const basePrice =
     codb && effectiveSession
@@ -679,23 +683,23 @@ export function QuoteBuilder({
               </div>
             )}
 
-            {/* Custom pricing (shown when no session selected) */}
-            {!selectedSessionId && (
-              <div className="grid grid-cols-3 gap-4 p-4" style={{ backgroundColor: "var(--sand)" }}>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs uppercase tracking-wider opacity-50" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
-                    Travel (mi)
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={customTravel || ""}
-                    placeholder="0"
-                    onChange={(e) => setCustomTravel(parseFloat(e.target.value) || 0)}
-                    className="px-3 py-2 text-sm bg-white border outline-none"
-                    style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
-                  />
-                </div>
+            {/* Travel miles — always shown */}
+            <div className={`grid gap-4 p-4 ${!selectedSessionId ? "grid-cols-3" : "grid-cols-2"}`} style={{ backgroundColor: "var(--sand)" }}>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs uppercase tracking-wider opacity-50" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                  Travel (mi)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={customTravel || ""}
+                  placeholder="0"
+                  onChange={(e) => setCustomTravel(parseFloat(e.target.value) || 0)}
+                  className="px-3 py-2 text-sm bg-white border outline-none"
+                  style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                />
+              </div>
+              {!selectedSessionId && (
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs uppercase tracking-wider opacity-50" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
                     $/mile
@@ -710,6 +714,8 @@ export function QuoteBuilder({
                     style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
                   />
                 </div>
+              )}
+              {!selectedSessionId && (
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs uppercase tracking-wider opacity-50" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
                     Margin %
@@ -723,8 +729,8 @@ export function QuoteBuilder({
                     style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
                   />
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Sales tax */}
             <div className="flex flex-col gap-1.5">

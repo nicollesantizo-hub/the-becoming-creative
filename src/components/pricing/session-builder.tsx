@@ -113,8 +113,7 @@ export function SessionBuilder({
   }
 
   const eventDays = 1;
-  const previewPrice = codb ? calcSessionPrice(form, codb) : null;
-  const travelCost = form.travel_miles * form.travel_rate_per_mile;
+  const previewPrice = codb ? calcSessionPrice({ ...form, travel_miles: 0 }, codb) : null;
   const studioCost = (form.studio_hourly_rate ?? 0) * form.duration_hours * eventDays;
   const editingCost = (form.editing_hourly_rate ?? 0) * form.editing_hours * eventDays;
   const shootingCost = (form.shooting_hourly_rate ?? 0) * form.duration_hours * eventDays;
@@ -132,7 +131,7 @@ export function SessionBuilder({
           </h2>
           <div className="flex flex-col gap-3">
             {sessions.map((session) => {
-              const price = codb ? calcSessionPrice(session, codb) : null;
+              const price = codb ? calcSessionPrice({ ...session, travel_miles: 0 }, codb) : null;
               return (
                 <div
                   key={session.id}
@@ -369,56 +368,31 @@ export function SessionBuilder({
               </div>
             </div>
 
-            {/* Travel */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label
-                  className="text-xs uppercase tracking-wider opacity-50"
-                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
-                >
-                  Travel (miles)
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  value={form.travel_miles || ""}
-                  placeholder="0"
-                  onChange={(e) => updateForm("travel_miles", parseFloat(e.target.value) || 0)}
-                  className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors"
-                  style={{
-                    borderColor: "var(--border)",
-                    fontFamily: "var(--font-body)",
-                    color: "var(--charcoal)",
-                  }}
-                  onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
-                  onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label
-                  className="text-xs uppercase tracking-wider opacity-50"
-                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
-                >
-                  Rate per mile ($)
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={form.travel_rate_per_mile || ""}
-                  onChange={(e) =>
-                    updateForm("travel_rate_per_mile", parseFloat(e.target.value) || 0)
-                  }
-                  className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors"
-                  style={{
-                    borderColor: "var(--border)",
-                    fontFamily: "var(--font-body)",
-                    color: "var(--charcoal)",
-                  }}
-                  onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
-                  onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
-                />
-              </div>
+            {/* Travel rate */}
+            <div className="flex flex-col gap-1.5">
+              <label
+                className="text-xs uppercase tracking-wider opacity-50"
+                style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+              >
+                Rate per mile ($)
+              </label>
+              <input
+                type="number"
+                min={0}
+                step={0.01}
+                value={form.travel_rate_per_mile || ""}
+                onChange={(e) =>
+                  updateForm("travel_rate_per_mile", parseFloat(e.target.value) || 0)
+                }
+                className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors"
+                style={{
+                  borderColor: "var(--border)",
+                  fontFamily: "var(--font-body)",
+                  color: "var(--charcoal)",
+                }}
+                onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
+                onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+              />
             </div>
 
             {/* Editing rate */}
@@ -559,16 +533,6 @@ export function SessionBuilder({
                     {fmt(codb.minimumPerSession)}
                   </span>
                 </div>
-                {travelCost > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-sm opacity-60" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
-                      Travel ({form.travel_miles} mi × ${form.travel_rate_per_mile}/mi)
-                    </span>
-                    <span className="text-sm" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
-                      {fmt(travelCost)}
-                    </span>
-                  </div>
-                )}
                 {studioCost > 0 && (
                   <div className="flex justify-between">
                     <span className="text-sm opacity-60" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
