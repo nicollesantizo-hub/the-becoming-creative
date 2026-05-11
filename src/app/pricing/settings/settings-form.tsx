@@ -14,6 +14,7 @@ interface Props {
     contact_name: string;
     phone: string;
     website: string;
+    payment_terms: string;
   };
 }
 
@@ -182,6 +183,23 @@ export function SettingsForm({ userId, email, isPro, initialLogoUrl, initialValu
           className="px-4 py-3 border outline-none text-sm"
           style={inputStyle}
         />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-xs uppercase tracking-widest opacity-40" style={labelStyle}>
+          Payment terms
+        </label>
+        <textarea
+          value={values.payment_terms}
+          onChange={(e) => set("payment_terms", e.target.value)}
+          placeholder="e.g. A 50% retainer is due upon booking. Remaining balance due on the day of your session. This quote is valid for 30 days."
+          rows={4}
+          className="px-4 py-3 border outline-none text-sm resize-none leading-relaxed"
+          style={inputStyle}
+        />
+        <p className="text-xs opacity-30" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+          Appears at the bottom of your PDF quotes.
+        </p>
       </div>
 
       <div className="flex items-center gap-4 mt-2">

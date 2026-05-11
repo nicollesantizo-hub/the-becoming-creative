@@ -13,7 +13,7 @@ export default async function SettingsPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("business_name, contact_name, phone, website, logo_url, tier")
+    .select("business_name, contact_name, phone, website, logo_url, tier, payment_terms")
     .eq("id", user.id)
     .single();
 
@@ -48,6 +48,7 @@ export default async function SettingsPage() {
           contact_name: profile?.contact_name ?? "",
           phone: profile?.phone ?? "",
           website: profile?.website ?? "",
+          payment_terms: profile?.payment_terms ?? "",
         }}
         initialLogoUrl={profile?.logo_url ?? ""}
       />

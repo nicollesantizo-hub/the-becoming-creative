@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Caveat, DM_Sans } from "next/font/google";
-import Script from "next/script";
+import { Analytics } from "@/components/analytics";
 import { LastSeenTracker } from "@/components/last-seen-tracker";
 import "./globals.css";
 
@@ -51,7 +51,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         {children}
         <LastSeenTracker />
-        <Script src="/_vercel/insights/script.js" strategy="afterInteractive" />
+        <Analytics />
       </body>
     </html>
   );

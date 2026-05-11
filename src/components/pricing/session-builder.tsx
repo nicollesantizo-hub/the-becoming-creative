@@ -24,6 +24,7 @@ const EMPTY_SESSION: Omit<SessionType, "id" | "user_id" | "created_at"> = {
   editing_hourly_rate: 0,
   shooting_hourly_rate: 0,
   profit_margin: 30,
+  event_days: 1,
 };
 
 
@@ -62,6 +63,7 @@ export function SessionBuilder({
       editing_hourly_rate: session.editing_hourly_rate ?? 0,
       shooting_hourly_rate: session.shooting_hourly_rate ?? 0,
       profit_margin: session.profit_margin,
+      event_days: session.event_days ?? 1,
     });
     setEditingId(session.id ?? null);
     setShowForm(true);
@@ -110,11 +112,12 @@ export function SessionBuilder({
     setSessions((prev) => prev.filter((s) => s.id !== id));
   }
 
+  const eventDays = 1;
   const previewPrice = codb ? calcSessionPrice(form, codb) : null;
   const travelCost = form.travel_miles * form.travel_rate_per_mile;
-  const studioCost = (form.studio_hourly_rate ?? 0) * form.duration_hours;
-  const editingCost = (form.editing_hourly_rate ?? 0) * form.editing_hours;
-  const shootingCost = (form.shooting_hourly_rate ?? 0) * form.duration_hours;
+  const studioCost = (form.studio_hourly_rate ?? 0) * form.duration_hours * eventDays;
+  const editingCost = (form.editing_hourly_rate ?? 0) * form.editing_hours * eventDays;
+  const shootingCost = (form.shooting_hourly_rate ?? 0) * form.duration_hours * eventDays;
 
   return (
     <div className="max-w-2xl">
@@ -323,7 +326,7 @@ export function SessionBuilder({
                   className="text-xs uppercase tracking-wider opacity-50"
                   style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
                 >
-                  Shoot Duration (hrs)
+                  {eventDays > 1 ? "Shoot Duration (hrs/day)" : "Shoot Duration (hrs)"}
                 </label>
                 <input
                   type="number"
@@ -346,7 +349,7 @@ export function SessionBuilder({
                   className="text-xs uppercase tracking-wider opacity-50"
                   style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
                 >
-                  Editing Time (hrs)
+                  {eventDays > 1 ? "Editing Time (hrs/day)" : "Editing Time (hrs)"}
                 </label>
                 <input
                   type="number"
@@ -569,7 +572,7 @@ export function SessionBuilder({
                 {studioCost > 0 && (
                   <div className="flex justify-between">
                     <span className="text-sm opacity-60" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
-                      Studio rental (${form.studio_hourly_rate}/hr × {form.duration_hours}h)
+                      Studio rental (${form.studio_hourly_rate}/hr × {form.duration_hours}h{eventDays > 1 ? ` × ${eventDays}d` : ""})
                     </span>
                     <span className="text-sm" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
                       {fmt(studioCost)}
@@ -579,7 +582,7 @@ export function SessionBuilder({
                 {shootingCost > 0 && (
                   <div className="flex justify-between">
                     <span className="text-sm opacity-60" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
-                      Shooting (${form.shooting_hourly_rate}/hr × {form.duration_hours}h)
+                      Shooting (${form.shooting_hourly_rate}/hr × {form.duration_hours}h{eventDays > 1 ? ` × ${eventDays}d` : ""})
                     </span>
                     <span className="text-sm" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
                       {fmt(shootingCost)}
@@ -589,7 +592,7 @@ export function SessionBuilder({
                 {editingCost > 0 && (
                   <div className="flex justify-between">
                     <span className="text-sm opacity-60" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
-                      Editing (${form.editing_hourly_rate}/hr × {form.editing_hours}h)
+                      Editing (${form.editing_hourly_rate}/hr × {form.editing_hours}h{eventDays > 1 ? ` × ${eventDays}d` : ""})
                     </span>
                     <span className="text-sm" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
                       {fmt(editingCost)}

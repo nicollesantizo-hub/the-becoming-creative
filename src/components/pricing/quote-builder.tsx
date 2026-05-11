@@ -46,31 +46,51 @@ export function QuoteBuilder({
   const [discountValue, setDiscountValue] = useState(0);
   const [quoteName, setQuoteName] = useState("");
   const [clientName, setClientName] = useState("");
+  const [clientBusiness, setClientBusiness] = useState("");
   const [clientEmail, setClientEmail] = useState("");
+  const [eventName, setEventName] = useState("");
+  const [eventLocation, setEventLocation] = useState("");
+  const [pointOfContact, setPointOfContact] = useState("");
+  const [marketingCost, setMarketingCost] = useState(0);
+  const [lodgingCost, setLodgingCost] = useState(0);
+  const [mealCost, setMealCost] = useState(0);
+  const [additionalPersonnel, setAdditionalPersonnel] = useState<{ name: string; role: string; cost: number }[]>([]);
+  const [coverageItems, setCoverageItems] = useState<string[]>([]);
+  const [galleryTurnaround, setGalleryTurnaround] = useState("");
+  const [quoteEventDays, setQuoteEventDays] = useState(1);
   const [sessionDate, setSessionDate] = useState("");
+  const [eventEndDate, setEventEndDate] = useState("");
   const [notes, setNotes] = useState("");
+  const [paymentTerms, setPaymentTerms] = useState("");
   const [addons, setAddons] = useState<{ label: string; price: number }[]>([]);
 
   const selectedSession = sessions.find((s) => s.id === selectedSessionId);
+  const isEventSession = selectedSession?.location_type === "event";
+  const isMultiDay = isEventSession && (quoteEventDays > 1 || !!eventEndDate);
 
-  const travel = selectedSession
-    ? selectedSession.travel_miles
-    : customTravel;
-  const travelRate = selectedSession
-    ? selectedSession.travel_rate_per_mile
-    : customTravelRate;
+  const travel = selectedSession ? selectedSession.travel_miles : customTravel;
+  const travelRate = selectedSession ? selectedSession.travel_rate_per_mile : customTravelRate;
   const margin = selectedSession ? selectedSession.profit_margin : customMargin;
 
+  // Override session type's event_days with the quote-level value
+  const effectiveSession = selectedSession && isEventSession
+    ? { ...selectedSession, event_days: Math.max(1, quoteEventDays) }
+    : selectedSession;
+
   const basePrice =
-    codb && selectedSession
-      ? calcSessionPrice(selectedSession, codb)
+    codb && effectiveSession
+      ? calcSessionPrice(effectiveSession, codb)
       : codb
       ? (codb.minimumPerSession + travel * travelRate) * (1 + margin / 100)
       : 0;
 
+  const mktCost = isEventSession ? (marketingCost || 0) : 0;
+  const lodgCost = isMultiDay ? (lodgingCost || 0) : 0;
+  const mlCost = isMultiDay ? (mealCost || 0) : 0;
+  const personnelTotal = isEventSession ? additionalPersonnel.reduce((sum, p) => sum + (p.cost || 0), 0) : 0;
   const addonsTotal = addons.reduce((sum, a) => sum + (a.price || 0), 0);
-  const taxAmount = (basePrice + addonsTotal) * (taxRate / 100);
-  const subtotal = basePrice + addonsTotal + taxAmount;
+  const taxAmount = (basePrice + mktCost + lodgCost + mlCost + personnelTotal + addonsTotal) * (taxRate / 100);
+  const subtotal = basePrice + mktCost + lodgCost + mlCost + personnelTotal + addonsTotal + taxAmount;
 
   const discountAmount =
     discountType === "percentage"
@@ -90,9 +110,22 @@ export function QuoteBuilder({
     setDiscountType("none");
     setDiscountValue(0);
     setClientName("");
+    setClientBusiness("");
     setClientEmail("");
+    setEventName("");
+    setEventLocation("");
+    setPointOfContact("");
+    setMarketingCost(0);
+    setLodgingCost(0);
+    setMealCost(0);
+    setAdditionalPersonnel([]);
+    setCoverageItems([]);
+    setGalleryTurnaround("");
+    setQuoteEventDays(1);
     setSessionDate("");
+    setEventEndDate("");
     setNotes("");
+    setPaymentTerms("");
     setAddons([]);
     setQuoteName("");
     setEditingQuoteId(null);
@@ -102,9 +135,22 @@ export function QuoteBuilder({
   function loadQuoteIntoForm(quote: Quote) {
     setQuoteName(quote.quote_name ?? "");
     setClientName(quote.client_name ?? "");
+    setClientBusiness(quote.client_business ?? "");
     setClientEmail(quote.client_email ?? "");
+    setEventName(quote.event_name ?? "");
+    setEventLocation(quote.event_location ?? "");
+    setPointOfContact(quote.point_of_contact ?? "");
+    setMarketingCost(quote.marketing_cost ?? 0);
+    setLodgingCost(quote.lodging_cost ?? 0);
+    setMealCost(quote.meal_cost ?? 0);
+    setAdditionalPersonnel(quote.additional_personnel ?? []);
+    setCoverageItems(quote.coverage_items ?? []);
+    setGalleryTurnaround(quote.gallery_turnaround ?? "");
+    setQuoteEventDays(quote.event_days ?? 1);
     setSessionDate(quote.session_date ?? "");
+    setEventEndDate(quote.event_end_date ?? "");
     setNotes(quote.notes ?? "");
+    setPaymentTerms(quote.payment_terms ?? "");
     setSelectedSessionId(quote.session_type_id ?? "");
     setTaxRate(quote.tax_rate ?? 0);
     setDiscountType(quote.discount_type ?? "none");
@@ -125,8 +171,20 @@ export function QuoteBuilder({
         session_type_id: quote.session_type_id,
         quote_name: quote.quote_name ? `${quote.quote_name} (copy)` : "",
         client_name: `${quote.client_name} (copy)`,
+        client_business: quote.client_business,
         client_email: quote.client_email,
+        event_name: quote.event_name,
+        event_location: quote.event_location,
+        point_of_contact: quote.point_of_contact,
+        marketing_cost: quote.marketing_cost ?? 0,
+        lodging_cost: quote.lodging_cost ?? 0,
+        meal_cost: quote.meal_cost ?? 0,
+        additional_personnel: quote.additional_personnel ?? [],
+        coverage_items: quote.coverage_items ?? [],
+        gallery_turnaround: quote.gallery_turnaround,
+        event_days: quote.event_days,
         session_date: quote.session_date,
+        event_end_date: quote.event_end_date,
         location_type: quote.location_type,
         duration_hours: quote.duration_hours,
         editing_hours: quote.editing_hours,
@@ -138,6 +196,7 @@ export function QuoteBuilder({
         suggested_price: quote.suggested_price,
         final_price: quote.final_price,
         notes: quote.notes,
+        payment_terms: quote.payment_terms,
         addons: quote.addons ?? [],
         status: "draft",
       })
@@ -151,7 +210,8 @@ export function QuoteBuilder({
       // Free users can generate but not save
       return;
     }
-    if (!clientName.trim()) return;
+    const hasIdentity = clientName.trim() || (isEventSession && (clientBusiness.trim() || pointOfContact.trim()));
+    if (!hasIdentity) return;
     setSaving(true);
     const supabase = createClient();
     const quote: Omit<Quote, "id" | "created_at"> = {
@@ -159,8 +219,20 @@ export function QuoteBuilder({
       session_type_id: selectedSessionId || null,
       quote_name: quoteName,
       client_name: clientName,
+      client_business: clientBusiness,
       client_email: clientEmail,
+      event_name: eventName || undefined,
+      event_location: eventLocation || undefined,
+      point_of_contact: pointOfContact || undefined,
+      marketing_cost: mktCost,
+      lodging_cost: lodgCost,
+      meal_cost: mlCost,
+      additional_personnel: isEventSession ? additionalPersonnel.filter(p => p.name.trim() || p.role.trim()) : [],
+      coverage_items: isEventSession ? coverageItems.filter(s => s.trim()) : [],
+      gallery_turnaround: galleryTurnaround || undefined,
+      event_days: isEventSession ? quoteEventDays : undefined,
       session_date: sessionDate,
+      event_end_date: (isEventSession && eventEndDate) ? eventEndDate : undefined,
       location_type: selectedSession?.location_type ?? "other",
       duration_hours: selectedSession?.duration_hours ?? 0,
       editing_hours: selectedSession?.editing_hours ?? 0,
@@ -172,6 +244,7 @@ export function QuoteBuilder({
       suggested_price: basePrice,
       final_price: finalPrice,
       notes,
+      payment_terms: paymentTerms || undefined,
       addons,
       status: "draft",
     };
@@ -236,7 +309,7 @@ export function QuoteBuilder({
                       className="text-xs opacity-50"
                       style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
                     >
-                      {quote.quote_name ? `${quote.client_name} · ` : ""}{quote.session_date || "No date"}
+                      {quote.quote_name ? `${[quote.client_business, quote.client_name].filter(Boolean).join(" · ")} · ` : ""}{quote.session_date || "No date"}
                     </p>
                   </div>
                   <span
@@ -376,25 +449,106 @@ export function QuoteBuilder({
               />
             </div>
 
-            {/* Client info */}
+            {/* Client name — hidden for events once business/POC are filled */}
+            {!(isEventSession && (clientBusiness.trim() || pointOfContact.trim())) && (
+              <div className="flex flex-col gap-1.5">
+                <label
+                  className="text-xs uppercase tracking-wider opacity-50"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                >
+                  Client Name
+                </label>
+                <input
+                  type="text"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  placeholder="Client name"
+                  className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors"
+                  style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                  onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
+                  onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                />
+              </div>
+            )}
+
             <div className="flex flex-col gap-1.5">
               <label
                 className="text-xs uppercase tracking-wider opacity-50"
                 style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
               >
-                Client Name
+                Business / Brand <span style={{ opacity: 0.4 }}>(optional)</span>
               </label>
               <input
                 type="text"
-                value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
-                placeholder="Client name"
+                value={clientBusiness}
+                onChange={(e) => setClientBusiness(e.target.value)}
+                placeholder="e.g. Bloom Studio"
                 className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors"
                 style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
                 onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
                 onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
               />
             </div>
+
+            {/* Event-specific client fields */}
+            {isEventSession && (
+              <>
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    className="text-xs uppercase tracking-wider opacity-50"
+                    style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                  >
+                    Event Name
+                  </label>
+                  <input
+                    type="text"
+                    value={eventName}
+                    onChange={(e) => setEventName(e.target.value)}
+                    placeholder="e.g. Portland Night Market, Annual Gala, Brand Launch…"
+                    className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors"
+                    style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                    onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
+                    onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    className="text-xs uppercase tracking-wider opacity-50"
+                    style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                  >
+                    Venue / Location
+                  </label>
+                  <input
+                    type="text"
+                    value={eventLocation}
+                    onChange={(e) => setEventLocation(e.target.value)}
+                    placeholder="e.g. Oregon Convention Center, Portland OR"
+                    className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors"
+                    style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                    onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
+                    onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    className="text-xs uppercase tracking-wider opacity-50"
+                    style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                  >
+                    Point of Contact
+                  </label>
+                  <input
+                    type="text"
+                    value={pointOfContact}
+                    onChange={(e) => setPointOfContact(e.target.value)}
+                    placeholder="Name and/or phone number"
+                    className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors"
+                    style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                    onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
+                    onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                  />
+                </div>
+              </>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
@@ -420,7 +574,7 @@ export function QuoteBuilder({
                   className="text-xs uppercase tracking-wider opacity-50"
                   style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
                 >
-                  Session Date
+                  {isEventSession ? "Event Start Date" : "Session Date"}
                 </label>
                 <input
                   type="date"
@@ -433,6 +587,28 @@ export function QuoteBuilder({
                 />
               </div>
             </div>
+
+            {/* Event end date */}
+            {isEventSession && (
+              <div className="flex flex-col gap-1.5">
+                <label
+                  className="text-xs uppercase tracking-wider opacity-50"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                >
+                  Event End Date <span style={{ opacity: 0.4 }}>(optional — for multi-day)</span>
+                </label>
+                <input
+                  type="date"
+                  value={eventEndDate}
+                  min={sessionDate || undefined}
+                  onChange={(e) => setEventEndDate(e.target.value)}
+                  className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors"
+                  style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                  onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
+                  onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                />
+              </div>
+            )}
 
             {/* Session selection */}
             <div className="flex flex-col gap-1.5">
@@ -465,6 +641,32 @@ export function QuoteBuilder({
                 </p>
               )}
             </div>
+
+            {/* Number of days — event session only */}
+            {isEventSession && (
+              <div className="flex flex-col gap-1.5">
+                <label
+                  className="text-xs uppercase tracking-wider opacity-50"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                >
+                  Number of Days
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={quoteEventDays > 0 ? quoteEventDays : ""}
+                  onChange={(e) => setQuoteEventDays(parseInt(e.target.value) || 0)}
+                  className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors w-32"
+                  style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                  onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = "var(--border)";
+                    if (!quoteEventDays || quoteEventDays < 1) setQuoteEventDays(1);
+                  }}
+                />
+              </div>
+            )}
 
             {/* Custom pricing (shown when no session selected) */}
             {!selectedSessionId && (
@@ -632,6 +834,222 @@ export function QuoteBuilder({
               </button>
             </div>
 
+            {/* Marketing cost — event only */}
+            {isEventSession && (
+              <div className="flex flex-col gap-1.5">
+                <label
+                  className="text-xs uppercase tracking-wider opacity-50"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                >
+                  Marketing & Advertising ($) <span style={{ opacity: 0.4 }}>(optional)</span>
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  step={10}
+                  value={marketingCost || ""}
+                  placeholder="0"
+                  onChange={(e) => setMarketingCost(parseFloat(e.target.value) || 0)}
+                  className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors w-40"
+                  style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                  onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
+                  onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                />
+                <p className="text-xs opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                  Licensing, promotions, or ad costs passed through to the client
+                </p>
+              </div>
+            )}
+
+            {/* Lodging & meals — multi-day events only */}
+            {isMultiDay && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    className="text-xs uppercase tracking-wider opacity-50"
+                    style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                  >
+                    Lodging ($) <span style={{ opacity: 0.4 }}>(optional)</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={10}
+                    value={lodgingCost || ""}
+                    placeholder="0"
+                    onChange={(e) => setLodgingCost(parseFloat(e.target.value) || 0)}
+                    className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors"
+                    style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                    onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
+                    onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    className="text-xs uppercase tracking-wider opacity-50"
+                    style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                  >
+                    Meals ($) <span style={{ opacity: 0.4 }}>(optional)</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={5}
+                    value={mealCost || ""}
+                    placeholder="0"
+                    onChange={(e) => setMealCost(parseFloat(e.target.value) || 0)}
+                    className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors"
+                    style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                    onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
+                    onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Additional personnel — event only */}
+            {isEventSession && (
+              <div className="flex flex-col gap-3">
+                <div>
+                  <label
+                    className="text-xs uppercase tracking-wider opacity-50"
+                    style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                  >
+                    Additional Personnel <span style={{ opacity: 0.4 }}>(optional)</span>
+                  </label>
+                  <p className="text-xs opacity-40 mt-1" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                    Second shooters, assistants, or other crew — each added as a cost line item on the PDF.
+                  </p>
+                </div>
+                {additionalPersonnel.map((person, i) => (
+                  <div key={i} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      placeholder="Name"
+                      value={person.name}
+                      onChange={(e) => {
+                        const updated = [...additionalPersonnel];
+                        updated[i] = { ...updated[i], name: e.target.value };
+                        setAdditionalPersonnel(updated);
+                      }}
+                      className="flex-1 px-3 py-2 text-sm bg-white border outline-none"
+                      style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Role (e.g. Second Shooter)"
+                      value={person.role}
+                      onChange={(e) => {
+                        const updated = [...additionalPersonnel];
+                        updated[i] = { ...updated[i], role: e.target.value };
+                        setAdditionalPersonnel(updated);
+                      }}
+                      className="flex-1 px-3 py-2 text-sm bg-white border outline-none"
+                      style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                    />
+                    <input
+                      type="number"
+                      placeholder="$"
+                      min={0}
+                      value={person.cost || ""}
+                      onChange={(e) => {
+                        const updated = [...additionalPersonnel];
+                        updated[i] = { ...updated[i], cost: parseFloat(e.target.value) || 0 };
+                        setAdditionalPersonnel(updated);
+                      }}
+                      className="w-24 px-3 py-2 text-sm bg-white border outline-none"
+                      style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setAdditionalPersonnel(additionalPersonnel.filter((_, idx) => idx !== i))}
+                      className="text-xs opacity-30 hover:opacity-60 transition-opacity px-2"
+                      style={{ color: "var(--destructive)", fontFamily: "var(--font-body)" }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setAdditionalPersonnel([...additionalPersonnel, { name: "", role: "", cost: 0 }])}
+                  className="text-xs uppercase tracking-wider opacity-40 hover:opacity-70 transition-opacity text-left"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                >
+                  + Add personnel
+                </button>
+              </div>
+            )}
+
+            {/* Key coverage moments — event only */}
+            {isEventSession && (
+              <div className="flex flex-col gap-3">
+                <div>
+                  <label
+                    className="text-xs uppercase tracking-wider opacity-50"
+                    style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                  >
+                    Key Coverage Moments <span style={{ opacity: 0.4 }}>(optional)</span>
+                  </label>
+                  <p className="text-xs opacity-40 mt-1" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                    Specific shots or scenes to document — shown on the PDF to justify scope for grant proposals or client approvals.
+                  </p>
+                </div>
+                {coverageItems.map((item, i) => (
+                  <div key={i} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      placeholder={`e.g. ${["Opening ceremony", "Keynote speaker on stage", "Exhibitor booths & signage", "Award presentations", "Attendee engagement moments", "Sponsor activations"][i % 6]}`}
+                      value={item}
+                      onChange={(e) => {
+                        const updated = [...coverageItems];
+                        updated[i] = e.target.value;
+                        setCoverageItems(updated);
+                      }}
+                      className="flex-1 px-3 py-2 text-sm bg-white border outline-none"
+                      style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setCoverageItems(coverageItems.filter((_, idx) => idx !== i))}
+                      className="text-xs opacity-30 hover:opacity-60 transition-opacity px-2"
+                      style={{ color: "var(--destructive)", fontFamily: "var(--font-body)" }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setCoverageItems([...coverageItems, ""])}
+                  className="text-xs uppercase tracking-wider opacity-40 hover:opacity-70 transition-opacity text-left"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                >
+                  + Add coverage moment
+                </button>
+              </div>
+            )}
+
+            {/* Gallery turnaround */}
+            <div className="flex flex-col gap-1.5">
+              <label
+                className="text-xs uppercase tracking-wider opacity-50"
+                style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+              >
+                Gallery Turnaround <span style={{ opacity: 0.4 }}>(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={galleryTurnaround}
+                onChange={(e) => setGalleryTurnaround(e.target.value)}
+                placeholder="e.g. 2–3 weeks, 30 days, 6–8 weeks…"
+                className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors"
+                style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
+                onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+              />
+            </div>
+
             {/* Notes */}
             <div className="flex flex-col gap-1.5">
               <label
@@ -646,6 +1064,26 @@ export function QuoteBuilder({
                 placeholder="Package details, deliverables, special requests…"
                 rows={3}
                 className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors resize-none"
+                style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
+                onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+              />
+            </div>
+
+            {/* Payment terms */}
+            <div className="flex flex-col gap-1.5">
+              <label
+                className="text-xs uppercase tracking-wider opacity-50"
+                style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+              >
+                Payment Terms <span style={{ opacity: 0.4 }}>(optional — overrides your default)</span>
+              </label>
+              <textarea
+                value={paymentTerms}
+                onChange={(e) => setPaymentTerms(e.target.value)}
+                placeholder="e.g. 50% retainer due upon signing. Remaining balance due 7 days before the event."
+                rows={3}
+                className="px-4 py-2.5 text-sm bg-white border outline-none transition-colors resize-none leading-relaxed"
                 style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
                 onFocus={(e) => (e.target.style.borderColor = "var(--clay)")}
                 onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
@@ -674,6 +1112,46 @@ export function QuoteBuilder({
                     {fmt(basePrice)}
                   </span>
                 </div>
+                {mktCost > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-sm opacity-60" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                      Marketing & advertising
+                    </span>
+                    <span className="text-sm" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                      {fmt(mktCost)}
+                    </span>
+                  </div>
+                )}
+                {lodgCost > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-sm opacity-60" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                      Lodging
+                    </span>
+                    <span className="text-sm" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                      {fmt(lodgCost)}
+                    </span>
+                  </div>
+                )}
+                {mlCost > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-sm opacity-60" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                      Meals & per diem
+                    </span>
+                    <span className="text-sm" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                      {fmt(mlCost)}
+                    </span>
+                  </div>
+                )}
+                {additionalPersonnel.filter(p => p.cost > 0).map((p, i) => (
+                  <div key={i} className="flex justify-between">
+                    <span className="text-sm opacity-60" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                      {p.role || p.name || "Additional personnel"}
+                    </span>
+                    <span className="text-sm" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                      {fmt(p.cost)}
+                    </span>
+                  </div>
+                ))}
                 {addons.filter(a => a.label || a.price).map((addon, i) => (
                   <div key={i} className="flex justify-between">
                     <span className="text-sm opacity-60" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
@@ -741,7 +1219,7 @@ export function QuoteBuilder({
               <div className="flex flex-col gap-2">
                 <button
                   onClick={handleSave}
-                  disabled={saving || !clientName.trim() || !codb}
+                  disabled={saving || !(clientName.trim() || (isEventSession && (clientBusiness.trim() || pointOfContact.trim()))) || !codb}
                   className="px-8 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80 disabled:opacity-40"
                   style={{ backgroundColor: "var(--clay)", color: "var(--cream)", fontFamily: "var(--font-body)", letterSpacing: "0.15em" }}
                 >
@@ -752,9 +1230,9 @@ export function QuoteBuilder({
                     Error: {saveError}
                   </p>
                 )}
-                {!clientName.trim() && (
+                {!(clientName.trim() || (isEventSession && (clientBusiness.trim() || pointOfContact.trim()))) && (
                   <p className="text-xs opacity-50" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
-                    Client name is required to save.
+                    {isEventSession ? "Business name or point of contact is required to save." : "Client name is required to save."}
                   </p>
                 )}
               </div>
@@ -779,8 +1257,9 @@ export function QuoteBuilder({
             <button
               onClick={() => {
                 setClientName(""); setClientEmail(""); setSessionDate("");
-                setSelectedSessionId(""); setTaxRate(0);
-                setDiscountType("none"); setDiscountValue(0); setNotes("");
+                setClientBusiness(""); setEventName(""); setPointOfContact("");
+                setMarketingCost(0); setLodgingCost(0); setMealCost(0); setAdditionalPersonnel([]); setCoverageItems([]); setGalleryTurnaround(""); setQuoteEventDays(1); setEventEndDate(""); setSelectedSessionId(""); setTaxRate(0);
+                setDiscountType("none"); setDiscountValue(0); setNotes(""); setPaymentTerms("");
                 setCustomTravel(0); setCustomTravelRate(0.67); setCustomMargin(30);
                 setAddons([]);
               }}

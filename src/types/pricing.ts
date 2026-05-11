@@ -24,6 +24,7 @@ export interface CODBResults {
   totalHoursPerYear: number;
   hourlyRate: number;
   minimumPerSession: number;
+  expensesMinimumPerSession: number;
 }
 
 export interface SessionType {
@@ -39,6 +40,7 @@ export interface SessionType {
   editing_hourly_rate: number;
   shooting_hourly_rate: number;
   profit_margin: number;
+  event_days?: number;
   created_at?: string;
 }
 
@@ -48,8 +50,13 @@ export interface Quote {
   session_type_id?: string | null;
   quote_name: string;
   client_name: string;
+  client_business: string;
   client_email: string;
+  event_name?: string;
+  event_location?: string;
+  point_of_contact?: string;
   session_date: string;
+  event_end_date?: string;
   location_type: "outdoor" | "studio" | "travel" | "event" | "other";
   duration_hours: number;
   editing_hours: number;
@@ -62,6 +69,14 @@ export interface Quote {
   final_price: number;
   notes: string;
   addons: { label: string; price: number }[];
+  payment_terms?: string;
+  marketing_cost?: number;
+  lodging_cost?: number;
+  meal_cost?: number;
+  additional_personnel?: { name: string; role: string; cost: number }[];
+  coverage_items?: string[];
+  gallery_turnaround?: string;
+  event_days?: number;
   status: "draft" | "sent" | "accepted" | "declined";
   created_at?: string;
 }
