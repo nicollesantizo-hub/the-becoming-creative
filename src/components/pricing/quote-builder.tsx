@@ -293,6 +293,21 @@ export function QuoteBuilder({
 
   return (
     <div className="max-w-2xl">
+      {!showForm && (
+        <button
+          onClick={() => setShowForm(true)}
+          className="px-6 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80 border mb-8"
+          style={{
+            borderColor: "var(--clay)",
+            color: "var(--clay)",
+            fontFamily: "var(--font-body)",
+            letterSpacing: "0.15em",
+          }}
+        >
+          + New quote
+        </button>
+      )}
+
       {/* Quote history (pro only) */}
       {isPro && quotes.length > 0 && !showForm && (
         <div className="mb-10">
@@ -426,21 +441,6 @@ export function QuoteBuilder({
             .
           </p>
         </div>
-      )}
-
-      {!showForm && (
-        <button
-          onClick={() => setShowForm(true)}
-          className="px-6 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80 border mb-8"
-          style={{
-            borderColor: "var(--clay)",
-            color: "var(--clay)",
-            fontFamily: "var(--font-body)",
-            letterSpacing: "0.15em",
-          }}
-        >
-          + New quote
-        </button>
       )}
 
       {showForm && (
