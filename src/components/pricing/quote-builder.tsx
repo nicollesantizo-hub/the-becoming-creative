@@ -63,6 +63,7 @@ export function QuoteBuilder({
   const [notes, setNotes] = useState("");
   const [paymentTerms, setPaymentTerms] = useState("");
   const [addons, setAddons] = useState<{ label: string; price: number }[]>([]);
+  const [shareSlug, setShareSlug] = useState("");
 
   const selectedSession = sessions.find((s) => s.id === selectedSessionId);
   const isEventSession = selectedSession?.location_type === "event";
@@ -132,6 +133,7 @@ export function QuoteBuilder({
     setPaymentTerms("");
     setAddons([]);
     setQuoteName("");
+    setShareSlug("");
     setEditingQuoteId(null);
     setShowForm(false);
   }
@@ -161,6 +163,7 @@ export function QuoteBuilder({
     setDiscountValue(quote.discount_value ?? 0);
     setCustomTravel(quote.travel_miles ?? 0);
     setAddons(quote.addons ?? []);
+    setShareSlug(quote.share_token ?? "");
     setEditingQuoteId(quote.id ?? null);
     setShowForm(true);
     setSaveError("");
@@ -253,9 +256,12 @@ export function QuoteBuilder({
       status: "draft",
     };
     if (editingQuoteId) {
+      const updatedSlug = shareSlug.trim()
+        ? shareSlug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "")
+        : Math.random().toString(36).slice(2, 10);
       const { data, error } = await supabase
         .from("quotes")
-        .update(quote)
+        .update({ ...quote, share_token: updatedSlug })
         .eq("id", editingQuoteId)
         .eq("user_id", userId)
         .select()
@@ -263,9 +269,12 @@ export function QuoteBuilder({
       if (error) { setSaveError(error.message); setSaving(false); return; }
       if (data) setQuotes((prev) => prev.map((q) => (q.id === editingQuoteId ? data : q)));
     } else {
+      const slug = shareSlug.trim()
+        ? shareSlug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "")
+        : Math.random().toString(36).slice(2, 10);
       const { data, error } = await supabase
         .from("quotes")
-        .insert({ ...quote, share_token: crypto.randomUUID() })
+        .insert({ ...quote, share_token: slug })
         .select()
         .single();
       if (error) { setSaveError(error.message); setSaving(false); return; }
@@ -1228,6 +1237,22 @@ export function QuoteBuilder({
               <p className="text-sm opacity-70" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
                 Set up your Calculator to generate accurate quotes.
               </p>
+            </div>
+          )}
+
+          {isPro && (
+            <div className="flex flex-col gap-1.5 mb-4">
+              <label className="text-xs uppercase tracking-wider opacity-50" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                Custom link  <span className="normal-case opacity-60">thebecomingcreative.com/q/</span>
+              </label>
+              <input
+                type="text"
+                value={shareSlug}
+                placeholder="e.g. pax-west-2026"
+                onChange={(e) => setShareSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
+                className="px-3 py-2 text-sm bg-white border outline-none"
+                style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+              />
             </div>
           )}
 
