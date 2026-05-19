@@ -587,10 +587,17 @@ const BOOKING_STATUS_LABELS: Record<PlannerBooking["status"], string> = {
 };
 
 const BOOKING_STATUS_COLORS: Record<PlannerBooking["status"], string> = {
-  lead: "rgba(0,0,0,0.12)",
-  booked: "var(--clay)",
-  completed: "rgba(0,0,0,0.35)",
-  paid: "var(--charcoal)",
+  lead:      "#c9a96e",
+  booked:    "#6a9b7e",
+  completed: "#8b5e3c",
+  paid:      "#2c2c3a",
+};
+
+const BOOKING_STATUS_TEXT: Record<PlannerBooking["status"], string> = {
+  lead:      "#2c2c3a",
+  booked:    "#f7f3ed",
+  completed: "#f7f3ed",
+  paid:      "#f7f3ed",
 };
 
 const EMPTY_BOOKING: Omit<PlannerBooking, "id" | "user_id" | "created_at"> = {
@@ -622,7 +629,15 @@ function BookingRow({ booking, onSave, onDelete }: {
   }
 
   return (
-    <div className="border" style={{ borderColor: "var(--border)", backgroundColor: "white" }}>
+    <div
+      className="border"
+      style={{
+        borderColor: "var(--border)",
+        borderLeftColor: BOOKING_STATUS_COLORS[booking.status],
+        borderLeftWidth: 3,
+        backgroundColor: "white",
+      }}
+    >
       <button
         onClick={() => setExpanded((v) => !v)}
         className="w-full flex items-center gap-4 px-5 py-3.5 text-left hover:bg-[var(--sand)] transition-colors"
@@ -631,7 +646,7 @@ function BookingRow({ booking, onSave, onDelete }: {
           className="text-xs px-2 py-0.5 flex-shrink-0"
           style={{
             backgroundColor: BOOKING_STATUS_COLORS[booking.status],
-            color: ["lead"].includes(booking.status) ? "var(--charcoal)" : "var(--cream)",
+            color: BOOKING_STATUS_TEXT[booking.status],
             fontFamily: "var(--font-body)",
             letterSpacing: "0.08em",
           }}
@@ -739,8 +754,8 @@ function BookingsSection({ bookings, userId, onChange, onStatusChange }: {
           {(["lead", "booked", "completed", "paid"] as PlannerBooking["status"][]).map((status) => {
             const count = bookings.filter((b) => b.status === status).length;
             return (
-              <div key={status} className="p-4" style={{ backgroundColor: "var(--sand)" }}>
-                <p className="text-xs uppercase tracking-widest opacity-40 mb-1" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>{BOOKING_STATUS_LABELS[status]}</p>
+              <div key={status} className="p-4 border-l-2" style={{ backgroundColor: "var(--sand)", borderLeftColor: BOOKING_STATUS_COLORS[status] }}>
+                <p className="text-xs uppercase tracking-widest mb-1" style={{ color: BOOKING_STATUS_COLORS[status], fontFamily: "var(--font-body)" }}>{BOOKING_STATUS_LABELS[status]}</p>
                 <p className="text-2xl font-light" style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}>{count}</p>
               </div>
             );
