@@ -1633,6 +1633,15 @@ function JournalView({
 }) {
   const supabase = createClient();
   const [creating, setCreating] = useState(false);
+  const [sortMode, setSortMode] = useState<"added" | "date">("added");
+
+  function entryDate(item: JournalItem): string {
+    if (item.kind === "shoot")   return (item.entry as PlannerShoot).session_date   ?? item.entry.created_at;
+    if (item.kind === "booking") return (item.entry as PlannerBooking).session_date  ?? item.entry.created_at;
+    if (item.kind === "edit")    return (item.entry as PlannerEdit).delivery_deadline ?? item.entry.created_at;
+    if (item.kind === "content") return (item.entry as PlannerContent).scheduled_date ?? item.entry.created_at;
+    return item.entry.created_at;
+  }
 
   const items: JournalItem[] = [
     ...shoots.map((e) => ({ kind: "shoot" as const, entry: e })),
@@ -1640,7 +1649,11 @@ function JournalView({
     ...(isPro ? edits.map((e) => ({ kind: "edit" as const, entry: e })) : []),
     ...(isPro ? content.map((e) => ({ kind: "content" as const, entry: e })) : []),
     ...(isPro ? inspo.map((e) => ({ kind: "inspo" as const, entry: e })) : []),
-  ].sort((a, b) => new Date(b.entry.created_at).getTime() - new Date(a.entry.created_at).getTime());
+  ].sort((a, b) => {
+    const aDate = sortMode === "added" ? a.entry.created_at : entryDate(a);
+    const bDate = sortMode === "added" ? b.entry.created_at : entryDate(b);
+    return new Date(bDate).getTime() - new Date(aDate).getTime();
+  });
 
   async function handleCreate(kind: JournalKind) {
     setCreating(false);
@@ -1721,6 +1734,26 @@ function JournalView({
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Sort + add row */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-1 p-1" style={{ backgroundColor: "var(--sand)" }}>
+          {([["added", "Order Added"], ["date", "Chronological"]] as const).map(([mode, label]) => (
+            <button
+              key={mode}
+              onClick={() => setSortMode(mode)}
+              className="px-3 py-1.5 text-xs uppercase tracking-widest transition-colors"
+              style={{
+                fontFamily: "var(--font-body)",
+                color: sortMode === mode ? "var(--cream)" : "rgba(26,26,46,0.45)",
+                backgroundColor: sortMode === mode ? "var(--charcoal)" : "transparent",
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Add entry */}
       <div className="flex flex-col gap-3">
         {!creating ? (
