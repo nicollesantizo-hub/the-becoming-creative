@@ -524,13 +524,13 @@ function ShootDaySection({ shoots, userId, onChange }: {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <p className="text-sm opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
           {shoots.length === 0 ? "No shoots yet." : `${shoots.length} shoot${shoots.length !== 1 ? "s" : ""}`}
         </p>
         <button
           onClick={() => setAdding(true)}
-          className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-opacity hover:opacity-80"
+          className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-opacity hover:opacity-80 flex-shrink-0"
           style={{ backgroundColor: "var(--charcoal)", color: "var(--cream)", fontFamily: "var(--font-body)" }}
         >
           <Plus size={13} />
@@ -730,7 +730,7 @@ function BookingsSection({ bookings, userId, onChange }: {
     <div className="flex flex-col gap-6">
       {/* Summary */}
       {bookings.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           {(["lead", "booked", "completed", "paid"] as PlannerBooking["status"][]).map((status) => {
             const count = bookings.filter((b) => b.status === status).length;
             return (
@@ -756,11 +756,11 @@ function BookingsSection({ bookings, userId, onChange }: {
         </div>
       )}
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <p className="text-sm opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
           {bookings.length === 0 ? "No bookings yet." : `${bookings.length} booking${bookings.length !== 1 ? "s" : ""}`}
         </p>
-        <button onClick={() => setAdding(true)} className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-opacity hover:opacity-80" style={{ backgroundColor: "var(--charcoal)", color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+        <button onClick={() => setAdding(true)} className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-opacity hover:opacity-80 flex-shrink-0" style={{ backgroundColor: "var(--charcoal)", color: "var(--cream)", fontFamily: "var(--font-body)" }}>
           <Plus size={13} /> New Booking
         </button>
       </div>
@@ -929,7 +929,7 @@ function EditingSection({ edits, userId, onChange }: {
   return (
     <div className="flex flex-col gap-6">
       {edits.length > 0 && (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           {[
             { label: "In Queue", value: edits.filter((e) => e.status === "not_started").length },
             { label: "In Progress", value: inProgress },
@@ -943,11 +943,11 @@ function EditingSection({ edits, userId, onChange }: {
         </div>
       )}
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <p className="text-sm opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
           {edits.length === 0 ? "No editing jobs yet." : `${edits.length} job${edits.length !== 1 ? "s" : ""}`}
         </p>
-        <button onClick={() => setAdding(true)} className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-opacity hover:opacity-80" style={{ backgroundColor: "var(--charcoal)", color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+        <button onClick={() => setAdding(true)} className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-opacity hover:opacity-80 flex-shrink-0" style={{ backgroundColor: "var(--charcoal)", color: "var(--cream)", fontFamily: "var(--font-body)" }}>
           <Plus size={13} /> New Job
         </button>
       </div>
@@ -1109,7 +1109,7 @@ function ContentSection({ content, userId, onChange }: {
   return (
     <div className="flex flex-col gap-6">
       {content.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           {(["idea", "drafted", "scheduled", "posted"] as PlannerContent["status"][]).map((status) => (
             <div key={status} className="p-4" style={{ backgroundColor: "var(--sand)" }}>
               <p className="text-xs uppercase tracking-widest opacity-40 mb-1" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>{CONTENT_STATUS_LABELS[status]}</p>
@@ -1119,11 +1119,11 @@ function ContentSection({ content, userId, onChange }: {
         </div>
       )}
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <p className="text-sm opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
           {content.length === 0 ? "No posts yet." : `${content.length} post${content.length !== 1 ? "s" : ""}`}
         </p>
-        <button onClick={() => setAdding(true)} className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-opacity hover:opacity-80" style={{ backgroundColor: "var(--charcoal)", color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+        <button onClick={() => setAdding(true)} className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-opacity hover:opacity-80 flex-shrink-0" style={{ backgroundColor: "var(--charcoal)", color: "var(--cream)", fontFamily: "var(--font-body)" }}>
           <Plus size={13} /> New Post
         </button>
       </div>
@@ -1499,13 +1499,13 @@ function InspoSection({ inspo, userId, onChange }: {
         </p>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <p className="text-sm opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
           {inspo.length === 0 ? "No sessions yet." : `${inspo.length} session idea${inspo.length !== 1 ? "s" : ""}`}
         </p>
         <button
           onClick={handleAdd}
-          className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-opacity hover:opacity-80"
+          className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-opacity hover:opacity-80 flex-shrink-0"
           style={{ backgroundColor: "var(--charcoal)", color: "var(--cream)", fontFamily: "var(--font-body)" }}
         >
           <Plus size={13} /> New Session Idea
@@ -1621,7 +1621,7 @@ export function PhotographerPlanner({
   const [inspo, setInspo] = useState<PlannerInspo[]>(initialInspo);
 
   return (
-    <div>
+    <div className="max-w-full overflow-hidden">
       {/* Pro actions */}
       {isPro && (
         <div className="flex items-center gap-3 mb-8 flex-wrap">
@@ -1644,7 +1644,7 @@ export function PhotographerPlanner({
       )}
 
       {/* Tab bar */}
-      <div className="flex gap-0 mb-8" style={{ borderBottom: "1px solid var(--border)" }}>
+      <div className="grid grid-cols-3 sm:flex sm:flex-nowrap gap-1 mb-8 p-1" style={{ backgroundColor: "var(--sand)" }}>
         {TABS.map((tab) => {
           const active = activeTab === tab.id;
           const locked = tab.pro && !isPro;
@@ -1652,17 +1652,15 @@ export function PhotographerPlanner({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className="px-5 py-3 text-xs uppercase tracking-widest transition-colors relative flex items-center gap-1.5"
+              className="flex items-center justify-center gap-1.5 py-2.5 px-3 text-xs uppercase tracking-widest transition-colors sm:flex-1"
               style={{
                 fontFamily: "var(--font-body)",
-                color: active ? "var(--charcoal)" : "rgba(26,26,46,0.35)",
-                borderBottom: active ? "2px solid var(--charcoal)" : "2px solid transparent",
-                marginBottom: -1,
-                backgroundColor: "transparent",
+                color: active ? "var(--cream)" : "rgba(26,26,46,0.45)",
+                backgroundColor: active ? "var(--charcoal)" : "transparent",
               }}
             >
               {tab.label}
-              {locked && <Lock size={10} style={{ opacity: 0.35 }} />}
+              {locked && <Lock size={10} style={{ opacity: 0.4 }} />}
             </button>
           );
         })}
