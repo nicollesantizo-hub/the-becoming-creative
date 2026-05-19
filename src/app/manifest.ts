@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Photography pricing and quoting tool for working photographers.",
     start_url: "/pricing",
     display: "standalone",
-    background_color: "#f7f3ed",
-    theme_color: "#8b5e3c",
+    background_color: "#ffffff",
+    theme_color: "#111111",
     icons: [
       {
         src: "/icon-192.png",

@@ -19,11 +19,11 @@ export async function POST(request: Request) {
         <p style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.15em; opacity: 0.4; margin-bottom: 24px;">The Becoming Creative</p>
         <h1 style="font-size: 24px; font-weight: 300; font-style: italic; margin-bottom: 8px;">New response on Field Notes.</h1>
         <p style="font-size: 13px; opacity: 0.4; margin-bottom: 24px;">${postTitle}</p>
-        <blockquote style="border-left: 3px solid #8B6F5E; padding-left: 16px; margin: 0 0 24px; font-style: italic; opacity: 0.7;">
+        <blockquote style="border-left: 3px solid #555555; padding-left: 16px; margin: 0 0 24px; font-style: italic; opacity: 0.7;">
           <p style="font-size: 15px; line-height: 1.8;">${commentBody}</p>
         </blockquote>
         <p style="font-size: 13px; opacity: 0.5; margin-bottom: 32px;">From: ${commenterEmail}</p>
-        <a href="https://thebecomingcreative.com/field-notes/${postSlug}" style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.15em; color: #8B6F5E; text-decoration: none;">View post →</a>
+        <a href="https://thebecomingcreative.com/field-notes/${postSlug}" style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.15em; color: #555555; text-decoration: none;">View post →</a>
       </div>
     `,
   });

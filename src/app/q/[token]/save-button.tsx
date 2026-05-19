@@ -10,7 +10,7 @@ export function SavePdfButton() {
           fontSize: "11px",
           letterSpacing: "0.18em",
           textTransform: "uppercase",
-          backgroundColor: "#8b6f5e",
+          backgroundColor: "#111111",
           color: "#fff",
           border: "none",
           padding: "12px 32px",

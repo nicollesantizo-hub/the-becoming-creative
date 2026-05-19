@@ -16,7 +16,7 @@ export function PrintTrigger({ title }: { title: string }) {
           fontSize: "11px",
           letterSpacing: "0.15em",
           textTransform: "uppercase",
-          backgroundColor: "#8b6f5e",
+          backgroundColor: "#111111",
           color: "#fff",
           border: "none",
           padding: "10px 20px",

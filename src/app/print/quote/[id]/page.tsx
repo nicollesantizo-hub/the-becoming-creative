@@ -101,7 +101,7 @@ export default async function QuotePrintPage({
           font-family: 'DM Sans', system-ui, sans-serif;
           font-size: 14px;
           line-height: 1.5;
-          color: #1c1917;
+          color: #111111;
           background: #ffffff;
           -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
@@ -109,7 +109,7 @@ export default async function QuotePrintPage({
 
         /* ── Header band ── */
         .header-band {
-          background: #1c1917;
+          background: #111111;
           padding: 36px 48px 32px;
         }
 
@@ -162,7 +162,7 @@ export default async function QuotePrintPage({
           font-size: 11px;
           letter-spacing: 0.12em;
           text-transform: uppercase;
-          color: #1c1917;
+          color: #111111;
           opacity: 0.3;
           text-decoration: none;
           margin-bottom: 40px;
@@ -175,14 +175,14 @@ export default async function QuotePrintPage({
           font-size: 40px;
           font-style: italic;
           font-weight: 400;
-          color: #1c1917;
+          color: #111111;
           line-height: 1.1;
           margin-bottom: 10px;
         }
 
         .client-meta {
           font-size: 13px;
-          color: #1c1917;
+          color: #111111;
           opacity: 0.4;
           margin-bottom: 44px;
         }
@@ -192,7 +192,7 @@ export default async function QuotePrintPage({
           font-size: 10px;
           letter-spacing: 0.22em;
           text-transform: uppercase;
-          color: #1c1917;
+          color: #111111;
           opacity: 0.28;
           margin-bottom: 12px;
         }
@@ -201,8 +201,8 @@ export default async function QuotePrintPage({
         .included {
           margin-bottom: 40px;
           padding: 24px 28px;
-          background: #f7f4f0;
-          border-left: 2px solid #e0d9d0;
+          background: #f5f5f5;
+          border-left: 2px solid #e0e0e0;
         }
 
         .included-list {
@@ -214,7 +214,7 @@ export default async function QuotePrintPage({
 
         .included-list li {
           font-size: 13px;
-          color: #1c1917;
+          color: #111111;
           opacity: 0.7;
           display: flex;
           align-items: center;
@@ -227,7 +227,7 @@ export default async function QuotePrintPage({
           width: 4px;
           height: 4px;
           border-radius: 50%;
-          background: #c4b8a8;
+          background: #bbbbbb;
           flex-shrink: 0;
         }
 
@@ -239,7 +239,7 @@ export default async function QuotePrintPage({
         }
 
         .items tr {
-          border-bottom: 1px solid #f0ece6;
+          border-bottom: 1px solid #ebebeb;
         }
 
         .items tr:last-child {
@@ -259,7 +259,7 @@ export default async function QuotePrintPage({
         }
 
         .items td.label-col {
-          color: #1c1917;
+          color: #111111;
           opacity: 0.65;
         }
 
@@ -273,7 +273,7 @@ export default async function QuotePrintPage({
           border-bottom: none;
         }
 
-        .discount-row td { color: #9b7a6a; }
+        .discount-row td { color: #888888; }
 
         /* ── Total ── */
         .total-row {
@@ -282,7 +282,7 @@ export default async function QuotePrintPage({
           align-items: baseline;
           margin-top: 24px;
           padding-top: 20px;
-          border-top: 1.5px solid #1c1917;
+          border-top: 1.5px solid #111111;
         }
 
         .total-label {
@@ -297,7 +297,7 @@ export default async function QuotePrintPage({
           font-size: 48px;
           font-style: italic;
           font-weight: 400;
-          color: #1c1917;
+          color: #111111;
           line-height: 1;
         }
 
@@ -307,7 +307,7 @@ export default async function QuotePrintPage({
         .notes-body {
           font-size: 13px;
           line-height: 1.7;
-          color: #1c1917;
+          color: #111111;
           opacity: 0.65;
           white-space: pre-wrap;
         }
@@ -318,7 +318,7 @@ export default async function QuotePrintPage({
         .terms-body {
           font-size: 12px;
           line-height: 1.8;
-          color: #1c1917;
+          color: #111111;
           opacity: 0.45;
           white-space: pre-wrap;
         }
@@ -327,7 +327,7 @@ export default async function QuotePrintPage({
         .signature {
           margin-top: 44px;
           padding-top: 28px;
-          border-top: 1px solid #ede8e2;
+          border-top: 1px solid #e8e8e8;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -336,7 +336,7 @@ export default async function QuotePrintPage({
 
         .signature-text {
           font-size: 13px;
-          color: #1c1917;
+          color: #111111;
           opacity: 0.5;
           font-style: italic;
           font-family: 'DM Serif Display', Georgia, serif;
@@ -344,7 +344,7 @@ export default async function QuotePrintPage({
 
         .signature-name {
           font-size: 12px;
-          color: #1c1917;
+          color: #111111;
           opacity: 0.35;
           text-align: right;
         }
@@ -355,7 +355,7 @@ export default async function QuotePrintPage({
           font-size: 10px;
           letter-spacing: 0.14em;
           text-transform: uppercase;
-          color: #1c1917;
+          color: #111111;
           opacity: 0.15;
           text-align: center;
         }
@@ -408,7 +408,7 @@ export default async function QuotePrintPage({
 
         {/* Location + point of contact — events only */}
         {(q.event_location || q.point_of_contact) && (
-          <p style={{ fontSize: "12px", color: "#1c1917", opacity: 0.45, marginBottom: "36px", marginTop: "-32px", lineHeight: 1.9 }}>
+          <p style={{ fontSize: "12px", color: "#111111", opacity: 0.45, marginBottom: "36px", marginTop: "-32px", lineHeight: 1.9 }}>
             {q.event_location && <>{q.event_location}<br /></>}
             {q.point_of_contact && <>{q.point_of_contact}</>}
           </p>

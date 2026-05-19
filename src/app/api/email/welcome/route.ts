@@ -23,8 +23,8 @@ export async function POST() {
           <p style="font-size: 15px; line-height: 1.8; opacity: 0.7; margin-bottom: 16px;">Whatever brought you here — a search, a feeling, a moment of wondering if you're doing this right — I'm glad it led you here.</p>
           <p style="font-size: 15px; line-height: 1.8; opacity: 0.7; margin-bottom: 16px;">This space was made for the in-between. For creatives who are still figuring it out — and building something beautiful in the process.</p>
           <p style="font-size: 15px; line-height: 1.8; opacity: 0.7; margin-bottom: 40px;">You belong here. Take your time.</p>
-          <a href="https://thebecomingcreative.com/field-notes" style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.15em; color: #8B6F5E; text-decoration: none;">Read Field Notes →</a>
-          <hr style="margin: 48px 0; border: none; border-top: 1px solid #e8e0d8;" />
+          <a href="https://thebecomingcreative.com/field-notes" style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.15em; color: #555555; text-decoration: none;">Read Field Notes →</a>
+          <hr style="margin: 48px 0; border: none; border-top: 1px solid #e0e0e0;" />
           <p style="font-size: 11px; opacity: 0.3; line-height: 1.6;">The Becoming Creative · thebecomingcreative.com</p>
         </div>
       `,

@@ -91,33 +91,33 @@ export default async function PublicQuotePage({
           font-family: 'DM Sans', system-ui, sans-serif;
           font-size: 14px;
           line-height: 1.5;
-          color: #1c1917;
-          background: #f7f5f2;
+          color: #111111;
+          background: #f5f5f5;
         }
-        .header-band { background: #1c1917; padding: 36px 48px 32px; }
+        .header-band { background: #111111; padding: 36px 48px 32px; }
         .header-inner { max-width: 660px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-start; }
         .biz-name { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; color: #fff; margin-bottom: 4px; }
         .biz-contact { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.8; }
         .logo-img { max-height: 52px; max-width: 140px; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.9; }
         .page { max-width: 660px; margin: 0 auto; padding: 48px 48px 80px; background: #fff; min-height: 100vh; }
-        .quote-title { font-family: 'DM Serif Display', Georgia, serif; font-size: 28px; font-weight: 400; color: #1c1917; margin-bottom: 6px; }
-        .client-meta { font-size: 12px; color: rgba(28,25,23,0.45); letter-spacing: 0.04em; margin-bottom: 32px; }
+        .quote-title { font-family: 'DM Serif Display', Georgia, serif; font-size: 28px; font-weight: 400; color: #111111; margin-bottom: 6px; }
+        .client-meta { font-size: 12px; color: rgba(17,17,17,0.45); letter-spacing: 0.04em; margin-bottom: 32px; }
         .section { margin-bottom: 32px; }
-        .section-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(28,25,23,0.35); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid rgba(28,25,23,0.08); }
-        .line { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; font-size: 13px; color: #1c1917; }
-        .line-label { color: rgba(28,25,23,0.65); }
+        .section-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(17,17,17,0.35); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid rgba(17,17,17,0.08); }
+        .line { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; font-size: 13px; color: #111111; }
+        .line-label { color: rgba(17,17,17,0.65); }
         .line-value { font-weight: 500; }
-        .line-total { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 0 0; margin-top: 10px; border-top: 2px solid #1c1917; }
+        .line-total { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 0 0; margin-top: 10px; border-top: 2px solid #111111; }
         .total-label { font-size: 13px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
         .total-value { font-size: 22px; font-weight: 600; }
         ul.coverage { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 5px; }
-        ul.coverage li { font-size: 13px; color: rgba(28,25,23,0.75); padding-left: 14px; position: relative; }
-        ul.coverage li::before { content: "—"; position: absolute; left: 0; color: rgba(28,25,23,0.3); }
+        ul.coverage li { font-size: 13px; color: rgba(17,17,17,0.75); padding-left: 14px; position: relative; }
+        ul.coverage li::before { content: "—"; position: absolute; left: 0; color: rgba(17,17,17,0.3); }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; }
-        .info-item { font-size: 13px; color: rgba(28,25,23,0.7); }
-        .info-item strong { color: #1c1917; display: block; font-weight: 500; }
-        .terms-block { font-size: 12px; color: rgba(28,25,23,0.55); line-height: 1.7; white-space: pre-wrap; }
-        .footer { text-align: center; font-size: 11px; color: rgba(28,25,23,0.3); letter-spacing: 0.12em; margin-top: 48px; padding-top: 24px; border-top: 1px solid rgba(28,25,23,0.06); }
+        .info-item { font-size: 13px; color: rgba(17,17,17,0.7); }
+        .info-item strong { color: #111111; display: block; font-weight: 500; }
+        .terms-block { font-size: 12px; color: rgba(17,17,17,0.55); line-height: 1.7; white-space: pre-wrap; }
+        .footer { text-align: center; font-size: 11px; color: rgba(17,17,17,0.3); letter-spacing: 0.12em; margin-top: 48px; padding-top: 24px; border-top: 1px solid rgba(17,17,17,0.06); }
 @media print { .no-print { display: none !important; } }
         @media (max-width: 640px) {
           .header-band { padding: 24px 24px 20px; }
@@ -160,7 +160,7 @@ export default async function PublicQuotePage({
         </p>
 
         {q.notes?.trim() && (
-          <p style={{ fontSize: "14px", color: "rgba(28,25,23,0.75)", lineHeight: "1.8", whiteSpace: "pre-wrap", marginBottom: "32px", marginTop: "16px" }}>{q.notes}</p>
+          <p style={{ fontSize: "14px", color: "rgba(17,17,17,0.75)", lineHeight: "1.8", whiteSpace: "pre-wrap", marginBottom: "32px", marginTop: "16px" }}>{q.notes}</p>
         )}
 
         {/* Session details */}
@@ -226,13 +226,13 @@ export default async function PublicQuotePage({
             <p className="section-label">Photography Team</p>
             <ul className="coverage">
               <li>
-                <strong style={{ color: "#1c1917" }}>Lead Photographer</strong>
+                <strong style={{ color: "#111111" }}>Lead Photographer</strong>
                 {biz?.contact_name ? ` — ${biz.contact_name}` : ""}
                 {biz?.business_name ? ` · ${biz.business_name}` : ""}
               </li>
               {personnel.map((p, i) => (
                 <li key={i}>
-                  <strong style={{ color: "#1c1917" }}>{p.role || "Additional Photographer"}</strong>
+                  <strong style={{ color: "#111111" }}>{p.role || "Additional Photographer"}</strong>
                   {p.name ? ` — ${p.name}` : ""}
                 </li>
               ))}
@@ -292,7 +292,7 @@ export default async function PublicQuotePage({
           ))}
 
           {discount > 0 && (
-            <div className="line" style={{ color: "#6b7c5e" }}>
+            <div className="line" style={{ color: "#888888" }}>
               <span>Discount{q.discount_type === "percentage" ? ` (${q.discount_value}%)` : ""}</span>
               <span>–{fmt(discount)}</span>
             </div>

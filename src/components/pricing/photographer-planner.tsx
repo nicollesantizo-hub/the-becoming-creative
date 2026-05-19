@@ -587,17 +587,17 @@ const BOOKING_STATUS_LABELS: Record<PlannerBooking["status"], string> = {
 };
 
 const BOOKING_STATUS_COLORS: Record<PlannerBooking["status"], string> = {
-  lead:      "#c9a96e",
-  booked:    "#6a9b7e",
-  completed: "#8b5e3c",
-  paid:      "#2c2c3a",
+  lead:      "#909090",
+  booked:    "#2b5c91",
+  completed: "#444444",
+  paid:      "#111111",
 };
 
 const BOOKING_STATUS_TEXT: Record<PlannerBooking["status"], string> = {
-  lead:      "#2c2c3a",
-  booked:    "#f7f3ed",
-  completed: "#f7f3ed",
-  paid:      "#f7f3ed",
+  lead:      "#111111",
+  booked:    "#ffffff",
+  completed: "#ffffff",
+  paid:      "#ffffff",
 };
 
 const EMPTY_BOOKING: Omit<PlannerBooking, "id" | "user_id" | "created_at"> = {
@@ -1554,12 +1554,12 @@ function printPlanner(
 
   const section = (title: string, rows: string) => `
     <div style="margin-bottom:40px">
-      <h2 style="font-size:14px;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid #e0dbd4;">${title}</h2>
+      <h2 style="font-size:14px;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid #e0e0e0;">${title}</h2>
       ${rows || '<p style="opacity:0.4;font-size:13px;">No entries.</p>'}
     </div>`;
 
   const row = (left: string, right?: string) => `
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid #f0ede8;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid #f0f0f0;">
       <span>${left}</span>${right ? `<span style="opacity:0.5;font-size:12px;">${right}</span>` : ""}
     </div>`;
 
@@ -1569,7 +1569,7 @@ function printPlanner(
   )).join("");
 
   const bookingRows = bookings.map((b) => row(
-    `<strong>${b.client_name || "—"}</strong> <span style="font-size:11px;background:#e0dbd4;padding:1px 6px">${BOOKING_STATUS_LABELS[b.status]}</span><br/><span style="font-size:12px;opacity:0.5">${b.session_type ? b.session_type + " · " : ""}${fmtDate(b.session_date)}</span>`,
+    `<strong>${b.client_name || "—"}</strong> <span style="font-size:11px;background:#e0e0e0;padding:1px 6px">${BOOKING_STATUS_LABELS[b.status]}</span><br/><span style="font-size:12px;opacity:0.5">${b.session_type ? b.session_type + " · " : ""}${fmtDate(b.session_date)}</span>`,
     b.amount > 0 ? `$${b.amount.toLocaleString()}` : undefined
   )).join("");
 
@@ -1579,17 +1579,17 @@ function printPlanner(
   )).join("");
 
   const contentRows = content.map((c) => row(
-    `<span style="font-size:11px;background:#e0dbd4;padding:1px 6px">${c.platform}</span> ${c.caption_idea ? `<br/><span style="font-size:12px">${c.caption_idea.slice(0, 120)}${c.caption_idea.length > 120 ? "…" : ""}</span>` : ""}`,
+    `<span style="font-size:11px;background:#e0e0e0;padding:1px 6px">${c.platform}</span> ${c.caption_idea ? `<br/><span style="font-size:12px">${c.caption_idea.slice(0, 120)}${c.caption_idea.length > 120 ? "…" : ""}</span>` : ""}`,
     `${fmtDate(c.scheduled_date)} · ${CONTENT_STATUS_LABELS[c.status]}`
   )).join("");
 
   win.document.write(`<!DOCTYPE html>
 <html><head><title>Photographer Planner — The Becoming Creative</title>
 <style>
-  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1a1a2e; margin: 0; padding: 40px; font-size: 13px; line-height: 1.5; }
+  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #111111; margin: 0; padding: 40px; font-size: 13px; line-height: 1.5; }
   @media print { body { padding: 20px; } }
 </style></head><body>
-<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:40px;padding-bottom:20px;border-bottom:2px solid #1a1a2e;">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:40px;padding-bottom:20px;border-bottom:2px solid #111111;">
   <div>
     <p style="font-size:10px;text-transform:uppercase;letter-spacing:0.15em;opacity:0.4;margin:0 0 6px">The Becoming Creative</p>
     <h1 style="font-size:28px;font-weight:300;font-style:italic;margin:0">Photographer Planner</h1>
@@ -2005,7 +2005,7 @@ function CalendarView({ shoots, edits }: { shoots: PlannerShoot[]; edits: Planne
                       <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: isSelected ? "var(--cream)" : "var(--clay)" }} />
                     )}
                     {hasEdits && (
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: isSelected ? "rgba(255,255,255,0.6)" : "#6a9b7e" }} />
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: isSelected ? "rgba(255,255,255,0.6)" : "#2b5c91" }} />
                     )}
                   </div>
                 )}
@@ -2022,7 +2022,7 @@ function CalendarView({ shoots, edits }: { shoots: PlannerShoot[]; edits: Planne
           <span className="text-xs opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>Shoot</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#6a9b7e" }} />
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#2b5c91" }} />
           <span className="text-xs opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>Delivery deadline</span>
         </div>
       </div>
@@ -2047,7 +2047,7 @@ function CalendarView({ shoots, edits }: { shoots: PlannerShoot[]; edits: Planne
             </div>
           ))}
           {selectedEdits.map((e) => (
-            <div key={e.id} className="flex items-start gap-3 p-4 border-l-2" style={{ borderLeftColor: "#6a9b7e", backgroundColor: "var(--sand)" }}>
+            <div key={e.id} className="flex items-start gap-3 p-4 border-l-2" style={{ borderLeftColor: "#2b5c91", backgroundColor: "var(--sand)" }}>
               <div className="flex flex-col gap-0.5">
                 <span className="text-xs uppercase tracking-widest opacity-40 mb-0.5" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>Delivery deadline</span>
                 <span className="text-sm font-medium" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>{e.client_name || "Unnamed job"}</span>
