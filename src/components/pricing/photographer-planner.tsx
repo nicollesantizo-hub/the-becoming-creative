@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase";
 import { Trash2, Plus, ChevronDown, ChevronUp, Check, Lock } from "lucide-react";
 import type {
@@ -699,10 +699,11 @@ function BookingRow({ booking, onSave, onDelete }: {
   );
 }
 
-function BookingsSection({ bookings, userId, onChange }: {
+function BookingsSection({ bookings, userId, onChange, onStatusChange }: {
   bookings: PlannerBooking[];
   userId: string;
   onChange: (bookings: PlannerBooking[]) => void;
+  onStatusChange?: (prev: PlannerBooking, next: PlannerBooking) => void;
 }) {
   const [adding, setAdding] = useState(false);
   const [newBooking, setNewBooking] = useState<Omit<PlannerBooking, "id" | "user_id" | "created_at">>(EMPTY_BOOKING);
@@ -717,9 +718,13 @@ function BookingsSection({ bookings, userId, onChange }: {
   }
 
   const handleSave = useCallback(async (updated: PlannerBooking) => {
+    const prev = bookings.find((b) => b.id === updated.id);
     const { error } = await supabase.from("planner_bookings").update(updated).eq("id", updated.id);
-    if (!error) onChange(bookings.map((b) => (b.id === updated.id ? updated : b)));
-  }, [bookings, onChange, supabase]);
+    if (!error) {
+      onChange(bookings.map((b) => (b.id === updated.id ? updated : b)));
+      if (prev && prev.status !== updated.status) onStatusChange?.(prev, updated);
+    }
+  }, [bookings, onChange, onStatusChange, supabase]);
 
   const handleDelete = useCallback(async (id: string) => {
     const { error } = await supabase.from("planner_bookings").delete().eq("id", id);
@@ -1617,6 +1622,7 @@ function JournalView({
   shoots, bookings, edits, content, inspo,
   userId, isPro,
   onShootsChange, onBookingsChange, onEditsChange, onContentChange, onInspoChange,
+  onBookingStatusChange,
 }: {
   shoots: PlannerShoot[];
   bookings: PlannerBooking[];
@@ -1630,6 +1636,7 @@ function JournalView({
   onEditsChange: (e: PlannerEdit[]) => void;
   onContentChange: (c: PlannerContent[]) => void;
   onInspoChange: (i: PlannerInspo[]) => void;
+  onBookingStatusChange?: (prev: PlannerBooking, next: PlannerBooking) => void;
 }) {
   const supabase = createClient();
   const [creating, setCreating] = useState(false);
@@ -1694,9 +1701,13 @@ function JournalView({
 
   const bookingHandlers = {
     onSave: useCallback(async (updated: PlannerBooking) => {
+      const prev = bookings.find((b) => b.id === updated.id);
       const { error } = await supabase.from("planner_bookings").update(updated).eq("id", updated.id);
-      if (!error) onBookingsChange(bookings.map((b) => (b.id === updated.id ? updated : b)));
-    }, [bookings, onBookingsChange, supabase]),
+      if (!error) {
+        onBookingsChange(bookings.map((b) => (b.id === updated.id ? updated : b)));
+        if (prev && prev.status !== updated.status) onBookingStatusChange?.(prev, updated);
+      }
+    }, [bookings, onBookingsChange, onBookingStatusChange, supabase]),
     onDelete: useCallback(async (id: string) => {
       const { error } = await supabase.from("planner_bookings").delete().eq("id", id);
       if (!error) onBookingsChange(bookings.filter((b) => b.id !== id));
@@ -1891,6 +1902,62 @@ export function PhotographerPlanner({
   const [content, setContent] = useState<PlannerContent[]>(initialContent);
   const [inspo, setInspo] = useState<PlannerInspo[]>(initialInspo);
 
+  const supabase = createClient();
+  const shootsRef = useRef(shoots);
+  const editsRef = useRef(edits);
+  useEffect(() => { shootsRef.current = shoots; }, [shoots]);
+  useEffect(() => { editsRef.current = edits; }, [edits]);
+
+  const maybeCreateShoot = useCallback(async (booking: PlannerBooking) => {
+    const exists = shootsRef.current.some(
+      (s) => s.client_name === booking.client_name && s.session_date === booking.session_date
+    );
+    if (exists) return;
+    const { data } = await supabase.from("planner_shoots").insert({
+      user_id: userId,
+      client_name: booking.client_name,
+      session_date: booking.session_date,
+      session_type: booking.session_type,
+      location: "", notes: "", shot_list: [], timeline: [], gear_checklist: [],
+    }).select().single();
+    if (data) setShoots((prev) => [...prev, data as PlannerShoot]);
+  }, [userId, supabase]);
+
+  const maybeCreateEditJob = useCallback(async (booking: PlannerBooking) => {
+    const exists = editsRef.current.some(
+      (e) => e.client_name === booking.client_name && e.session_date === booking.session_date
+    );
+    if (exists) return;
+    const { data } = await supabase.from("planner_edits").insert({
+      user_id: userId,
+      client_name: booking.client_name,
+      session_date: booking.session_date,
+      status: "not_started",
+      photos_count: 0, notes: "", tasks: [],
+      editing_deadline: null, delivery_deadline: null,
+    }).select().single();
+    if (data) setEdits((prev) => [...prev, data as PlannerEdit]);
+  }, [userId, supabase]);
+
+  const handleBookingStatusChange = useCallback(async (prev: PlannerBooking, next: PlannerBooking) => {
+    if (prev.status !== "booked" && next.status === "booked") {
+      await maybeCreateShoot(next);
+    }
+    if (prev.status !== "completed" && next.status === "completed") {
+      await maybeCreateEditJob(next);
+    }
+  }, [maybeCreateShoot, maybeCreateEditJob]);
+
+  // On mount: auto-create edit jobs for bookings whose session date has passed
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    const pastBookings = initialBookings.filter(
+      (b) => b.session_date && b.session_date < today && (b.status === "booked" || b.status === "completed")
+    );
+    pastBookings.forEach((b) => maybeCreateEditJob(b));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="max-w-full overflow-hidden">
       {/* View mode toggle + pro actions */}
@@ -1942,6 +2009,7 @@ export function PhotographerPlanner({
           userId={userId} isPro={isPro}
           onShootsChange={setShoots} onBookingsChange={setBookings}
           onEditsChange={setEdits} onContentChange={setContent} onInspoChange={setInspo}
+          onBookingStatusChange={handleBookingStatusChange}
         />
       )}
 
@@ -1974,7 +2042,7 @@ export function PhotographerPlanner({
             <ShootDaySection shoots={shoots} userId={userId} onChange={setShoots} />
           )}
           {activeTab === "bookings" && (
-            isPro ? <BookingsSection bookings={bookings} userId={userId} onChange={setBookings} /> : <ProGate />
+            isPro ? <BookingsSection bookings={bookings} userId={userId} onChange={setBookings} onStatusChange={handleBookingStatusChange} /> : <ProGate />
           )}
           {activeTab === "edits" && (
             isPro ? <EditingSection edits={edits} userId={userId} onChange={setEdits} /> : <ProGate />
