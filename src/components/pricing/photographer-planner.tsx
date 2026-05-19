@@ -1635,12 +1635,12 @@ function JournalView({
   const [creating, setCreating] = useState(false);
   const [sortMode, setSortMode] = useState<"added" | "date">("added");
 
-  function entryDate(item: JournalItem): string {
-    if (item.kind === "shoot")   return (item.entry as PlannerShoot).session_date   ?? item.entry.created_at;
-    if (item.kind === "booking") return (item.entry as PlannerBooking).session_date  ?? item.entry.created_at;
-    if (item.kind === "edit")    return (item.entry as PlannerEdit).delivery_deadline ?? item.entry.created_at;
-    if (item.kind === "content") return (item.entry as PlannerContent).scheduled_date ?? item.entry.created_at;
-    return item.entry.created_at;
+  function entryEventDate(item: JournalItem): string | null {
+    if (item.kind === "shoot")   return (item.entry as PlannerShoot).session_date    ?? null;
+    if (item.kind === "booking") return (item.entry as PlannerBooking).session_date   ?? null;
+    if (item.kind === "edit")    return (item.entry as PlannerEdit).delivery_deadline ?? null;
+    if (item.kind === "content") return (item.entry as PlannerContent).scheduled_date ?? null;
+    return null;
   }
 
   const items: JournalItem[] = [
@@ -1650,9 +1650,15 @@ function JournalView({
     ...(isPro ? content.map((e) => ({ kind: "content" as const, entry: e })) : []),
     ...(isPro ? inspo.map((e) => ({ kind: "inspo" as const, entry: e })) : []),
   ].sort((a, b) => {
-    const aDate = sortMode === "added" ? a.entry.created_at : entryDate(a);
-    const bDate = sortMode === "added" ? b.entry.created_at : entryDate(b);
-    return new Date(bDate).getTime() - new Date(aDate).getTime();
+    if (sortMode === "added") {
+      return new Date(b.entry.created_at).getTime() - new Date(a.entry.created_at).getTime();
+    }
+    const aDate = entryEventDate(a);
+    const bDate = entryEventDate(b);
+    if (!aDate && !bDate) return 0;
+    if (!aDate) return 1;
+    if (!bDate) return -1;
+    return new Date(aDate).getTime() - new Date(bDate).getTime();
   });
 
   async function handleCreate(kind: JournalKind) {
