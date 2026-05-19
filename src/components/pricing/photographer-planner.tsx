@@ -1586,6 +1586,237 @@ ${section("Content & Marketing", contentRows)}
   win.print();
 }
 
+// ─── Journal view ────────────────────────────────────────────────────────────
+
+type JournalKind = "shoot" | "booking" | "edit" | "content" | "inspo";
+
+type JournalItem =
+  | { kind: "shoot"; entry: PlannerShoot }
+  | { kind: "booking"; entry: PlannerBooking }
+  | { kind: "edit"; entry: PlannerEdit }
+  | { kind: "content"; entry: PlannerContent }
+  | { kind: "inspo"; entry: PlannerInspo };
+
+const KIND_CONFIG: Record<JournalKind, { label: string; color: string }> = {
+  shoot:   { label: "Shoot",   color: "var(--clay)" },
+  booking: { label: "Booking", color: "var(--charcoal)" },
+  edit:    { label: "Editing", color: "rgba(0,0,0,0.45)" },
+  content: { label: "Content", color: "rgba(0,0,0,0.25)" },
+  inspo:   { label: "Inspo",   color: "rgba(0,0,0,0.12)" },
+};
+
+const KIND_SECTIONS: { kind: JournalKind; label: string; pro: boolean }[] = [
+  { kind: "shoot",   label: "Shoot",   pro: false },
+  { kind: "booking", label: "Booking", pro: true },
+  { kind: "edit",    label: "Editing", pro: true },
+  { kind: "content", label: "Content", pro: true },
+  { kind: "inspo",   label: "Inspo",   pro: true },
+];
+
+function JournalView({
+  shoots, bookings, edits, content, inspo,
+  userId, isPro,
+  onShootsChange, onBookingsChange, onEditsChange, onContentChange, onInspoChange,
+}: {
+  shoots: PlannerShoot[];
+  bookings: PlannerBooking[];
+  edits: PlannerEdit[];
+  content: PlannerContent[];
+  inspo: PlannerInspo[];
+  userId: string;
+  isPro: boolean;
+  onShootsChange: (s: PlannerShoot[]) => void;
+  onBookingsChange: (b: PlannerBooking[]) => void;
+  onEditsChange: (e: PlannerEdit[]) => void;
+  onContentChange: (c: PlannerContent[]) => void;
+  onInspoChange: (i: PlannerInspo[]) => void;
+}) {
+  const supabase = createClient();
+  const [creating, setCreating] = useState(false);
+
+  const items: JournalItem[] = [
+    ...shoots.map((e) => ({ kind: "shoot" as const, entry: e })),
+    ...(isPro ? bookings.map((e) => ({ kind: "booking" as const, entry: e })) : []),
+    ...(isPro ? edits.map((e) => ({ kind: "edit" as const, entry: e })) : []),
+    ...(isPro ? content.map((e) => ({ kind: "content" as const, entry: e })) : []),
+    ...(isPro ? inspo.map((e) => ({ kind: "inspo" as const, entry: e })) : []),
+  ].sort((a, b) => new Date(b.entry.created_at).getTime() - new Date(a.entry.created_at).getTime());
+
+  async function handleCreate(kind: JournalKind) {
+    setCreating(false);
+    if (kind === "shoot") {
+      const { data, error } = await supabase.from("planner_shoots").insert({ ...EMPTY_SHOOT, user_id: userId }).select().single();
+      if (!error && data) onShootsChange([...shoots, data as PlannerShoot]);
+    } else if (kind === "booking") {
+      const { data, error } = await supabase.from("planner_bookings").insert({ ...EMPTY_BOOKING, user_id: userId }).select().single();
+      if (!error && data) onBookingsChange([...bookings, data as PlannerBooking]);
+    } else if (kind === "edit") {
+      const { data, error } = await supabase.from("planner_edits").insert({ ...EMPTY_EDIT, user_id: userId }).select().single();
+      if (!error && data) onEditsChange([...edits, data as PlannerEdit]);
+    } else if (kind === "content") {
+      const { data, error } = await supabase.from("planner_content").insert({ ...EMPTY_CONTENT, user_id: userId }).select().single();
+      if (!error && data) onContentChange([...content, data as PlannerContent]);
+    } else if (kind === "inspo") {
+      const { data, error } = await supabase.from("planner_inspo").insert({ ...EMPTY_INSPO, user_id: userId }).select().single();
+      if (!error && data) onInspoChange([...inspo, data as PlannerInspo]);
+    }
+  }
+
+  const shootHandlers = {
+    onSave: useCallback(async (updated: PlannerShoot) => {
+      const { error } = await supabase.from("planner_shoots").update(updated).eq("id", updated.id);
+      if (!error) onShootsChange(shoots.map((s) => (s.id === updated.id ? updated : s)));
+    }, [shoots, onShootsChange, supabase]),
+    onDelete: useCallback(async (id: string) => {
+      const { error } = await supabase.from("planner_shoots").delete().eq("id", id);
+      if (!error) onShootsChange(shoots.filter((s) => s.id !== id));
+    }, [shoots, onShootsChange, supabase]),
+  };
+
+  const bookingHandlers = {
+    onSave: useCallback(async (updated: PlannerBooking) => {
+      const { error } = await supabase.from("planner_bookings").update(updated).eq("id", updated.id);
+      if (!error) onBookingsChange(bookings.map((b) => (b.id === updated.id ? updated : b)));
+    }, [bookings, onBookingsChange, supabase]),
+    onDelete: useCallback(async (id: string) => {
+      const { error } = await supabase.from("planner_bookings").delete().eq("id", id);
+      if (!error) onBookingsChange(bookings.filter((b) => b.id !== id));
+    }, [bookings, onBookingsChange, supabase]),
+  };
+
+  const editHandlers = {
+    onSave: useCallback(async (updated: PlannerEdit) => {
+      const { error } = await supabase.from("planner_edits").update(updated).eq("id", updated.id);
+      if (!error) onEditsChange(edits.map((e) => (e.id === updated.id ? updated : e)));
+    }, [edits, onEditsChange, supabase]),
+    onDelete: useCallback(async (id: string) => {
+      const { error } = await supabase.from("planner_edits").delete().eq("id", id);
+      if (!error) onEditsChange(edits.filter((e) => e.id !== id));
+    }, [edits, onEditsChange, supabase]),
+  };
+
+  const contentHandlers = {
+    onSave: useCallback(async (updated: PlannerContent) => {
+      const { error } = await supabase.from("planner_content").update(updated).eq("id", updated.id);
+      if (!error) onContentChange(content.map((c) => (c.id === updated.id ? updated : c)));
+    }, [content, onContentChange, supabase]),
+    onDelete: useCallback(async (id: string) => {
+      const { error } = await supabase.from("planner_content").delete().eq("id", id);
+      if (!error) onContentChange(content.filter((c) => c.id !== id));
+    }, [content, onContentChange, supabase]),
+  };
+
+  const inspoHandlers = {
+    onSave: useCallback(async (updated: PlannerInspo) => {
+      const { error } = await supabase.from("planner_inspo").update(updated).eq("id", updated.id);
+      if (!error) onInspoChange(inspo.map((i) => (i.id === updated.id ? updated : i)));
+    }, [inspo, onInspoChange, supabase]),
+    onDelete: useCallback(async (id: string) => {
+      const entry = inspo.find((i) => i.id === id);
+      if (entry?.images.length) await supabase.storage.from("planner-inspo").remove(entry.images.map((i) => i.path));
+      const { error } = await supabase.from("planner_inspo").delete().eq("id", id);
+      if (!error) onInspoChange(inspo.filter((i) => i.id !== id));
+    }, [inspo, onInspoChange, supabase]),
+  };
+
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Add entry */}
+      <div className="flex flex-col gap-3">
+        {!creating ? (
+          <button
+            onClick={() => setCreating(true)}
+            className="flex items-center gap-2 px-4 py-3 border w-full sm:w-auto transition-colors hover:bg-[var(--sand)]"
+            style={{ borderColor: "var(--border)", borderStyle: "dashed", color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+          >
+            <Plus size={14} style={{ opacity: 0.4 }} />
+            <span className="text-xs uppercase tracking-widest opacity-40">Add entry</span>
+          </button>
+        ) : (
+          <div className="flex flex-wrap gap-2 items-center p-4" style={{ backgroundColor: "var(--sand)" }}>
+            <span className="text-xs uppercase tracking-widest opacity-40 w-full mb-1" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+              What are you adding?
+            </span>
+            {KIND_SECTIONS.filter((s) => isPro || !s.pro).map((s) => (
+              <button
+                key={s.kind}
+                onClick={() => handleCreate(s.kind)}
+                className="flex items-center gap-1.5 px-4 py-2 text-xs uppercase tracking-widest transition-opacity hover:opacity-80"
+                style={{
+                  backgroundColor: KIND_CONFIG[s.kind].color,
+                  color: ["inspo", "content"].includes(s.kind) ? "var(--charcoal)" : "var(--cream)",
+                  fontFamily: "var(--font-body)",
+                }}
+              >
+                {s.label}
+              </button>
+            ))}
+            <button
+              onClick={() => setCreating(false)}
+              className="px-3 py-2 text-xs opacity-30 hover:opacity-60 transition-opacity"
+              style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Journal entries */}
+      {items.length === 0 && (
+        <p className="text-sm opacity-30 py-8 text-center" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+          Nothing here yet. Add your first entry above.
+        </p>
+      )}
+
+      <div className="flex flex-col gap-3">
+        {items.map((item) => {
+          const config = KIND_CONFIG[item.kind];
+          return (
+            <div key={`${item.kind}-${item.entry.id}`} className="flex gap-0">
+              {/* Type indicator */}
+              <div className="flex flex-col items-center gap-1 pt-4 pr-3 flex-shrink-0">
+                <div className="w-1 flex-1 min-h-[20px] rounded-full" style={{ backgroundColor: config.color }} />
+                <span
+                  className="text-[10px] uppercase tracking-widest"
+                  style={{
+                    color: config.color === "var(--clay)" ? "var(--clay)" : "rgba(26,26,46,0.35)",
+                    fontFamily: "var(--font-body)",
+                    writingMode: "vertical-rl",
+                    transform: "rotate(180deg)",
+                    letterSpacing: "0.12em",
+                  }}
+                >
+                  {config.label}
+                </span>
+              </div>
+
+              {/* Card */}
+              <div className="flex-1 min-w-0">
+                {item.kind === "shoot" && (
+                  <ShootCard shoot={item.entry} onSave={shootHandlers.onSave} onDelete={shootHandlers.onDelete} />
+                )}
+                {item.kind === "booking" && (
+                  <BookingRow booking={item.entry} onSave={bookingHandlers.onSave} onDelete={bookingHandlers.onDelete} />
+                )}
+                {item.kind === "edit" && (
+                  <EditRow edit={item.entry} onSave={editHandlers.onSave} onDelete={editHandlers.onDelete} />
+                )}
+                {item.kind === "content" && (
+                  <ContentRow content={item.entry} onSave={contentHandlers.onSave} onDelete={contentHandlers.onDelete} />
+                )}
+                {item.kind === "inspo" && (
+                  <InspoCard inspo={item.entry} userId={userId} onSave={inspoHandlers.onSave} onDelete={inspoHandlers.onDelete} />
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 const TABS: { id: Tab; label: string; pro: boolean }[] = [
@@ -1613,6 +1844,7 @@ export function PhotographerPlanner({
   initialContent: PlannerContent[];
   initialInspo: PlannerInspo[];
 }) {
+  const [viewMode, setViewMode] = useState<"tabs" | "journal">("tabs");
   const [activeTab, setActiveTab] = useState<Tab>("shoots");
   const [shoots, setShoots] = useState<PlannerShoot[]>(initialShoots);
   const [bookings, setBookings] = useState<PlannerBooking[]>(initialBookings);
@@ -1622,9 +1854,29 @@ export function PhotographerPlanner({
 
   return (
     <div className="max-w-full overflow-hidden">
-      {/* Pro actions */}
-      {isPro && (
-        <div className="flex items-center gap-3 mb-8 flex-wrap">
+      {/* View mode toggle + pro actions */}
+      <div className="flex items-center justify-between gap-4 flex-wrap mb-8">
+        {/* Toggle */}
+        <div className="flex items-center gap-1 p-1" style={{ backgroundColor: "var(--sand)" }}>
+          {(["tabs", "journal"] as const).map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              className="px-4 py-2 text-xs uppercase tracking-widest transition-colors"
+              style={{
+                fontFamily: "var(--font-body)",
+                color: viewMode === mode ? "var(--cream)" : "rgba(26,26,46,0.45)",
+                backgroundColor: viewMode === mode ? "var(--charcoal)" : "transparent",
+              }}
+            >
+              {mode === "tabs" ? "Organized" : "Journal"}
+            </button>
+          ))}
+        </div>
+
+        {/* Pro actions */}
+        {isPro && (
+          <div className="flex items-center gap-3 flex-wrap">
           <button
             onClick={() => printPlanner(shoots, bookings, edits, content)}
             className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest border transition-opacity hover:opacity-70"
@@ -1640,55 +1892,61 @@ export function PhotographerPlanner({
           >
             Download Template
           </a>
-        </div>
-      )}
-
-      {/* Tab bar */}
-      <div className="grid grid-cols-3 sm:flex sm:flex-nowrap gap-1 mb-8 p-1" style={{ backgroundColor: "var(--sand)" }}>
-        {TABS.map((tab) => {
-          const active = activeTab === tab.id;
-          const locked = tab.pro && !isPro;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className="flex items-center justify-center gap-1.5 py-2.5 px-3 text-xs uppercase tracking-widest transition-colors sm:flex-1"
-              style={{
-                fontFamily: "var(--font-body)",
-                color: active ? "var(--cream)" : "rgba(26,26,46,0.45)",
-                backgroundColor: active ? "var(--charcoal)" : "transparent",
-              }}
-            >
-              {tab.label}
-              {locked && <Lock size={10} style={{ opacity: 0.4 }} />}
-            </button>
-          );
-        })}
+          </div>
+        )}
       </div>
 
-      {/* Tab content */}
-      {activeTab === "shoots" && (
-        <ShootDaySection shoots={shoots} userId={userId} onChange={setShoots} />
+      {/* Journal view */}
+      {viewMode === "journal" && (
+        <JournalView
+          shoots={shoots} bookings={bookings} edits={edits} content={content} inspo={inspo}
+          userId={userId} isPro={isPro}
+          onShootsChange={setShoots} onBookingsChange={setBookings}
+          onEditsChange={setEdits} onContentChange={setContent} onInspoChange={setInspo}
+        />
       )}
-      {activeTab === "bookings" && (
-        isPro
-          ? <BookingsSection bookings={bookings} userId={userId} onChange={setBookings} />
-          : <ProGate />
-      )}
-      {activeTab === "edits" && (
-        isPro
-          ? <EditingSection edits={edits} userId={userId} onChange={setEdits} />
-          : <ProGate />
-      )}
-      {activeTab === "content" && (
-        isPro
-          ? <ContentSection content={content} userId={userId} onChange={setContent} />
-          : <ProGate />
-      )}
-      {activeTab === "inspo" && (
-        isPro
-          ? <InspoSection inspo={inspo} userId={userId} onChange={setInspo} />
-          : <ProGate />
+
+      {/* Tabs mode */}
+      {viewMode === "tabs" && (
+        <>
+          <div className="grid grid-cols-3 sm:flex sm:flex-nowrap gap-1 mb-8 p-1" style={{ backgroundColor: "var(--sand)" }}>
+            {TABS.map((tab) => {
+              const active = activeTab === tab.id;
+              const locked = tab.pro && !isPro;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className="flex items-center justify-center gap-1.5 py-2.5 px-3 text-xs uppercase tracking-widest transition-colors sm:flex-1"
+                  style={{
+                    fontFamily: "var(--font-body)",
+                    color: active ? "var(--cream)" : "rgba(26,26,46,0.45)",
+                    backgroundColor: active ? "var(--charcoal)" : "transparent",
+                  }}
+                >
+                  {tab.label}
+                  {locked && <Lock size={10} style={{ opacity: 0.4 }} />}
+                </button>
+              );
+            })}
+          </div>
+
+          {activeTab === "shoots" && (
+            <ShootDaySection shoots={shoots} userId={userId} onChange={setShoots} />
+          )}
+          {activeTab === "bookings" && (
+            isPro ? <BookingsSection bookings={bookings} userId={userId} onChange={setBookings} /> : <ProGate />
+          )}
+          {activeTab === "edits" && (
+            isPro ? <EditingSection edits={edits} userId={userId} onChange={setEdits} /> : <ProGate />
+          )}
+          {activeTab === "content" && (
+            isPro ? <ContentSection content={content} userId={userId} onChange={setContent} /> : <ProGate />
+          )}
+          {activeTab === "inspo" && (
+            isPro ? <InspoSection inspo={inspo} userId={userId} onChange={setInspo} /> : <ProGate />
+          )}
+        </>
       )}
     </div>
   );
