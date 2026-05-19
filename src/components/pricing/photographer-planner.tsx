@@ -1882,6 +1882,191 @@ function JournalView({
   );
 }
 
+// ─── Calendar view ───────────────────────────────────────────────────────────
+
+const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+function CalendarView({ shoots, edits }: { shoots: PlannerShoot[]; edits: PlannerEdit[] }) {
+  const today = new Date();
+  const [year, setYear] = useState(today.getFullYear());
+  const [month, setMonth] = useState(today.getMonth());
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  function prevMonth() {
+    if (month === 0) { setYear(y => y - 1); setMonth(11); }
+    else setMonth(m => m - 1);
+    setSelectedDate(null);
+  }
+
+  function nextMonth() {
+    if (month === 11) { setYear(y => y + 1); setMonth(0); }
+    else setMonth(m => m + 1);
+    setSelectedDate(null);
+  }
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfWeek = new Date(year, month, 1).getDay();
+  const totalCells = Math.ceil((firstDayOfWeek + daysInMonth) / 7) * 7;
+
+  function isoDate(day: number) {
+    return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  }
+
+  function isToday(day: number) {
+    return year === today.getFullYear() && month === today.getMonth() && day === today.getDate();
+  }
+
+  const shootsByDate: Record<string, PlannerShoot[]> = {};
+  shoots.forEach((s) => { if (s.session_date) { shootsByDate[s.session_date] = [...(shootsByDate[s.session_date] ?? []), s]; } });
+
+  const editsByDate: Record<string, PlannerEdit[]> = {};
+  edits.forEach((e) => { if (e.delivery_deadline) { editsByDate[e.delivery_deadline] = [...(editsByDate[e.delivery_deadline] ?? []), e]; } });
+
+  const selectedShoots = selectedDate ? (shootsByDate[selectedDate] ?? []) : [];
+  const selectedEdits  = selectedDate ? (editsByDate[selectedDate]  ?? []) : [];
+
+  return (
+    <div className="flex flex-col gap-6">
+      {/* Month nav */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={prevMonth}
+          className="px-3 py-2 text-sm opacity-40 hover:opacity-80 transition-opacity"
+          style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+        >
+          ←
+        </button>
+        <p className="text-base font-light italic" style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}>
+          {MONTH_NAMES[month]} {year}
+        </p>
+        <button
+          onClick={nextMonth}
+          className="px-3 py-2 text-sm opacity-40 hover:opacity-80 transition-opacity"
+          style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+        >
+          →
+        </button>
+      </div>
+
+      {/* Grid */}
+      <div>
+        {/* Day headers */}
+        <div className="grid grid-cols-7 mb-1">
+          {DAY_LABELS.map((d) => (
+            <div key={d} className="text-center py-1">
+              <span className="text-[10px] uppercase tracking-widest opacity-30" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                {d.slice(0, 1)}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Day cells */}
+        <div className="grid grid-cols-7 gap-px" style={{ backgroundColor: "var(--border)" }}>
+          {Array.from({ length: totalCells }).map((_, i) => {
+            const day = i - firstDayOfWeek + 1;
+            const inMonth = day >= 1 && day <= daysInMonth;
+            const iso = inMonth ? isoDate(day) : null;
+            const hasShoots = iso ? (shootsByDate[iso]?.length ?? 0) > 0 : false;
+            const hasEdits  = iso ? (editsByDate[iso]?.length  ?? 0) > 0 : false;
+            const isSelected = iso && iso === selectedDate;
+            const todayCell = inMonth && isToday(day);
+
+            return (
+              <button
+                key={i}
+                onClick={() => iso && setSelectedDate(isSelected ? null : iso)}
+                disabled={!inMonth}
+                className="flex flex-col items-center gap-1 py-2 min-h-[52px] transition-colors"
+                style={{
+                  backgroundColor: isSelected
+                    ? "var(--charcoal)"
+                    : todayCell
+                    ? "var(--sand)"
+                    : "white",
+                  cursor: inMonth ? "pointer" : "default",
+                }}
+              >
+                <span
+                  className="text-xs leading-none"
+                  style={{
+                    color: isSelected ? "var(--cream)" : inMonth ? "var(--charcoal)" : "transparent",
+                    fontFamily: "var(--font-body)",
+                    fontWeight: todayCell ? 500 : 300,
+                    opacity: inMonth ? (todayCell || isSelected ? 1 : 0.7) : 0,
+                  }}
+                >
+                  {inMonth ? day : ""}
+                </span>
+                {inMonth && (hasShoots || hasEdits) && (
+                  <div className="flex items-center gap-0.5">
+                    {hasShoots && (
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: isSelected ? "var(--cream)" : "var(--clay)" }} />
+                    )}
+                    {hasEdits && (
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: isSelected ? "rgba(255,255,255,0.6)" : "#6a9b7e" }} />
+                    )}
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center gap-5">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "var(--clay)" }} />
+          <span className="text-xs opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>Shoot</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#6a9b7e" }} />
+          <span className="text-xs opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>Delivery deadline</span>
+        </div>
+      </div>
+
+      {/* Selected day detail */}
+      {selectedDate && (selectedShoots.length > 0 || selectedEdits.length > 0) && (
+        <div className="flex flex-col gap-3 pt-2" style={{ borderTop: "1px solid var(--border)" }}>
+          <p className="text-xs uppercase tracking-widest opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+            {new Date(selectedDate + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+          </p>
+          {selectedShoots.map((s) => (
+            <div key={s.id} className="flex items-start gap-3 p-4 border-l-2" style={{ borderLeftColor: "var(--clay)", backgroundColor: "var(--sand)" }}>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs uppercase tracking-widest opacity-40 mb-0.5" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>Shoot</span>
+                <span className="text-sm font-medium" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>{s.client_name || "Unnamed shoot"}</span>
+                {(s.session_type || s.location) && (
+                  <span className="text-xs opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                    {[s.session_type, s.location].filter(Boolean).join(" · ")}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+          {selectedEdits.map((e) => (
+            <div key={e.id} className="flex items-start gap-3 p-4 border-l-2" style={{ borderLeftColor: "#6a9b7e", backgroundColor: "var(--sand)" }}>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs uppercase tracking-widest opacity-40 mb-0.5" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>Delivery deadline</span>
+                <span className="text-sm font-medium" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>{e.client_name || "Unnamed job"}</span>
+                <span className="text-xs opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>{EDIT_STATUS_LABELS[e.status]}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {selectedDate && selectedShoots.length === 0 && selectedEdits.length === 0 && (
+        <p className="text-sm opacity-30 text-center py-4" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+          Nothing scheduled for this day.
+        </p>
+      )}
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 const TABS: { id: Tab; label: string; pro: boolean }[] = [
@@ -1909,7 +2094,7 @@ export function PhotographerPlanner({
   initialContent: PlannerContent[];
   initialInspo: PlannerInspo[];
 }) {
-  const [viewMode, setViewMode] = useState<"tabs" | "journal">("tabs");
+  const [viewMode, setViewMode] = useState<"tabs" | "journal" | "calendar">("tabs");
   const [activeTab, setActiveTab] = useState<Tab>("shoots");
   const [shoots, setShoots] = useState<PlannerShoot[]>(initialShoots);
   const [bookings, setBookings] = useState<PlannerBooking[]>(initialBookings);
@@ -1979,7 +2164,7 @@ export function PhotographerPlanner({
       <div className="flex items-center justify-between gap-4 flex-wrap mb-8">
         {/* Toggle */}
         <div className="flex items-center gap-1 p-1" style={{ backgroundColor: "var(--sand)" }}>
-          {(["tabs", "journal"] as const).map((mode) => (
+          {([["tabs", "Organized"], ["journal", "Journal"], ["calendar", "Calendar"]] as const).map(([mode, label]) => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
@@ -1990,7 +2175,7 @@ export function PhotographerPlanner({
                 backgroundColor: viewMode === mode ? "var(--charcoal)" : "transparent",
               }}
             >
-              {mode === "tabs" ? "Organized" : "Journal"}
+              {label}
             </button>
           ))}
         </div>
@@ -2016,6 +2201,11 @@ export function PhotographerPlanner({
           </div>
         )}
       </div>
+
+      {/* Calendar view */}
+      {viewMode === "calendar" && (
+        <CalendarView shoots={shoots} edits={edits} />
+      )}
 
       {/* Journal view */}
       {viewMode === "journal" && (
