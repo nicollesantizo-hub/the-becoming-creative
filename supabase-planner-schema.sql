@@ -70,3 +70,26 @@ CREATE TABLE planner_content (
 ALTER TABLE planner_content ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users manage their own content entries" ON planner_content
   FOR ALL USING (auth.uid() = user_id);
+
+-- Inspo board (pro)
+CREATE TABLE planner_inspo (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  title TEXT DEFAULT '',
+  description TEXT DEFAULT '',
+  images JSONB DEFAULT '[]',
+  mood_words JSONB DEFAULT '[]',
+  colors JSONB DEFAULT '[]',
+  collaborators JSONB DEFAULT '[]',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE planner_inspo ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users manage their own inspo entries" ON planner_inspo
+  FOR ALL USING (auth.uid() = user_id);
+
+-- Storage bucket for inspo images (run separately in Supabase Storage settings,
+-- or via the dashboard: create a bucket named "planner-inspo" set to private)
+-- Then add this storage policy:
+-- CREATE POLICY "Users manage their own inspo images" ON storage.objects
+--   FOR ALL USING (bucket_id = 'planner-inspo' AND auth.uid()::text = (storage.foldername(name))[1]);

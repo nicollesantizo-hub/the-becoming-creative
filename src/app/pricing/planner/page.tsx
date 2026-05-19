@@ -20,12 +20,14 @@ export default async function PlannerPage() {
     { data: bookings },
     { data: edits },
     { data: content },
+    { data: inspo },
   ] = await Promise.all([
     supabase.from("profiles").select("tier").eq("id", user.id).single(),
     supabase.from("planner_shoots").select("*").eq("user_id", user.id).order("session_date", { ascending: true }),
     supabase.from("planner_bookings").select("*").eq("user_id", user.id).order("session_date", { ascending: true }),
     supabase.from("planner_edits").select("*").eq("user_id", user.id).order("delivery_deadline", { ascending: true }),
     supabase.from("planner_content").select("*").eq("user_id", user.id).order("scheduled_date", { ascending: true }),
+    supabase.from("planner_inspo").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
   ]);
 
   const isPro = profile?.tier === "pro";
@@ -59,6 +61,7 @@ export default async function PlannerPage() {
         initialBookings={bookings ?? []}
         initialEdits={edits ?? []}
         initialContent={content ?? []}
+        initialInspo={inspo ?? []}
       />
     </div>
   );

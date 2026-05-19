@@ -153,3 +153,26 @@ export interface PlannerContent {
   notes: string;
   created_at: string;
 }
+
+export interface InspoCollaborator {
+  id: string;
+  name: string;
+  role: string;
+}
+
+export interface InspoImage {
+  path: string;
+  url: string;
+}
+
+export interface PlannerInspo {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  images: InspoImage[];
+  mood_words: string[];
+  colors: string[];
+  collaborators: InspoCollaborator[];
+  created_at: string;
+}

@@ -8,11 +8,14 @@ import type {
   PlannerBooking,
   PlannerEdit,
   PlannerContent,
+  PlannerInspo,
+  InspoCollaborator,
+  InspoImage,
   ChecklistItem,
   TimelineEntry,
 } from "@/types/pricing";
 
-type Tab = "shoots" | "bookings" | "edits" | "content";
+type Tab = "shoots" | "bookings" | "edits" | "content" | "inspo";
 
 function uid() {
   return Math.random().toString(36).slice(2, 10);
@@ -1149,6 +1152,375 @@ function ContentSection({ content, userId, onChange }: {
   );
 }
 
+// ─── Inspo Board ─────────────────────────────────────────────────────────────
+
+const EMPTY_INSPO: Omit<PlannerInspo, "id" | "user_id" | "created_at"> = {
+  title: "",
+  description: "",
+  images: [],
+  mood_words: [],
+  colors: [],
+  collaborators: [],
+};
+
+function MoodWordEditor({ words, onChange }: { words: string[]; onChange: (w: string[]) => void }) {
+  const [input, setInput] = useState("");
+
+  function add() {
+    const word = input.trim();
+    if (!word || words.includes(word)) return;
+    onChange([...words, word]);
+    setInput("");
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-xs uppercase tracking-widest opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>Mood Words</p>
+      <div className="flex flex-wrap gap-2">
+        {words.map((w) => (
+          <button
+            key={w}
+            onClick={() => onChange(words.filter((x) => x !== w))}
+            className="flex items-center gap-1 px-3 py-1 text-xs transition-opacity hover:opacity-60"
+            style={{ backgroundColor: "var(--sand)", color: "var(--charcoal)", fontFamily: "var(--font-body)", border: "1px solid var(--border)" }}
+          >
+            {w} <span className="opacity-40 ml-0.5">×</span>
+          </button>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={input}
+          placeholder="golden, moody, soft..."
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && add()}
+          className="flex-1 px-3 py-1.5 text-sm border bg-white outline-none"
+          style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+        />
+        <button onClick={add} className="px-3 py-1.5 transition-opacity hover:opacity-80" style={{ backgroundColor: "var(--charcoal)", color: "var(--cream)" }}>
+          <Plus size={14} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ColorPaletteEditor({ colors, onChange }: { colors: string[]; onChange: (c: string[]) => void }) {
+  const [input, setInput] = useState("#");
+
+  function add() {
+    const hex = input.trim();
+    if (!hex || colors.includes(hex)) return;
+    onChange([...colors, hex]);
+    setInput("#");
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-xs uppercase tracking-widest opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>Color Palette</p>
+      <div className="flex flex-wrap gap-3 items-center">
+        {colors.map((c) => (
+          <button
+            key={c}
+            onClick={() => onChange(colors.filter((x) => x !== c))}
+            className="group relative flex flex-col items-center gap-1"
+            title={`Remove ${c}`}
+          >
+            <div
+              className="w-10 h-10 border border-[var(--border)] transition-opacity group-hover:opacity-60"
+              style={{ backgroundColor: c }}
+            />
+            <span className="text-[10px] opacity-40" style={{ fontFamily: "var(--font-body)", color: "var(--charcoal)" }}>{c}</span>
+          </button>
+        ))}
+      </div>
+      <div className="flex gap-2 items-center">
+        <input
+          type="color"
+          value={input.startsWith("#") && input.length === 7 ? input : "#cccccc"}
+          onChange={(e) => setInput(e.target.value)}
+          className="w-10 h-9 border cursor-pointer p-0.5"
+          style={{ borderColor: "var(--border)" }}
+        />
+        <input
+          type="text"
+          value={input}
+          placeholder="#f7c59f"
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && add()}
+          className="w-28 px-3 py-1.5 text-sm border bg-white outline-none font-mono"
+          style={{ borderColor: "var(--border)", fontFamily: "monospace", color: "var(--charcoal)" }}
+        />
+        <button onClick={add} className="px-3 py-1.5 transition-opacity hover:opacity-80" style={{ backgroundColor: "var(--charcoal)", color: "var(--cream)" }}>
+          <Plus size={14} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function CollaboratorEditor({ collaborators, onChange }: { collaborators: InspoCollaborator[]; onChange: (c: InspoCollaborator[]) => void }) {
+  const [name, setName] = useState("");
+  const [role, setRole] = useState("");
+
+  function add() {
+    if (!name.trim()) return;
+    onChange([...collaborators, { id: uid(), name: name.trim(), role: role.trim() }]);
+    setName("");
+    setRole("");
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-xs uppercase tracking-widest opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>Collaborators</p>
+      <div className="flex flex-col gap-1">
+        {collaborators.map((c) => (
+          <div key={c.id} className="flex items-center gap-3 group py-1.5 px-3" style={{ backgroundColor: "var(--sand)" }}>
+            <div className="flex-1">
+              <span className="text-sm" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>{c.name}</span>
+              {c.role && <span className="text-xs opacity-40 ml-2" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>{c.role}</span>}
+            </div>
+            <button onClick={() => onChange(collaborators.filter((x) => x.id !== c.id))} className="opacity-0 group-hover:opacity-30 hover:!opacity-70 transition-opacity" style={{ color: "var(--charcoal)" }}>
+              <Trash2 size={13} />
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <input type="text" value={name} placeholder="Name" onChange={(e) => setName(e.target.value)} className="flex-1 px-3 py-1.5 text-sm border bg-white outline-none" style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }} />
+        <input type="text" value={role} placeholder="Role (MUA, florist...)" onChange={(e) => setRole(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} className="flex-1 px-3 py-1.5 text-sm border bg-white outline-none" style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }} />
+        <button onClick={add} className="px-3 py-1.5 transition-opacity hover:opacity-80" style={{ backgroundColor: "var(--charcoal)", color: "var(--cream)" }}>
+          <Plus size={14} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ImageUploader({ images, onAdd, onRemove, userId, inspoId }: {
+  images: InspoImage[];
+  onAdd: (img: InspoImage) => void;
+  onRemove: (path: string) => void;
+  userId: string;
+  inspoId: string;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const supabase = createClient();
+
+  async function handleFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    for (const file of Array.from(files)) {
+      const ext = file.name.split(".").pop();
+      const path = `${userId}/inspo/${inspoId}/${uid()}.${ext}`;
+      const { error } = await supabase.storage.from("planner-inspo").upload(path, file, { upsert: false });
+      if (!error) {
+        const { data: urlData } = supabase.storage.from("planner-inspo").getPublicUrl(path);
+        onAdd({ path, url: urlData.publicUrl });
+      }
+    }
+    setUploading(false);
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-xs uppercase tracking-widest opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>Images</p>
+      {images.length > 0 && (
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+          {images.map((img) => (
+            <div key={img.path} className="relative group aspect-square">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={img.url} alt="" className="w-full h-full object-cover" />
+              <button
+                onClick={() => onRemove(img.path)}
+                className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+              >
+                <Trash2 size={11} style={{ color: "white" }} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <label
+        className="flex items-center justify-center gap-2 px-4 py-3 border cursor-pointer transition-colors hover:bg-[var(--sand)]"
+        style={{ borderColor: "var(--border)", borderStyle: "dashed" }}
+      >
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          className="sr-only"
+          onChange={(e) => handleFiles(e.target.files)}
+        />
+        <Plus size={14} style={{ color: "var(--charcoal)", opacity: 0.4 }} />
+        <span className="text-xs uppercase tracking-widest opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+          {uploading ? "Uploading..." : "Add Images"}
+        </span>
+      </label>
+    </div>
+  );
+}
+
+function InspoCard({ inspo, onSave, onDelete, userId }: {
+  inspo: PlannerInspo;
+  onSave: (i: PlannerInspo) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+  userId: string;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [draft, setDraft] = useState(inspo);
+  const [saving, setSaving] = useState(false);
+  const supabase = createClient();
+
+  function update<K extends keyof PlannerInspo>(key: K, value: PlannerInspo[K]) {
+    setDraft((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    await onSave(draft);
+    setSaving(false);
+  }
+
+  async function handleRemoveImage(path: string) {
+    await supabase.storage.from("planner-inspo").remove([path]);
+    const updated = { ...draft, images: draft.images.filter((i) => i.path !== path) };
+    setDraft(updated);
+    await onSave(updated);
+  }
+
+  const coverImage = inspo.images[0];
+
+  return (
+    <div className="border" style={{ borderColor: "var(--border)", backgroundColor: "white" }}>
+      <button onClick={() => setExpanded((v) => !v)} className="w-full flex items-center gap-4 text-left hover:bg-[var(--sand)] transition-colors">
+        {coverImage && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={coverImage.url} alt="" className="w-16 h-16 object-cover flex-shrink-0" />
+        )}
+        {!coverImage && (
+          <div className="w-16 h-16 flex-shrink-0" style={{ backgroundColor: "var(--sand)" }} />
+        )}
+        <div className="flex-1 min-w-0 py-4 pr-5">
+          <span className="text-sm font-medium truncate block" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+            {inspo.title || "Untitled session"}
+          </span>
+          <div className="flex items-center gap-2 flex-wrap mt-1">
+            {inspo.colors.slice(0, 5).map((c) => (
+              <div key={c} className="w-3 h-3 rounded-full border border-[var(--border)]" style={{ backgroundColor: c }} />
+            ))}
+            {inspo.mood_words.slice(0, 3).map((w) => (
+              <span key={w} className="text-xs opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>{w}</span>
+            ))}
+            {inspo.images.length > 1 && (
+              <span className="text-xs opacity-30" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>{inspo.images.length} images</span>
+            )}
+          </div>
+        </div>
+        <div className="pr-5 flex-shrink-0">
+          {expanded ? <ChevronUp size={15} style={{ color: "var(--charcoal)", opacity: 0.3 }} /> : <ChevronDown size={15} style={{ color: "var(--charcoal)", opacity: 0.3 }} />}
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="px-5 pb-6 pt-4 flex flex-col gap-6" style={{ borderTop: "1px solid var(--border)" }}>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <TextInput label="Session Title" value={draft.title} onChange={(v) => update("title", v)} placeholder="Golden hour elopement, Dark romance, etc." />
+          </div>
+          <TextareaInput label="Description / Vision" value={draft.description} onChange={(v) => update("description", v)} placeholder="Describe the feeling, the light, the story you want to tell..." rows={3} />
+
+          <ImageUploader
+            images={draft.images}
+            userId={userId}
+            inspoId={inspo.id}
+            onAdd={(img) => update("images", [...draft.images, img])}
+            onRemove={handleRemoveImage}
+          />
+
+          <MoodWordEditor words={draft.mood_words} onChange={(w) => update("mood_words", w)} />
+          <ColorPaletteEditor colors={draft.colors} onChange={(c) => update("colors", c)} />
+          <CollaboratorEditor collaborators={draft.collaborators} onChange={(c) => update("collaborators", c)} />
+
+          <div className="flex items-center justify-between pt-2" style={{ borderTop: "1px solid var(--border)" }}>
+            <button onClick={() => onDelete(inspo.id)} className="flex items-center gap-1.5 text-xs opacity-30 hover:opacity-60 transition-opacity" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+              <Trash2 size={13} /> Delete
+            </button>
+            <button onClick={handleSave} disabled={saving} className="px-5 py-2 text-xs uppercase tracking-widest transition-opacity hover:opacity-80 disabled:opacity-40" style={{ backgroundColor: "var(--charcoal)", color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+              {saving ? "Saving..." : "Save"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function InspoSection({ inspo, userId, onChange }: {
+  inspo: PlannerInspo[];
+  userId: string;
+  onChange: (inspo: PlannerInspo[]) => void;
+}) {
+  const [adding, setAdding] = useState(false);
+  const supabase = createClient();
+
+  async function handleAdd() {
+    const { data, error } = await supabase
+      .from("planner_inspo")
+      .insert({ ...EMPTY_INSPO, user_id: userId })
+      .select()
+      .single();
+    if (!error && data) {
+      onChange([...inspo, data as PlannerInspo]);
+      setAdding(false);
+    }
+  }
+
+  const handleSave = useCallback(async (updated: PlannerInspo) => {
+    const { error } = await supabase.from("planner_inspo").update(updated).eq("id", updated.id);
+    if (!error) onChange(inspo.map((i) => (i.id === updated.id ? updated : i)));
+  }, [inspo, onChange, supabase]);
+
+  const handleDelete = useCallback(async (id: string) => {
+    const entry = inspo.find((i) => i.id === id);
+    if (entry?.images.length) {
+      await supabase.storage.from("planner-inspo").remove(entry.images.map((i) => i.path));
+    }
+    const { error } = await supabase.from("planner_inspo").delete().eq("id", id);
+    if (!error) onChange(inspo.filter((i) => i.id !== id));
+  }, [inspo, onChange, supabase]);
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <p className="text-sm opacity-40 mb-1" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+          Dream sessions, mood boards, and visual direction — all in one place.
+        </p>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <p className="text-sm opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+          {inspo.length === 0 ? "No sessions yet." : `${inspo.length} session idea${inspo.length !== 1 ? "s" : ""}`}
+        </p>
+        <button
+          onClick={handleAdd}
+          className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-widest transition-opacity hover:opacity-80"
+          style={{ backgroundColor: "var(--charcoal)", color: "var(--cream)", fontFamily: "var(--font-body)" }}
+        >
+          <Plus size={13} /> New Session Idea
+        </button>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        {inspo.map((i) => (
+          <InspoCard key={i.id} inspo={i} userId={userId} onSave={handleSave} onDelete={handleDelete} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── PDF export ───────────────────────────────────────────────────────────────
 
 function printPlanner(
@@ -1221,6 +1593,7 @@ const TABS: { id: Tab; label: string; pro: boolean }[] = [
   { id: "bookings", label: "Bookings", pro: true },
   { id: "edits", label: "Editing", pro: true },
   { id: "content", label: "Content", pro: true },
+  { id: "inspo", label: "Inspo", pro: true },
 ];
 
 export function PhotographerPlanner({
@@ -1230,6 +1603,7 @@ export function PhotographerPlanner({
   initialBookings,
   initialEdits,
   initialContent,
+  initialInspo,
 }: {
   userId: string;
   isPro: boolean;
@@ -1237,12 +1611,14 @@ export function PhotographerPlanner({
   initialBookings: PlannerBooking[];
   initialEdits: PlannerEdit[];
   initialContent: PlannerContent[];
+  initialInspo: PlannerInspo[];
 }) {
   const [activeTab, setActiveTab] = useState<Tab>("shoots");
   const [shoots, setShoots] = useState<PlannerShoot[]>(initialShoots);
   const [bookings, setBookings] = useState<PlannerBooking[]>(initialBookings);
   const [edits, setEdits] = useState<PlannerEdit[]>(initialEdits);
   const [content, setContent] = useState<PlannerContent[]>(initialContent);
+  const [inspo, setInspo] = useState<PlannerInspo[]>(initialInspo);
 
   return (
     <div>
@@ -1309,6 +1685,11 @@ export function PhotographerPlanner({
       {activeTab === "content" && (
         isPro
           ? <ContentSection content={content} userId={userId} onChange={setContent} />
+          : <ProGate />
+      )}
+      {activeTab === "inspo" && (
+        isPro
+          ? <InspoSection inspo={inspo} userId={userId} onChange={setInspo} />
           : <ProGate />
       )}
     </div>
