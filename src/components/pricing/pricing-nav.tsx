@@ -98,8 +98,8 @@ export function PricingNav({ profile }: { profile: UserProfile | null }) {
                 className="px-3 py-2 text-sm rounded-sm transition-colors"
                 style={{
                   fontFamily: "var(--font-body)",
-                  color: active ? "var(--cream)" : "rgba(247,243,237,0.45)",
-                  backgroundColor: active ? "rgba(247,243,237,0.1)" : "transparent",
+                  color: active ? "var(--cream)" : "rgba(255,255,255,0.45)",
+                  backgroundColor: active ? "rgba(255,255,255,0.1)" : "transparent",
                 }}
               >
                 {item.label}
@@ -111,8 +111,8 @@ export function PricingNav({ profile }: { profile: UserProfile | null }) {
             className="px-3 py-2 text-sm rounded-sm transition-colors"
             style={{
               fontFamily: "var(--font-body)",
-              color: pathname === "/pricing/settings" ? "var(--cream)" : "rgba(247,243,237,0.45)",
-              backgroundColor: pathname === "/pricing/settings" ? "rgba(247,243,237,0.1)" : "transparent",
+              color: pathname === "/pricing/settings" ? "var(--cream)" : "rgba(255,255,255,0.45)",
+              backgroundColor: pathname === "/pricing/settings" ? "rgba(255,255,255,0.1)" : "transparent",
             }}
           >
             Settings
@@ -123,7 +123,7 @@ export function PricingNav({ profile }: { profile: UserProfile | null }) {
           {profile?.tier === "pro" ? (
             <div
               className="flex items-center gap-2 px-3 py-2"
-              style={{ backgroundColor: "rgba(247,243,237,0.08)" }}
+              style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
             >
               <span
                 className="text-xs px-2 py-0.5 uppercase tracking-widest"
@@ -146,7 +146,7 @@ export function PricingNav({ profile }: { profile: UserProfile | null }) {
           ) : (
             <div
               className="p-3 rounded-sm"
-              style={{ backgroundColor: "rgba(247,243,237,0.06)" }}
+              style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
             >
               <p
                 className="text-xs opacity-40 mb-2"
@@ -193,7 +193,7 @@ export function PricingNav({ profile }: { profile: UserProfile | null }) {
               className="flex flex-col items-center"
               style={{
                 fontFamily: "var(--font-body)",
-                color: active ? "var(--cream)" : "rgba(247,243,237,0.4)",
+                color: active ? "var(--cream)" : "rgba(255,255,255,0.4)",
               }}
             >
               <span className="text-xs uppercase tracking-wider">{item.label}</span>

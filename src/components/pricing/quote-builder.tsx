@@ -1219,7 +1219,7 @@ export function QuoteBuilder({
                 )}
                 <div
                   className="flex justify-between pt-3"
-                  style={{ borderTop: "1px solid rgba(247,243,237,0.15)" }}
+                  style={{ borderTop: "1px solid rgba(255,255,255,0.15)" }}
                 >
                   <span
                     className="text-base font-medium"
