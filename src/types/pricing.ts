@@ -88,3 +88,68 @@ export interface UserProfile {
   tier: "free" | "pro";
   created_at: string;
 }
+
+// Photographer Planner types
+
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  checked: boolean;
+}
+
+export interface TimelineEntry {
+  id: string;
+  time: string;
+  note: string;
+}
+
+export interface PlannerShoot {
+  id: string;
+  user_id: string;
+  client_name: string;
+  session_date: string | null;
+  location: string;
+  session_type: string;
+  notes: string;
+  shot_list: ChecklistItem[];
+  timeline: TimelineEntry[];
+  gear_checklist: ChecklistItem[];
+  created_at: string;
+}
+
+export interface PlannerBooking {
+  id: string;
+  user_id: string;
+  client_name: string;
+  session_type: string;
+  session_date: string | null;
+  status: "lead" | "booked" | "completed" | "paid";
+  amount: number;
+  notes: string;
+  created_at: string;
+}
+
+export interface PlannerEdit {
+  id: string;
+  user_id: string;
+  client_name: string;
+  session_date: string | null;
+  editing_deadline: string | null;
+  delivery_deadline: string | null;
+  status: "not_started" | "culling" | "editing" | "reviewing" | "delivered";
+  photos_count: number;
+  notes: string;
+  tasks: ChecklistItem[];
+  created_at: string;
+}
+
+export interface PlannerContent {
+  id: string;
+  user_id: string;
+  platform: string;
+  scheduled_date: string | null;
+  caption_idea: string;
+  status: "idea" | "drafted" | "scheduled" | "posted";
+  notes: string;
+  created_at: string;
+}

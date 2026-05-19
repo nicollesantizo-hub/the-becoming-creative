@@ -10,12 +10,14 @@ const navItems = [
   { href: "/pricing/calculator", label: "Calculator" },
   { href: "/pricing/sessions", label: "Sessions" },
   { href: "/pricing/quotes", label: "Quotes" },
+  { href: "/pricing/planner", label: "Planner" },
 ];
 
 const pageTitles: Record<string, string> = {
   "/pricing/calculator": "Calculator",
   "/pricing/sessions": "Sessions",
   "/pricing/quotes": "Quotes",
+  "/pricing/planner": "Planner",
   "/pricing/settings": "Settings",
   "/pricing": "Price My Work",
 };
