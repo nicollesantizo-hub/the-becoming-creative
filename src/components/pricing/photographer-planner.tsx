@@ -729,7 +729,14 @@ function BookingsSection({ bookings, userId, onChange, onStatusChange }: {
 
   async function handleAdd() {
     const { data, error } = await supabase.from("planner_bookings").insert({ ...newBooking, user_id: userId }).select().single();
-    if (!error && data) { onChange([...bookings, data as PlannerBooking]); setNewBooking(EMPTY_BOOKING); setAdding(false); }
+    if (!error && data) {
+      onChange([...bookings, data as PlannerBooking]);
+      if (newBooking.status === "booked" || newBooking.status === "completed") {
+        onStatusChange?.({ ...(data as PlannerBooking), status: "lead" }, data as PlannerBooking);
+      }
+      setNewBooking(EMPTY_BOOKING);
+      setAdding(false);
+    }
   }
 
   const handleSave = useCallback(async (updated: PlannerBooking) => {
