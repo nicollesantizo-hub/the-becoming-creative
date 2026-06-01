@@ -24,6 +24,7 @@ export function SettingsForm({ userId, email, isPro, initialLogoUrl, initialValu
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const router = useRouter();
 
   async function signOut() {
@@ -36,6 +37,7 @@ export function SettingsForm({ userId, email, isPro, initialLogoUrl, initialValu
   function set(key: keyof typeof values, val: string) {
     setValues((v) => ({ ...v, [key]: val }));
     setSaved(false);
+    setSaveError("");
   }
 
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -62,12 +64,18 @@ export function SettingsForm({ userId, email, isPro, initialLogoUrl, initialValu
 
   async function handleSave() {
     setSaving(true);
+    setSaveError("");
     const supabase = createClient();
     const { error } = await supabase
       .from("profiles")
       .upsert({ id: userId, ...values });
     setSaving(false);
-    if (!error) setSaved(true);
+    if (error) {
+      setSaveError(error.message);
+    } else {
+      setSaved(true);
+      router.refresh();
+    }
   }
 
   const inputStyle = {
@@ -221,6 +229,11 @@ export function SettingsForm({ userId, email, isPro, initialLogoUrl, initialValu
         {saved && (
           <p className="text-xs opacity-50" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
             Saved.
+          </p>
+        )}
+        {saveError && (
+          <p className="text-xs" style={{ color: "var(--destructive)", fontFamily: "var(--font-body)" }}>
+            {saveError}
           </p>
         )}
       </div>
