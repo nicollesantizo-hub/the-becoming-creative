@@ -19,7 +19,7 @@ export default async function QuotesPage() {
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false }),
-      supabase.from("profiles").select("tier").eq("id", user.id).single(),
+      supabase.from("profiles").select("tier, payment_terms").eq("id", user.id).single(),
     ]);
 
   const codb = codbConfig ? calculateCODB(codbConfig) : null;
@@ -53,6 +53,7 @@ export default async function QuotesPage() {
         userId={user.id}
         codb={codb}
         isPro={isPro}
+        defaultPaymentTerms={profile?.payment_terms ?? ""}
       />
     </div>
   );

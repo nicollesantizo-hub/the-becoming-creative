@@ -25,12 +25,14 @@ export function QuoteBuilder({
   userId,
   codb,
   isPro,
+  defaultPaymentTerms = "",
 }: {
   savedQuotes: Quote[];
   sessions: SessionType[];
   userId: string;
   codb: CODBResults | null;
   isPro: boolean;
+  defaultPaymentTerms?: string;
 }) {
   const [quotes, setQuotes] = useState<Quote[]>(savedQuotes);
   const [showForm, setShowForm] = useState(false);
@@ -61,7 +63,7 @@ export function QuoteBuilder({
   const [sessionDate, setSessionDate] = useState("");
   const [eventEndDate, setEventEndDate] = useState("");
   const [notes, setNotes] = useState("");
-  const [paymentTerms, setPaymentTerms] = useState("");
+  const [paymentTerms, setPaymentTerms] = useState(defaultPaymentTerms);
   const [addons, setAddons] = useState<{ label: string; price: number }[]>([]);
   const [shareSlug, setShareSlug] = useState("");
   const [baseOverride, setBaseOverride] = useState<number | null>(null);
@@ -84,6 +86,13 @@ export function QuoteBuilder({
     setPaymentTemplates(stored ? JSON.parse(stored) : DEFAULT_TEMPLATES);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Auto-fill included items when a session is selected on a new quote
+  useEffect(() => {
+    if (!showForm || editingQuoteId || !selectedSessionId || includedItems.length > 0) return;
+    autoFillIncludedItems();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSessionId, showForm]);
 
   function persistTemplates(templates: { name: string; text: string }[]) {
     setPaymentTemplates(templates);
@@ -219,7 +228,7 @@ export function QuoteBuilder({
     setSessionDate("");
     setEventEndDate("");
     setNotes("");
-    setPaymentTerms("");
+    setPaymentTerms(defaultPaymentTerms);
     setAddons([]);
     setQuoteName("");
     setShareSlug("");
@@ -1629,7 +1638,7 @@ export function QuoteBuilder({
                 setClientName(""); setClientEmail(""); setSessionDate("");
                 setClientBusiness(""); setEventName(""); setPointOfContact("");
                 setMarketingCost(0); setLodgingCost(0); setMealCost(0); setAdditionalPersonnel([]); setCoverageItems([]); setGalleryTurnaround(""); setQuoteEventDays(1); setEventEndDate(""); setSelectedSessionId(""); setTaxRate(0);
-                setDiscountType("none"); setDiscountValue(0); setNotes(""); setPaymentTerms("");
+                setDiscountType("none"); setDiscountValue(0); setNotes(""); setPaymentTerms(defaultPaymentTerms);
                 setCustomTravel(0); setCustomTravelRate(0.67); setCustomMargin(30);
                 setAddons([]);
                 setBaseOverride(null); setEditingBase(false); setIncludedItems([]);
