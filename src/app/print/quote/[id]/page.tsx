@@ -382,22 +382,12 @@ export default async function QuotePrintPage({
       {/* Dark header band */}
       <div className="header-band">
         <div className="header-inner">
-          <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-            {isPro && biz?.logo_url && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={biz.logo_url}
-                alt="Logo"
-                style={{ maxHeight: "28px", maxWidth: "80px", objectFit: "contain", display: "block", flexShrink: 0 }}
-              />
-            )}
-            <div>
-              <p className="biz-name">{businessHeader}</p>
-              <p className="biz-contact">
-                {contactLine}
-                {biz?.website && <><br />{biz.website}</>}
-              </p>
-            </div>
+          <div>
+            <p className="biz-name">{businessHeader}</p>
+            <p className="biz-contact">
+              {contactLine}
+              {biz?.website && <><br />{biz.website}</>}
+            </p>
           </div>
           <div className="meta-right">
             <p className="meta-label">Quote</p>
@@ -657,6 +647,17 @@ export default async function QuotePrintPage({
             {user.email}
           </p>
         </div>
+
+        {isPro && biz?.logo_url && (
+          <div style={{ textAlign: "center", marginTop: "24px" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={biz.logo_url}
+              alt="Logo"
+              style={{ maxHeight: "44px", maxWidth: "150px", objectFit: "contain", opacity: 0.7, display: "inline-block" }}
+            />
+          </div>
+        )}
 
         <div className="footer">
           {isPro && biz?.website ? biz.website : "thebecomingcreative.com"} · Price My Work
