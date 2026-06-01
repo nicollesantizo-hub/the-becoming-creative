@@ -382,20 +382,22 @@ export default async function QuotePrintPage({
       {/* Dark header band */}
       <div className="header-band">
         <div className="header-inner">
-          <div>
+          <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
             {isPro && biz?.logo_url && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={biz.logo_url}
                 alt="Logo"
-                style={{ maxHeight: "44px", maxWidth: "150px", objectFit: "contain", marginBottom: "12px", display: "block" }}
+                style={{ maxHeight: "28px", maxWidth: "80px", objectFit: "contain", display: "block", flexShrink: 0 }}
               />
             )}
-            <p className="biz-name">{businessHeader}</p>
-            <p className="biz-contact">
-              {contactLine}
-              {biz?.website && <><br />{biz.website}</>}
-            </p>
+            <div>
+              <p className="biz-name">{businessHeader}</p>
+              <p className="biz-contact">
+                {contactLine}
+                {biz?.website && <><br />{biz.website}</>}
+              </p>
+            </div>
           </div>
           <div className="meta-right">
             <p className="meta-label">Quote</p>
