@@ -49,6 +49,10 @@ export default async function QuotePrintPage({
   const isPro = biz?.tier === "pro";
   const hasBreakdown = sessionType !== null;
   const isEventQuote = q.location_type === "event" && sessionType !== null;
+  const customIncluded = (q.included_items ?? []).filter(i => i.text?.trim());
+  const hasCustomIncluded = customIncluded.length > 0;
+  const customPricedItems = customIncluded.filter(i => (i.price ?? 0) > 0);
+  const hasCustomPricing = customPricedItems.length > 0;
   const eventDays = q.event_days && q.event_days > 1 ? q.event_days : 1;
 
   const shootingCost = sessionType ? (sessionType.shooting_hourly_rate ?? 0) * q.duration_hours * eventDays : 0;
@@ -110,7 +114,7 @@ export default async function QuotePrintPage({
         /* ── Header band ── */
         .header-band {
           background: #111111;
-          padding: 36px 48px 32px;
+          padding: 18px 40px 16px;
         }
 
         .header-inner {
@@ -123,30 +127,30 @@ export default async function QuotePrintPage({
 
         .biz-name {
           font-family: 'DM Sans', sans-serif;
-          font-size: 15px;
+          font-size: 13px;
           font-weight: 500;
           color: #ffffff;
-          margin-bottom: 6px;
+          margin-bottom: 3px;
         }
 
         .biz-contact {
-          font-size: 12px;
+          font-size: 11px;
           color: rgba(255,255,255,0.45);
-          line-height: 1.8;
+          line-height: 1.6;
         }
 
         .meta-right { text-align: right; }
 
         .meta-label {
-          font-size: 10px;
+          font-size: 9px;
           letter-spacing: 0.22em;
           text-transform: uppercase;
           color: rgba(255,255,255,0.3);
-          margin-bottom: 5px;
+          margin-bottom: 3px;
         }
 
         .meta-date {
-          font-size: 12px;
+          font-size: 11px;
           color: rgba(255,255,255,0.45);
         }
 
@@ -154,7 +158,7 @@ export default async function QuotePrintPage({
         .page {
           max-width: 660px;
           margin: 0 auto;
-          padding: 48px 48px 64px;
+          padding: 28px 40px 36px;
         }
 
         .back {
@@ -165,26 +169,26 @@ export default async function QuotePrintPage({
           color: #111111;
           opacity: 0.3;
           text-decoration: none;
-          margin-bottom: 40px;
+          margin-bottom: 20px;
         }
         .back:hover { opacity: 0.6; }
 
         /* ── Quote title ── */
         .quote-title {
           font-family: 'DM Serif Display', Georgia, serif;
-          font-size: 40px;
+          font-size: 30px;
           font-style: italic;
           font-weight: 400;
           color: #111111;
           line-height: 1.1;
-          margin-bottom: 10px;
+          margin-bottom: 6px;
         }
 
         .client-meta {
-          font-size: 13px;
+          font-size: 12px;
           color: #111111;
           opacity: 0.4;
-          margin-bottom: 44px;
+          margin-bottom: 20px;
         }
 
         /* ── Section label ── */
@@ -194,13 +198,13 @@ export default async function QuotePrintPage({
           text-transform: uppercase;
           color: #111111;
           opacity: 0.28;
-          margin-bottom: 12px;
+          margin-bottom: 10px;
         }
 
         /* ── What's included ── */
         .included {
-          margin-bottom: 40px;
-          padding: 24px 28px;
+          margin-bottom: 22px;
+          padding: 14px 20px;
           background: #f5f5f5;
           border-left: 2px solid #e0e0e0;
         }
@@ -209,11 +213,11 @@ export default async function QuotePrintPage({
           list-style: none;
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 5px;
         }
 
         .included-list li {
-          font-size: 13px;
+          font-size: 12px;
           color: #111111;
           opacity: 0.7;
           display: flex;
@@ -247,8 +251,8 @@ export default async function QuotePrintPage({
         }
 
         .items td {
-          padding: 12px 0;
-          font-size: 13px;
+          padding: 7px 0;
+          font-size: 12px;
         }
 
         .items td.amount {
@@ -264,8 +268,8 @@ export default async function QuotePrintPage({
         }
 
         .items tr.addons-header td {
-          padding-top: 20px;
-          padding-bottom: 4px;
+          padding-top: 12px;
+          padding-bottom: 3px;
           font-size: 10px;
           letter-spacing: 0.18em;
           text-transform: uppercase;
@@ -280,8 +284,8 @@ export default async function QuotePrintPage({
           display: flex;
           justify-content: space-between;
           align-items: baseline;
-          margin-top: 24px;
-          padding-top: 20px;
+          margin-top: 14px;
+          padding-top: 14px;
           border-top: 1.5px solid #111111;
         }
 
@@ -294,7 +298,7 @@ export default async function QuotePrintPage({
 
         .total-amount {
           font-family: 'DM Serif Display', Georgia, serif;
-          font-size: 48px;
+          font-size: 38px;
           font-style: italic;
           font-weight: 400;
           color: #111111;
@@ -302,22 +306,22 @@ export default async function QuotePrintPage({
         }
 
         /* ── Notes ── */
-        .notes { margin-top: 44px; }
+        .notes { margin-top: 24px; }
 
         .notes-body {
-          font-size: 13px;
-          line-height: 1.7;
+          font-size: 12px;
+          line-height: 1.6;
           color: #111111;
           opacity: 0.65;
           white-space: pre-wrap;
         }
 
         /* ── Terms ── */
-        .terms { margin-top: 44px; }
+        .terms { margin-top: 22px; }
 
         .terms-body {
-          font-size: 12px;
-          line-height: 1.8;
+          font-size: 11px;
+          line-height: 1.7;
           color: #111111;
           opacity: 0.45;
           white-space: pre-wrap;
@@ -325,8 +329,8 @@ export default async function QuotePrintPage({
 
         /* ── Signature ── */
         .signature {
-          margin-top: 44px;
-          padding-top: 28px;
+          margin-top: 22px;
+          padding-top: 16px;
           border-top: 1px solid #e8e8e8;
           display: flex;
           align-items: center;
@@ -335,7 +339,7 @@ export default async function QuotePrintPage({
         }
 
         .signature-text {
-          font-size: 13px;
+          font-size: 12px;
           color: #111111;
           opacity: 0.5;
           font-style: italic;
@@ -343,7 +347,7 @@ export default async function QuotePrintPage({
         }
 
         .signature-name {
-          font-size: 12px;
+          font-size: 11px;
           color: #111111;
           opacity: 0.35;
           text-align: right;
@@ -351,7 +355,7 @@ export default async function QuotePrintPage({
 
         /* ── Footer ── */
         .footer {
-          margin-top: 56px;
+          margin-top: 24px;
           font-size: 10px;
           letter-spacing: 0.14em;
           text-transform: uppercase;
@@ -361,6 +365,15 @@ export default async function QuotePrintPage({
         }
 
         @media print {
+          html {
+            height: auto !important;
+          }
+          body {
+            display: block !important;
+            min-height: 0 !important;
+            height: auto !important;
+            background: white !important;
+          }
           .back { display: none; }
           .header-band { margin: 0; }
         }
@@ -401,58 +414,57 @@ export default async function QuotePrintPage({
         </p>
 
         {q.notes && (
-          <div className="notes" style={{ marginTop: "20px" }}>
+          <div className="notes" style={{ marginTop: "14px" }}>
             <div className="notes-body">{q.notes}</div>
           </div>
         )}
 
         {/* Location + point of contact — events only */}
         {(q.event_location || q.point_of_contact) && (
-          <p style={{ fontSize: "12px", color: "#111111", opacity: 0.45, marginBottom: "36px", marginTop: "-32px", lineHeight: 1.9 }}>
+          <p style={{ fontSize: "11px", color: "#111111", opacity: 0.45, marginBottom: "18px", marginTop: "-14px", lineHeight: 1.7 }}>
             {q.event_location && <>{q.event_location}<br /></>}
             {q.point_of_contact && <>{q.point_of_contact}</>}
           </p>
         )}
 
         {/* What's included */}
-        {hasBreakdown && (
+        {(hasCustomIncluded || hasBreakdown) && (
           <div className="included">
             <p className="section-label" style={{ marginBottom: "14px" }}>What&apos;s included</p>
             <ul className="included-list">
-              {/* Event date range */}
-              {isEventQuote && sessionDateDisplay && (
-                <li>
-                  {q.event_end_date ? `Event dates — ${sessionDateDisplay}` : `Event date — ${sessionDateDisplay}`}
-                </li>
+              {hasCustomIncluded ? (
+                customIncluded.map((item, i) => <li key={i}>{item.text}</li>)
+              ) : (
+                <>
+                  {isEventQuote && sessionDateDisplay && (
+                    <li>{q.event_end_date ? `Event dates — ${sessionDateDisplay}` : `Event date — ${sessionDateDisplay}`}</li>
+                  )}
+                  {q.duration_hours > 0 && (
+                    <li>
+                      {isEventQuote && eventDays > 1
+                        ? `Coverage — ${q.duration_hours}h/day × ${eventDays} days`
+                        : `Shooting — ${q.duration_hours} ${q.duration_hours === 1 ? "hour" : "hours"}`}
+                    </li>
+                  )}
+                  {q.editing_hours > 0 && (
+                    <li>Post-production — {q.editing_hours} {q.editing_hours === 1 ? "hour" : "hours"} total</li>
+                  )}
+                  {studioCost > 0 && <li>Studio rental</li>}
+                  {travelCost > 0 && <li>Travel</li>}
+                  {mktCost > 0 && <li>Marketing & advertising</li>}
+                  {lodgCost > 0 && <li>Lodging</li>}
+                  {mlCost > 0 && <li>Meals & per diem</li>}
+                  <li>Private gallery delivery{q.gallery_turnaround ? ` — within ${q.gallery_turnaround}` : ""}</li>
+                </>
               )}
-              {/* Shooting — show per-day × days for multi-day events */}
-              {q.duration_hours > 0 && (
-                <li>
-                  {isEventQuote && eventDays > 1
-                    ? `Coverage — ${q.duration_hours}h/day × ${eventDays} days`
-                    : `Shooting — ${q.duration_hours} ${q.duration_hours === 1 ? "hour" : "hours"}`}
-                </li>
-              )}
-              {q.editing_hours > 0 && (
-                <li>Post-production — {q.editing_hours} {q.editing_hours === 1 ? "hour" : "hours"} total</li>
-              )}
-              {studioCost > 0 && <li>Studio rental</li>}
-              {travelCost > 0 && <li>Travel</li>}
-              {mktCost > 0 && <li>Marketing & advertising</li>}
-              {lodgCost > 0 && <li>Lodging</li>}
-              {mlCost > 0 && <li>Meals & per diem</li>}
-              <li>
-                Private gallery delivery
-                {q.gallery_turnaround ? ` — within ${q.gallery_turnaround}` : ""}
-              </li>
             </ul>
           </div>
         )}
 
         {/* Photography team — event only */}
         {isEventQuote && (
-          <div style={{ marginBottom: "40px" }}>
-            <p className="section-label" style={{ marginBottom: "12px" }}>Photography Team</p>
+          <div style={{ marginBottom: "22px" }}>
+            <p className="section-label" style={{ marginBottom: "8px" }}>Photography Team</p>
             <ul className="included-list">
               <li>
                 <strong style={{ fontWeight: 500 }}>Lead Photographer</strong>
@@ -472,8 +484,8 @@ export default async function QuotePrintPage({
 
         {/* Coverage plan — event only */}
         {isEventQuote && (q.coverage_items ?? []).filter(s => s.trim()).length > 0 && (
-          <div style={{ marginBottom: "40px" }}>
-            <p className="section-label" style={{ marginBottom: "12px" }}>Coverage Plan</p>
+          <div style={{ marginBottom: "22px" }}>
+            <p className="section-label" style={{ marginBottom: "8px" }}>Coverage Plan</p>
             <ul className="included-list">
               {(q.coverage_items ?? []).filter(s => s.trim()).map((item, i) => (
                 <li key={i}>{item}</li>
@@ -483,10 +495,18 @@ export default async function QuotePrintPage({
         )}
 
         {/* Pricing */}
-        <p className="section-label">{isEventQuote ? "Cost Breakdown" : "Pricing"}</p>
+        <p className="section-label">{isEventQuote && !hasCustomPricing ? "Cost Breakdown" : "Pricing"}</p>
         <table className="items">
           <tbody>
-            {isEventQuote ? (
+            {hasCustomPricing ? (
+              /* Custom breakdown from included_items */
+              customPricedItems.map((item, i) => (
+                <tr key={i}>
+                  <td className="label-col">{item.text}</td>
+                  <td className="amount">{fmt(item.price!)}</td>
+                </tr>
+              ))
+            ) : isEventQuote ? (
               <>
                 {/* Event full breakdown */}
                 {(shootingCost > 0 || editingCost > 0) && (
@@ -513,7 +533,6 @@ export default async function QuotePrintPage({
                     <td className="amount">{fmt(editingCost)}</td>
                   </tr>
                 )}
-
                 {(studioCost > 0 || travelCost > 0 || mktCost > 0) && (
                   <tr className="addons-header">
                     <td colSpan={2}>Costs</td>
@@ -532,9 +551,7 @@ export default async function QuotePrintPage({
                 )}
                 {travelCost > 0 && (
                   <tr>
-                    <td className="label-col">
-                      Travel — {q.travel_miles} mi × ${sessionType!.travel_rate_per_mile}/mi
-                    </td>
+                    <td className="label-col">Travel — {q.travel_miles} mi × ${sessionType!.travel_rate_per_mile}/mi</td>
                     <td className="amount">{fmt(travelCost)}</td>
                   </tr>
                 )}
@@ -564,22 +581,15 @@ export default async function QuotePrintPage({
                     <td className="amount">{fmt(p.cost)}</td>
                   </tr>
                 ))}
-
-                <tr className="addons-header">
-                  <td colSpan={2}>&nbsp;</td>
-                </tr>
+                <tr className="addons-header"><td colSpan={2}>&nbsp;</td></tr>
                 <tr>
-                  <td className="label-col">
-                    {sessionType?.name ?? "Event coverage"} (incl. overhead)
-                  </td>
+                  <td className="label-col">{sessionType?.name ?? "Event coverage"} (incl. overhead)</td>
                   <td className="amount">{fmt(q.suggested_price)}</td>
                 </tr>
               </>
             ) : (
               <tr>
-                <td className="label-col">
-                  {sessionType?.name ?? "Session fee"}
-                </td>
+                <td className="label-col">{sessionType?.name ?? "Session fee"}</td>
                 <td className="amount">{fmt(q.suggested_price)}</td>
               </tr>
             )}

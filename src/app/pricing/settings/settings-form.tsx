@@ -63,9 +63,11 @@ export function SettingsForm({ userId, email, isPro, initialLogoUrl, initialValu
   async function handleSave() {
     setSaving(true);
     const supabase = createClient();
-    await supabase.from("profiles").update(values).eq("id", userId);
+    const { error } = await supabase
+      .from("profiles")
+      .upsert({ id: userId, ...values });
     setSaving(false);
-    setSaved(true);
+    if (!error) setSaved(true);
   }
 
   const inputStyle = {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase";
 import { fmt, calcSessionPrice } from "@/lib/pricing";
 import type { SessionType, Quote, CODBResults } from "@/types/pricing";
@@ -64,6 +64,88 @@ export function QuoteBuilder({
   const [paymentTerms, setPaymentTerms] = useState("");
   const [addons, setAddons] = useState<{ label: string; price: number }[]>([]);
   const [shareSlug, setShareSlug] = useState("");
+  const [baseOverride, setBaseOverride] = useState<number | null>(null);
+  const [editingBase, setEditingBase] = useState(false);
+  const [includedItems, setIncludedItems] = useState<{ text: string; price?: number | null }[]>([]);
+  const [paymentTemplates, setPaymentTemplates] = useState<{ name: string; text: string }[]>([]);
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState("");
+
+  const TEMPLATE_KEY = "tbc_payment_templates";
+  const DEFAULT_TEMPLATES = [
+    { name: "Standard", text: "50% retainer due upon booking to hold your date. Remaining balance due 7 days before your session." },
+    { name: "Portrait", text: "50% retainer due upon booking. Remaining balance due 7 days before your session date. Retainer is non-refundable but transferable once within 60 days." },
+    { name: "Branding", text: "50% deposit due upon signing to reserve your date. Remaining balance due 7 days prior to the shoot. Deposits are non-refundable." },
+    { name: "Event", text: "50% deposit due upon contract signing. Remaining balance due 14 days before the event date. Deposits are non-refundable." },
+  ];
+
+  useEffect(() => {
+    const stored = localStorage.getItem(TEMPLATE_KEY);
+    setPaymentTemplates(stored ? JSON.parse(stored) : DEFAULT_TEMPLATES);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function persistTemplates(templates: { name: string; text: string }[]) {
+    setPaymentTemplates(templates);
+    localStorage.setItem(TEMPLATE_KEY, JSON.stringify(templates));
+  }
+
+  function saveAsTemplate() {
+    if (!newTemplateName.trim() || !paymentTerms.trim()) return;
+    persistTemplates([...paymentTemplates, { name: newTemplateName.trim(), text: paymentTerms }]);
+    setNewTemplateName("");
+    setSavingTemplate(false);
+  }
+
+  function deleteTemplate(index: number) {
+    persistTemplates(paymentTemplates.filter((_, i) => i !== index));
+  }
+
+  function autoFillIncludedItems() {
+    const days = isEventSession ? Math.max(1, quoteEventDays) : 1;
+    const items: { text: string; price?: number | null }[] = [];
+    if (effectiveSession) {
+      const sh = effectiveSession.duration_hours;
+      const eh = effectiveSession.editing_hours;
+      const shootRate = effectiveSession.shooting_hourly_rate ?? 0;
+      const editRate = effectiveSession.editing_hourly_rate ?? 0;
+      const studioRate = effectiveSession.studio_hourly_rate ?? 0;
+      const trvRate = effectiveSession.travel_rate_per_mile ?? 0;
+      const shootCost = shootRate * sh * days;
+      const editCost = editRate * eh;
+      const studioCostAmt = studioRate * sh * days;
+      const travelCostAmt = customTravel * trvRate;
+      if (sh > 0) {
+        items.push({
+          text: isEventSession && days > 1
+            ? `Coverage — ${sh}h/day × ${days} days`
+            : `Photography — ${sh} ${sh === 1 ? "hour" : "hours"}`,
+          price: shootCost > 0 ? shootCost : null,
+        });
+      }
+      if (eh > 0) {
+        items.push({
+          text: `Post-production — ${eh} ${eh === 1 ? "hour" : "hours"}`,
+          price: editCost > 0 ? editCost : null,
+        });
+      }
+      if (studioCostAmt > 0) items.push({ text: "Studio rental", price: studioCostAmt });
+      if (customTravel > 0) {
+        items.push({
+          text: `Travel — ${customTravel} mi`,
+          price: travelCostAmt > 0 ? travelCostAmt : null,
+        });
+      }
+    } else {
+      items.push({ text: "Photography session", price: null });
+      items.push({ text: "Post-production / editing", price: null });
+    }
+    items.push({
+      text: galleryTurnaround ? `Gallery delivery — within ${galleryTurnaround}` : "Gallery delivery",
+      price: null,
+    });
+    setIncludedItems(items);
+  }
 
   const selectedSession = sessions.find((s) => s.id === selectedSessionId);
   const isEventSession = selectedSession?.location_type === "event";
@@ -89,13 +171,20 @@ export function QuoteBuilder({
       ? (codb.minimumPerSession + travel * travelRate) * (1 + margin / 100)
       : 0;
 
+  // Custom included items — priced items sum becomes the session base
+  const customItemsTotal = includedItems.reduce((s, i) => s + (i.price || 0), 0);
+  const hasCustomItemPrices = includedItems.some(i => (i.price ?? 0) > 0);
+  const effectiveBase = hasCustomItemPrices ? customItemsTotal
+    : baseOverride !== null ? baseOverride
+    : basePrice;
+
   const mktCost = isEventSession ? (marketingCost || 0) : 0;
   const lodgCost = isMultiDay ? (lodgingCost || 0) : 0;
   const mlCost = isMultiDay ? (mealCost || 0) : 0;
   const personnelTotal = isEventSession ? additionalPersonnel.reduce((sum, p) => sum + (p.cost || 0), 0) : 0;
   const addonsTotal = addons.reduce((sum, a) => sum + (a.price || 0), 0);
-  const taxAmount = (basePrice + mktCost + lodgCost + mlCost + personnelTotal + addonsTotal) * (taxRate / 100);
-  const subtotal = basePrice + mktCost + lodgCost + mlCost + personnelTotal + addonsTotal + taxAmount;
+  const taxAmount = (effectiveBase + mktCost + lodgCost + mlCost + personnelTotal + addonsTotal) * (taxRate / 100);
+  const subtotal = effectiveBase + mktCost + lodgCost + mlCost + personnelTotal + addonsTotal + taxAmount;
 
   const discountAmount =
     discountType === "percentage"
@@ -134,6 +223,9 @@ export function QuoteBuilder({
     setAddons([]);
     setQuoteName("");
     setShareSlug("");
+    setBaseOverride(null);
+    setEditingBase(false);
+    setIncludedItems([]);
     setEditingQuoteId(null);
     setShowForm(false);
   }
@@ -164,6 +256,9 @@ export function QuoteBuilder({
     setCustomTravel(quote.travel_miles ?? 0);
     setAddons(quote.addons ?? []);
     setShareSlug(quote.share_token ?? "");
+    setBaseOverride(quote.base_override ?? null);
+    setIncludedItems(quote.included_items ?? []);
+    setEditingBase(false);
     setEditingQuoteId(quote.id ?? null);
     setShowForm(true);
     setSaveError("");
@@ -202,6 +297,8 @@ export function QuoteBuilder({
         minimum_price: quote.minimum_price,
         suggested_price: quote.suggested_price,
         final_price: quote.final_price,
+        base_override: quote.base_override ?? null,
+        included_items: quote.included_items ?? null,
         notes: quote.notes,
         payment_terms: quote.payment_terms,
         addons: quote.addons ?? [],
@@ -248,8 +345,10 @@ export function QuoteBuilder({
       discount_type: discountType === "none" ? null : discountType,
       discount_value: discountValue,
       minimum_price: codb?.minimumPerSession ?? 0,
-      suggested_price: basePrice,
+      suggested_price: effectiveBase,
       final_price: finalPrice,
+      base_override: hasCustomItemPrices ? null : baseOverride,
+      included_items: includedItems.length > 0 ? includedItems : null,
       notes,
       payment_terms: paymentTerms || undefined,
       addons,
@@ -1105,14 +1204,175 @@ export function QuoteBuilder({
               />
             </div>
 
+            {/* What's included / custom breakdown */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <label
+                    className="text-xs uppercase tracking-wider opacity-50"
+                    style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                  >
+                    What&apos;s Included
+                  </label>
+                  <p className="text-xs opacity-30 mt-0.5 leading-relaxed" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                    Shown on the PDF. Items with a price override the auto session fee.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={autoFillIncludedItems}
+                  className="text-xs opacity-40 hover:opacity-70 transition-opacity whitespace-nowrap shrink-0 mt-0.5"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                >
+                  Auto-fill ↻
+                </button>
+              </div>
+
+              {includedItems.length === 0 && (
+                <p className="text-xs opacity-25 italic" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                  No custom items — session fee calculated automatically.
+                </p>
+              )}
+
+              {includedItems.map((item, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    placeholder="e.g. Photography, Editing, Gallery delivery…"
+                    value={item.text}
+                    onChange={(e) => {
+                      const updated = [...includedItems];
+                      updated[i] = { ...updated[i], text: e.target.value };
+                      setIncludedItems(updated);
+                    }}
+                    className="flex-1 px-3 py-2 text-sm bg-white border outline-none"
+                    style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                  />
+                  <input
+                    type="number"
+                    placeholder="$ price"
+                    min={0}
+                    step={1}
+                    value={item.price ?? ""}
+                    onChange={(e) => {
+                      const updated = [...includedItems];
+                      updated[i] = { ...updated[i], price: e.target.value === "" ? null : parseFloat(e.target.value) || 0 };
+                      setIncludedItems(updated);
+                    }}
+                    className="w-28 px-3 py-2 text-sm bg-white border outline-none"
+                    style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setIncludedItems(includedItems.filter((_, idx) => idx !== i))}
+                    className="text-xs opacity-30 hover:opacity-60 transition-opacity px-2"
+                    style={{ color: "var(--destructive)", fontFamily: "var(--font-body)" }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => setIncludedItems([...includedItems, { text: "", price: null }])}
+                  className="text-xs uppercase tracking-wider opacity-40 hover:opacity-70 transition-opacity"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                >
+                  + Add item
+                </button>
+                {includedItems.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setIncludedItems([])}
+                    className="text-xs opacity-20 hover:opacity-50 transition-opacity"
+                    style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                  >
+                    Clear all
+                  </button>
+                )}
+              </div>
+            </div>
+
             {/* Payment terms */}
-            <div className="flex flex-col gap-1.5">
-              <label
-                className="text-xs uppercase tracking-wider opacity-50"
-                style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
-              >
-                Payment Terms <span style={{ opacity: 0.4 }}>(optional — overrides your default)</span>
-              </label>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between gap-2">
+                <label
+                  className="text-xs uppercase tracking-wider opacity-50"
+                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                >
+                  Payment Terms <span style={{ opacity: 0.4 }}>(optional — overrides your default)</span>
+                </label>
+                {!savingTemplate ? (
+                  <button
+                    type="button"
+                    onClick={() => setSavingTemplate(true)}
+                    className="text-xs opacity-40 hover:opacity-70 transition-opacity whitespace-nowrap"
+                    style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                  >
+                    + save as template
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      autoFocus
+                      type="text"
+                      value={newTemplateName}
+                      onChange={(e) => setNewTemplateName(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") saveAsTemplate(); if (e.key === "Escape") { setSavingTemplate(false); setNewTemplateName(""); } }}
+                      placeholder="Template name…"
+                      className="px-2 py-1 text-xs bg-white border outline-none w-36"
+                      style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={saveAsTemplate}
+                      disabled={!newTemplateName.trim() || !paymentTerms.trim()}
+                      className="text-xs opacity-60 hover:opacity-100 transition-opacity disabled:opacity-20"
+                      style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setSavingTemplate(false); setNewTemplateName(""); }}
+                      className="text-xs opacity-30 hover:opacity-60 transition-opacity"
+                      style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Template chips */}
+              {paymentTemplates.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {paymentTemplates.map((t, i) => (
+                    <div key={i} className="flex items-center border" style={{ borderColor: "var(--border)" }}>
+                      <button
+                        type="button"
+                        onClick={() => setPaymentTerms(t.text)}
+                        className="px-2.5 py-1 text-xs transition-opacity hover:opacity-70"
+                        style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                      >
+                        {t.name}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteTemplate(i)}
+                        className="pr-2 text-xs opacity-20 hover:opacity-60 transition-opacity leading-none"
+                        style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                        aria-label={`Delete ${t.name} template`}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <textarea
                 value={paymentTerms}
                 onChange={(e) => setPaymentTerms(e.target.value)}
@@ -1139,14 +1399,73 @@ export function QuoteBuilder({
                 Quote Summary
               </p>
               <div className="flex flex-col gap-3">
-                <div className="flex justify-between">
-                  <span className="text-sm opacity-60" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
-                    {selectedSession ? selectedSession.name : "Custom session"}
-                  </span>
-                  <span className="text-sm" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
-                    {fmt(basePrice)}
-                  </span>
-                </div>
+                {/* Session fee row — custom breakdown, single override, or auto */}
+                {hasCustomItemPrices ? (
+                  <>
+                    {includedItems.map((item, i) =>
+                      (item.price ?? 0) > 0 ? (
+                        <div key={i} className="flex justify-between items-center">
+                          <span className="text-sm opacity-60" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                            {item.text || "Line item"}
+                          </span>
+                          <span className="text-sm" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                            {fmt(item.price!)}
+                          </span>
+                        </div>
+                      ) : null
+                    )}
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setIncludedItems([])}
+                        className="text-xs opacity-30 hover:opacity-60 transition-opacity underline"
+                        style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}
+                      >
+                        reset to auto
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm opacity-60 flex items-center gap-2" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                      {selectedSession ? selectedSession.name : "Custom session"}
+                      {baseOverride !== null && (
+                        <button
+                          type="button"
+                          onClick={() => { setBaseOverride(null); setEditingBase(false); }}
+                          className="text-xs opacity-40 hover:opacity-70 transition-opacity underline"
+                          style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}
+                        >
+                          reset
+                        </button>
+                      )}
+                    </span>
+                    {editingBase ? (
+                      <input
+                        type="number"
+                        autoFocus
+                        min={0}
+                        step={1}
+                        value={baseOverride ?? ""}
+                        onChange={(e) => setBaseOverride(parseFloat(e.target.value) || 0)}
+                        onBlur={() => setEditingBase(false)}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === "Escape") setEditingBase(false); }}
+                        className="w-28 px-2 py-0.5 text-sm text-right outline-none"
+                        style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", backgroundColor: "rgba(255,255,255,0.9)", border: "1px solid rgba(255,255,255,0.3)" }}
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => { setBaseOverride(effectiveBase); setEditingBase(true); }}
+                        className="text-sm flex items-center gap-1.5 group transition-opacity hover:opacity-100"
+                        style={{ color: "var(--cream)", fontFamily: "var(--font-body)", opacity: baseOverride !== null ? 1 : 0.9 }}
+                      >
+                        {fmt(effectiveBase)}
+                        <span className="text-xs opacity-30 group-hover:opacity-60 transition-opacity">✎</span>
+                      </button>
+                    )}
+                  </div>
+                )}
                 {mktCost > 0 && (
                   <div className="flex justify-between">
                     <span className="text-sm opacity-60" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
@@ -1313,6 +1632,7 @@ export function QuoteBuilder({
                 setDiscountType("none"); setDiscountValue(0); setNotes(""); setPaymentTerms("");
                 setCustomTravel(0); setCustomTravelRate(0.67); setCustomMargin(30);
                 setAddons([]);
+                setBaseOverride(null); setEditingBase(false); setIncludedItems([]);
               }}
               className="px-6 py-3 text-sm uppercase tracking-wider opacity-40 hover:opacity-70 transition-opacity"
               style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}

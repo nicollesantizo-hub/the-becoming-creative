@@ -79,6 +79,8 @@ export interface Quote {
   event_days?: number;
   status: "draft" | "sent" | "accepted" | "declined";
   share_token?: string;
+  base_override?: number | null;
+  included_items?: { text: string; price?: number | null }[] | null;
   created_at?: string;
 }
 
