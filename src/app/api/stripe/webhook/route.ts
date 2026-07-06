@@ -3,9 +3,8 @@ import Stripe from "stripe";
 // Uses raw admin client (service role key) to bypass RLS — no user session available in webhook context
 import { createClient as createSupabaseAdmin } from "@supabase/supabase-js";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
 export async function POST(request: Request) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   const body = await request.text();
   const sig = request.headers.get("stripe-signature")!;
 

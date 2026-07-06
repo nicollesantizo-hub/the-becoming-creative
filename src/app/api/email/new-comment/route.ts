@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase-server";
-import { resend, FROM, ADMIN_EMAIL } from "@/lib/resend";
+import { getResend, FROM, ADMIN_EMAIL } from "@/lib/resend";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -10,7 +10,7 @@ export async function POST(request: Request) {
 
   const { postTitle, postSlug, commentBody, commenterEmail } = await request.json();
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: ADMIN_EMAIL,
     subject: `New response on "${postTitle}"`,
