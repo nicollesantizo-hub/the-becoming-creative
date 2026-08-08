@@ -48,7 +48,7 @@ export async function POST(request: Request) {
         <h1 style="font-size: 28px; font-weight: 300; font-style: italic; margin-bottom: 6px; line-height: 1.2;">
           ${inv.session_name || "Invoice"}
         </h1>
-        ${inv.invoice_number ? `<p style="font-size: 12px; opacity: 0.4; margin-bottom: 32px;">${inv.invoice_number}</p>` : "<div style='margin-bottom:32px'></div>"}
+        <p style="font-size: 12px; opacity: 0.4; margin-bottom: 32px;">${[inv.invoice_number, inv.client_business].filter(Boolean).join("  ·  ") || "&nbsp;"}</p>
 
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 0;">
           <tbody>

@@ -172,6 +172,7 @@ export interface Invoice {
   user_id?: string;
   invoice_number?: string;
   client_name: string;
+  client_business?: string;
   client_email: string;
   session_name: string;
   line_items: { description: string; amount: number }[];

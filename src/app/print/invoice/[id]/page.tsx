@@ -286,7 +286,7 @@ export default async function InvoicePrintPage({
         {/* Title + client */}
         <h1 className="invoice-title">{inv.session_name || inv.client_name || "Invoice"}</h1>
         <p className="client-meta">
-          {[inv.client_name, inv.client_email].filter(Boolean).join("  ·  ")}
+          {[inv.client_business || null, inv.client_name, inv.client_email].filter(Boolean).join("  ·  ")}
         </p>
 
         {/* Line items */}

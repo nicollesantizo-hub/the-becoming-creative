@@ -38,6 +38,7 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const [clientName, setClientName] = useState("");
+  const [clientBusiness, setClientBusiness] = useState("");
   const [clientEmail, setClientEmail] = useState("");
   const [sessionName, setSessionName] = useState("");
   const [lineItems, setLineItems] = useState([emptyLine()]);
@@ -55,6 +56,7 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
 
   function resetForm() {
     setClientName("");
+    setClientBusiness("");
     setClientEmail("");
     setSessionName("");
     setLineItems([emptyLine()]);
@@ -73,6 +75,7 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
 
   function openEdit(inv: Invoice) {
     setClientName(inv.client_name);
+    setClientBusiness(inv.client_business ?? "");
     setClientEmail(inv.client_email);
     setSessionName(inv.session_name);
     setLineItems(inv.line_items.length > 0 ? inv.line_items : [emptyLine()]);
@@ -108,6 +111,7 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
       user_id: userId,
       invoice_number: invoiceNumber,
       client_name: clientName,
+      client_business: clientBusiness || null,
       client_email: clientEmail,
       session_name: sessionName,
       line_items: lineItems.filter((i) => i.description.trim()),
@@ -231,7 +235,7 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Client name */}
             <div className="flex flex-col gap-1">
-              <label style={labelStyle}>Client name</label>
+              <label style={labelStyle}>Contact name</label>
               <input
                 type="text"
                 value={clientName}
@@ -242,18 +246,31 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
               />
             </div>
 
-            {/* Client email */}
+            {/* Company / client */}
             <div className="flex flex-col gap-1">
-              <label style={labelStyle}>Client email</label>
+              <label style={labelStyle}>Company / Client <span style={{ opacity: 0.4 }}>(optional)</span></label>
               <input
-                type="email"
-                value={clientEmail}
-                onChange={(e) => setClientEmail(e.target.value)}
-                placeholder="e.g. sarah@email.com"
+                type="text"
+                value={clientBusiness}
+                onChange={(e) => setClientBusiness(e.target.value)}
+                placeholder="e.g. Bloom Studio"
                 className="px-4 py-3 border outline-none text-sm"
                 style={inputStyle}
               />
             </div>
+          </div>
+
+          {/* Client email */}
+          <div className="flex flex-col gap-1">
+            <label style={labelStyle}>Client email</label>
+            <input
+              type="email"
+              value={clientEmail}
+              onChange={(e) => setClientEmail(e.target.value)}
+              placeholder="e.g. sarah@email.com"
+              className="px-4 py-3 border outline-none text-sm max-w-sm"
+              style={inputStyle}
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -454,8 +471,13 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
                       className="text-sm font-medium"
                       style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
                     >
-                      {inv.client_name || "—"}
+                      {inv.client_business || inv.client_name || "—"}
                     </span>
+                    {inv.client_business && inv.client_name && (
+                      <span className="text-xs opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                        {inv.client_name}
+                      </span>
+                    )}
                     <span
                       className="text-xs px-2 py-0.5 uppercase tracking-widest"
                       style={{

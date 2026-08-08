@@ -77,8 +77,8 @@ export function QuoteBuilder({
   const DEFAULT_TEMPLATES = [
     { name: "Standard", text: "50% retainer due upon booking to hold your date. Remaining balance due 7 days before your session." },
     { name: "Portrait", text: "50% retainer due upon booking. Remaining balance due 7 days before your session date. Retainer is non-refundable but transferable once within 60 days." },
-    { name: "Branding", text: "50% deposit due upon signing to reserve your date. Remaining balance due 7 days prior to the shoot. Deposits are non-refundable." },
-    { name: "Event", text: "50% deposit due upon contract signing. Remaining balance due 14 days before the event date. Deposits are non-refundable." },
+    { name: "Branding", text: "50% retainer due upon signing to reserve your date. Remaining balance due 7 days prior to the shoot." },
+    { name: "Event", text: "50% retainer due upon contract signing. Remaining balance due 14 days before the event date." },
   ];
 
   useEffect(() => {
