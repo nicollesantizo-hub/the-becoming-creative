@@ -74,16 +74,23 @@ export function QuoteBuilder({
   const [newTemplateName, setNewTemplateName] = useState("");
 
   const TEMPLATE_KEY = "tbc_payment_templates";
+  const TEMPLATE_VERSION = "v2";
+  const TEMPLATE_VERSION_KEY = "tbc_payment_templates_version";
   const DEFAULT_TEMPLATES = [
     { name: "Standard", text: "50% retainer due upon booking to hold your date. Remaining balance due 7 days before your session." },
     { name: "Portrait", text: "50% retainer due upon booking. Remaining balance due 7 days before your session date. Retainer is non-refundable but transferable once within 60 days." },
-    { name: "Branding", text: "50% retainer due upon signing to reserve your date. Remaining balance due 7 days prior to the shoot." },
-    { name: "Event", text: "50% retainer due upon contract signing. Remaining balance due 14 days before the event date." },
   ];
 
   useEffect(() => {
-    const stored = localStorage.getItem(TEMPLATE_KEY);
-    setPaymentTemplates(stored ? JSON.parse(stored) : DEFAULT_TEMPLATES);
+    const storedVersion = localStorage.getItem(TEMPLATE_VERSION_KEY);
+    if (storedVersion !== TEMPLATE_VERSION) {
+      localStorage.setItem(TEMPLATE_KEY, JSON.stringify(DEFAULT_TEMPLATES));
+      localStorage.setItem(TEMPLATE_VERSION_KEY, TEMPLATE_VERSION);
+      setPaymentTemplates(DEFAULT_TEMPLATES);
+    } else {
+      const stored = localStorage.getItem(TEMPLATE_KEY);
+      setPaymentTemplates(stored ? JSON.parse(stored) : DEFAULT_TEMPLATES);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
