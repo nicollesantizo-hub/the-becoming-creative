@@ -254,11 +254,19 @@ export default async function InvoicePrintPage({
         }
 
         @media print {
-          html { height: auto !important; }
-          body { display: block !important; min-height: 0 !important; height: auto !important; background: white !important; }
+          html { height: auto !important; min-height: 0 !important; overflow: visible !important; }
+          body {
+            display: block !important;
+            min-height: 0 !important;
+            height: auto !important;
+            overflow: visible !important;
+            background: white !important;
+            flex: none !important;
+          }
           .back { display: none; }
           .header-band { margin: 0; }
           .no-print { display: none !important; }
+          .header-band, .page { display: block !important; }
         }
       `}</style>
 
