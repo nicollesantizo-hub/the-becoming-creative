@@ -167,6 +167,20 @@ export interface InspoImage {
   url: string;
 }
 
+export interface Invoice {
+  id?: string;
+  user_id?: string;
+  invoice_number?: string;
+  client_name: string;
+  client_email: string;
+  session_name: string;
+  line_items: { description: string; amount: number }[];
+  notes?: string;
+  due_date?: string;
+  status: "draft" | "sent" | "paid";
+  created_at?: string;
+}
+
 export interface PlannerInspo {
   id: string;
   user_id: string;
