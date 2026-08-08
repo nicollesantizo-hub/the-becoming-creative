@@ -328,14 +328,6 @@ export default async function InvoicePrintPage({
           </div>
         )}
 
-        {/* Payment terms from profile */}
-        {biz?.payment_terms?.trim() && (
-          <div className="terms">
-            <p className="section-label" style={{ marginBottom: "8px" }}>Payment Terms</p>
-            <div className="terms-body">{biz.payment_terms}</div>
-          </div>
-        )}
-
         {/* Logo */}
         {isPro && biz?.logo_url && (
           <div style={{ textAlign: "center", marginTop: "28px" }}>

@@ -74,12 +74,6 @@ export async function POST(request: Request) {
           </div>
         ` : ""}
 
-        ${biz?.payment_terms?.trim() ? `
-          <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #eeeeee;">
-            <p style="font-size: 11px; line-height: 1.7; opacity: 0.45; white-space: pre-wrap;">${biz.payment_terms}</p>
-          </div>
-        ` : ""}
-
         <hr style="margin: 36px 0 20px; border: none; border-top: 1px solid #eeeeee;" />
         <p style="font-size: 11px; opacity: 0.3; line-height: 1.6;">${businessName}${biz?.phone ? ` · ${biz.phone}` : ""}${biz?.website ? ` · ${biz.website}` : ""}</p>
       </div>
