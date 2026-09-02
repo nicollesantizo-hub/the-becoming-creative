@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase";
-import { defaultClauses, type Clause, type ContractState } from "@/lib/contract-clauses";
+import { defaultClauses, defaultVariableValues, flattenClauses, type Clause, type ContractState } from "@/lib/contract-clauses";
+import { VariableFields } from "@/components/pricing/variable-fields";
 import type { ContractTemplate } from "@/types/pricing";
 
 interface Props {
@@ -28,6 +29,7 @@ export function TemplateBuilder({ savedTemplates, userId }: Props) {
   const [name, setName] = useState("");
   const [state, setState] = useState<ContractState>("general");
   const [clauses, setClauses] = useState<Clause[]>([]);
+  const [variables, setVariables] = useState<Record<string, string>>({});
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -36,6 +38,7 @@ export function TemplateBuilder({ savedTemplates, userId }: Props) {
     setName("");
     setState("general");
     setClauses([]);
+    setVariables({});
     setEditingId(null);
     setError("");
   }
@@ -49,6 +52,7 @@ export function TemplateBuilder({ savedTemplates, userId }: Props) {
     setName(t.name);
     setState(t.state);
     setClauses(t.clauses ?? []);
+    setVariables(t.variables ?? {});
     setEditingId(t.id ?? null);
     setError("");
     setShowForm(true);
@@ -58,9 +62,14 @@ export function TemplateBuilder({ savedTemplates, userId }: Props) {
   function loadStarter(forState: ContractState) {
     setState(forState);
     setClauses(defaultClauses(forState));
+    setVariables(defaultVariableValues());
     if (!name.trim()) {
       setName(forState === "OR" ? "Oregon Starter" : forState === "WA" ? "Washington Starter" : "General Starter");
     }
+  }
+
+  function updateVariable(id: string, value: string) {
+    setVariables((prev) => ({ ...prev, [id]: value }));
   }
 
   function updateClause(id: string, field: "title" | "body", value: string) {
@@ -84,7 +93,7 @@ export function TemplateBuilder({ savedTemplates, userId }: Props) {
     setSaving(true);
     setError("");
     const supabase = createClient();
-    const payload = { user_id: userId, name, state, clauses };
+    const payload = { user_id: userId, name, state, clauses, variables };
 
     if (editingId) {
       const { data, error: err } = await supabase
@@ -247,6 +256,28 @@ export function TemplateBuilder({ savedTemplates, userId }: Props) {
               + Add clause
             </button>
           </div>
+
+          {clauses.length > 0 && (
+            <div className="flex flex-col gap-3">
+              <label style={labelStyle}>Standard terms for this template</label>
+              <p className="text-xs opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                These fill in wherever a clause references them. Session-specific numbers (price, deposit, delivery details) are filled in per contract instead.
+              </p>
+              <VariableFields values={variables} onChange={updateVariable} />
+            </div>
+          )}
+
+          {clauses.length > 0 && (
+            <div className="flex flex-col gap-1">
+              <label style={labelStyle}>Preview</label>
+              <div
+                className="px-4 py-3 border text-sm leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto"
+                style={{ ...inputStyle, backgroundColor: "var(--sand, #f5f5f0)" }}
+              >
+                {flattenClauses(clauses, variables)}
+              </div>
+            </div>
+          )}
 
           {error && (
             <p className="text-sm" style={{ color: "var(--destructive)", fontFamily: "var(--font-body)" }}>

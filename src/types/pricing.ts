@@ -190,6 +190,7 @@ export interface ContractTemplate {
   name: string;
   state: "OR" | "WA" | "general";
   clauses: Clause[];
+  variables?: Record<string, string>;
   created_at?: string;
 }
 

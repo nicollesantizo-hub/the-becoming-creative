@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase";
 import { fmt } from "@/lib/pricing";
-import { defaultClauses, flattenClauses } from "@/lib/contract-clauses";
+import { defaultClauses, defaultVariableValues, flattenClauses, type Clause } from "@/lib/contract-clauses";
+import { VariableFields } from "@/components/pricing/variable-fields";
 import type { Contract, ContractTemplate } from "@/types/pricing";
 
 interface Props {
@@ -58,6 +59,8 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
   const [deliverableMinPhotos, setDeliverableMinPhotos] = useState(0);
   const [deliveryDays, setDeliveryDays] = useState(14);
   const [termsText, setTermsText] = useState("");
+  const [activeClauses, setActiveClauses] = useState<Clause[] | null>(null);
+  const [contractVariables, setContractVariables] = useState<Record<string, string>>({});
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [status, setStatus] = useState<Contract["status"]>("draft");
 
@@ -79,6 +82,8 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
     setDeliverableMinPhotos(0);
     setDeliveryDays(14);
     setTermsText("");
+    setActiveClauses(null);
+    setContractVariables({});
     setShareToken(null);
     setStatus("draft");
     setEditingId(null);
@@ -104,6 +109,8 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
     setDeliverableMinPhotos(c.deliverable_min_photos ?? 0);
     setDeliveryDays(c.delivery_days ?? 14);
     setTermsText(c.terms_text || "");
+    setActiveClauses(null);
+    setContractVariables({});
     setShareToken(c.share_token ?? null);
     setStatus(c.status);
     setEditingId(c.id ?? null);
@@ -113,22 +120,56 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  // Merges policy variables (from the panel) with the numbers the form already
+  // has (price/deposit/photo count/delivery days), then regenerates the terms
+  // text from whichever clause set is currently active. Called explicitly from
+  // every relevant onChange rather than a useEffect, so it never fights with
+  // hand-edits to the textarea — it only runs when something that should
+  // regenerate the text actually changes.
+  function regenerate(clauses: Clause[], vars: Record<string, string>, opts?: { price?: number; deposit?: number; minPhotos?: number; days?: number }) {
+    const p = opts?.price ?? price;
+    const d = opts?.deposit ?? depositAmount;
+    const merged = {
+      ...vars,
+      deliverableMinPhotos: String(opts?.minPhotos ?? deliverableMinPhotos),
+      deliveryDays: String(opts?.days ?? deliveryDays),
+      depositAmount: fmt(d),
+      balanceRemaining: fmt(Math.max(0, p - d)),
+    };
+    setTermsText(flattenClauses(clauses, merged));
+  }
+
   function selectPackage(name: string) {
     setPackageName(name);
     const pkg = PACKAGES.find((p) => p.name === name);
     if (pkg) {
       setPrice(pkg.price);
       setDeliverableMinPhotos(pkg.minPhotos);
+      if (activeClauses) regenerate(activeClauses, contractVariables, { price: pkg.price, minPhotos: pkg.minPhotos });
     }
   }
 
   function loadTemplate(templateId: string) {
     const template = savedTemplates.find((t) => t.id === templateId);
-    if (template) setTermsText(flattenClauses(template.clauses));
+    if (!template) return;
+    const vars = template.variables && Object.keys(template.variables).length > 0 ? template.variables : defaultVariableValues();
+    setActiveClauses(template.clauses);
+    setContractVariables(vars);
+    regenerate(template.clauses, vars);
   }
 
-  function loadStarterTerms(state: "OR" | "WA") {
-    setTermsText(flattenClauses(defaultClauses(state)));
+  function loadStarterTerms(forState: "OR" | "WA") {
+    const clauses = defaultClauses(forState);
+    const vars = defaultVariableValues();
+    setActiveClauses(clauses);
+    setContractVariables(vars);
+    regenerate(clauses, vars);
+  }
+
+  function updateVariable(id: string, value: string) {
+    const next = { ...contractVariables, [id]: value };
+    setContractVariables(next);
+    if (activeClauses) regenerate(activeClauses, next);
   }
 
   async function duplicateContract(c: Contract) {
@@ -377,7 +418,11 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
                 min={0}
                 step={0.01}
                 value={price || ""}
-                onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value) || 0;
+                  setPrice(v);
+                  if (activeClauses) regenerate(activeClauses, contractVariables, { price: v });
+                }}
                 className="px-4 py-3 border outline-none text-sm"
                 style={inputStyle}
               />
@@ -389,7 +434,11 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
                 min={0}
                 step={0.01}
                 value={depositAmount || ""}
-                onChange={(e) => setDepositAmount(parseFloat(e.target.value) || 0)}
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value) || 0;
+                  setDepositAmount(v);
+                  if (activeClauses) regenerate(activeClauses, contractVariables, { deposit: v });
+                }}
                 className="px-4 py-3 border outline-none text-sm"
                 style={inputStyle}
               />
@@ -400,7 +449,11 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
                 type="number"
                 min={0}
                 value={deliverableMinPhotos || ""}
-                onChange={(e) => setDeliverableMinPhotos(parseInt(e.target.value) || 0)}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value) || 0;
+                  setDeliverableMinPhotos(v);
+                  if (activeClauses) regenerate(activeClauses, contractVariables, { minPhotos: v });
+                }}
                 className="px-4 py-3 border outline-none text-sm"
                 style={inputStyle}
               />
@@ -413,7 +466,11 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
               type="number"
               min={0}
               value={deliveryDays || ""}
-              onChange={(e) => setDeliveryDays(parseInt(e.target.value) || 0)}
+              onChange={(e) => {
+                const v = parseInt(e.target.value) || 0;
+                setDeliveryDays(v);
+                if (activeClauses) regenerate(activeClauses, contractVariables, { days: v });
+              }}
               className="px-4 py-3 border outline-none text-sm"
               style={inputStyle}
             />
@@ -463,6 +520,15 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
                 >
                   or save a reusable template →
                 </a>
+              </div>
+            )}
+
+            {activeClauses && (
+              <div className="flex flex-col gap-3 p-4 mb-3" style={{ backgroundColor: "var(--sand, #f5f5f0)" }}>
+                <p className="text-xs opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                  Fill these in — they plug straight into the text below. Changing one regenerates the text, so hand-edits made after this point will be overwritten if you change a field again.
+                </p>
+                <VariableFields values={contractVariables} onChange={updateVariable} />
               </div>
             )}
 

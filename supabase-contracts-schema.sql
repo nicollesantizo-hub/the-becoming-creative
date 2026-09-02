@@ -48,6 +48,7 @@ CREATE TABLE contract_templates (
   name TEXT NOT NULL DEFAULT '',
   state TEXT NOT NULL DEFAULT 'general', -- 'OR' | 'WA' | 'general'
   clauses JSONB DEFAULT '[]', -- [{id, title, body, enabled}]
+  variables JSONB DEFAULT '{}', -- {tokenId: value} — fillable defaults for {{token}} placeholders in clause bodies
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

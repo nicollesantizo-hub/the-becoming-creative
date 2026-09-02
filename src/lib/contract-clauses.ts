@@ -5,13 +5,62 @@ export interface Clause {
   enabled: boolean;
 }
 
+export interface VariableDef {
+  id: string;
+  label: string;
+  defaultValue: string;
+  group: string;
+}
+
 export type ContractState = "OR" | "WA" | "general";
 
 const GOVERNING_LAW: Record<ContractState, string> = {
-  OR: `This Agreement is governed by the laws of the State of Oregon, without regard to its conflict-of-laws principles. Any dispute arising under this Agreement will be resolved in the state or federal courts located in [County], Oregon.`,
-  WA: `This Agreement is governed by the laws of the State of Washington, without regard to its conflict-of-laws principles. Any dispute arising under this Agreement will be resolved in the state or federal courts located in [County], Washington.`,
-  general: `This Agreement is governed by the laws of the State of [Oregon/Washington], without regard to its conflict-of-laws principles. Any dispute arising under this Agreement will be resolved in the state or federal courts located in [County], [Oregon/Washington].`,
+  OR: `This Agreement is governed by the laws of the State of Oregon, without regard to its conflict-of-laws principles. Any dispute arising under this Agreement will be resolved in the state or federal courts located in {{county}}, Oregon.`,
+  WA: `This Agreement is governed by the laws of the State of Washington, without regard to its conflict-of-laws principles. Any dispute arising under this Agreement will be resolved in the state or federal courts located in {{county}}, Washington.`,
+  general: `This Agreement is governed by the laws of the State of [Oregon/Washington], without regard to its conflict-of-laws principles. Any dispute arising under this Agreement will be resolved in the state or federal courts located in {{county}}, [Oregon/Washington].`,
 };
+
+// Policy variables — fillable per template (as reusable defaults) and per
+// contract (as an override). "Structured" values that already live as fields
+// on the contract itself (price, deposit, deliverable count, delivery days)
+// are NOT here — those are merged in separately at generation time so they're
+// never typed twice. See contract-builder.tsx's regenerate().
+export const VARIABLE_DEFS: VariableDef[] = [
+  { id: "balanceDueDays", label: "Balance due (days before session)", defaultValue: "7", group: "Payment" },
+  { id: "lateFeePercent", label: "Late fee (%)", defaultValue: "10", group: "Payment" },
+  { id: "lateFeeFlatAmount", label: "Late fee (flat $, if greater)", defaultValue: "50", group: "Payment" },
+  { id: "lateFeeGraceDays", label: "Late fee grace period (days)", defaultValue: "5", group: "Payment" },
+
+  { id: "cancellationNoticeDays", label: "Cancellation notice (days)", defaultValue: "14", group: "Cancellation & Rescheduling" },
+  { id: "rescheduleNoticeDays", label: "Reschedule notice (days)", defaultValue: "7", group: "Cancellation & Rescheduling" },
+  { id: "rescheduleFee", label: "Late reschedule fee ($)", defaultValue: "75", group: "Cancellation & Rescheduling" },
+  { id: "rescheduleWindowDays", label: "Reschedule window (days)", defaultValue: "90", group: "Cancellation & Rescheduling" },
+
+  { id: "rushDeliveryDays", label: "Rush delivery (business days)", defaultValue: "3", group: "Delivery" },
+  { id: "rushDeliveryFee", label: "Rush delivery fee ($)", defaultValue: "150", group: "Delivery" },
+  { id: "galleryExpiryDays", label: "Gallery expiration (days)", defaultValue: "90", group: "Delivery" },
+
+  { id: "travelRadiusMiles", label: "Included travel radius (miles)", defaultValue: "25", group: "Travel & Overtime" },
+  { id: "baseLocation", label: "Base location", defaultValue: "Portland, OR", group: "Travel & Overtime" },
+  { id: "travelRatePerMile", label: "Travel rate ($/mile beyond radius)", defaultValue: "0.67", group: "Travel & Overtime" },
+  { id: "travelFlatFee", label: "Travel flat fee alternative ($)", defaultValue: "50", group: "Travel & Overtime" },
+  { id: "overtimeRatePerHour", label: "Overtime rate ($/hour)", defaultValue: "150", group: "Travel & Overtime" },
+
+  { id: "secondShooterNoticeDays", label: "Second photographer opt-out notice (days)", defaultValue: "7", group: "Team & Legal" },
+  { id: "county", label: "County (governing law / venue)", defaultValue: "Multnomah", group: "Team & Legal" },
+  { id: "negotiationPeriodDays", label: "Dispute negotiation period (days)", defaultValue: "14", group: "Team & Legal" },
+];
+
+export function defaultVariableValues(): Record<string, string> {
+  return Object.fromEntries(VARIABLE_DEFS.map((v) => [v.id, v.defaultValue]));
+}
+
+export function substitute(text: string, values: Record<string, string>): string {
+  return text.replace(/\{\{(\w+)\}\}/g, (match, token) => {
+    const value = values[token];
+    return value !== undefined && value !== "" ? value : `[${token}]`;
+  });
+}
 
 // Transcribed from Documents/Aida Visuals Tools/Contracts/clause-library.md —
 // that file is the source of truth for the legal content itself (including
@@ -22,37 +71,37 @@ export function defaultClauses(state: ContractState): Clause[] {
     {
       id: "retainer",
       title: "RETAINER / DEPOSIT (NON-REFUNDABLE)",
-      body: `A retainer of [50]% of the total session fee ($[amount]), or $[flat amount], is due at the time this Agreement is signed to reserve Client's date. This retainer is earned upon booking in exchange for Photographer turning away other inquiries for that date, and is non-refundable regardless of whether the session later proceeds, except as provided in the Cancellation section below. The retainer is credited toward the total session fee.`,
+      body: `A retainer of {{depositAmount}} is due at the time this Agreement is signed to reserve Client's date. This retainer is earned upon booking in exchange for Photographer turning away other inquiries for that date, and is non-refundable regardless of whether the session later proceeds, except as provided in the Cancellation section below. The retainer is credited toward the total session fee.`,
       enabled: true,
     },
     {
       id: "payment-late",
       title: "PAYMENT SCHEDULE & LATE PAYMENT",
-      body: `The remaining balance of $[amount] is due no later than [7] days before the session date [or: on the day of the session, before shooting begins]. Payments not received by the due date are considered late. A late payment fee of [10]% or $[flat amount], whichever is greater, may apply to balances more than [5] days overdue. Photographer is not obligated to begin or continue a session, or to deliver final images, while a balance remains outstanding.`,
+      body: `The remaining balance of {{balanceRemaining}} is due no later than {{balanceDueDays}} days before the session date. Payments not received by the due date are considered late. A late payment fee of {{lateFeePercent}}% or \${{lateFeeFlatAmount}}, whichever is greater, may apply to balances more than {{lateFeeGraceDays}} days overdue. Photographer is not obligated to begin or continue a session, or to deliver final images, while a balance remains outstanding.`,
       enabled: true,
     },
     {
       id: "cancellation",
       title: "CANCELLATION POLICY",
-      body: `If Client cancels the session for any reason, the retainer is forfeited per the Retainer section above. If cancellation occurs less than [14] days before the session date, the full remaining balance is also due and non-refundable, as Photographer will likely be unable to rebook the date on short notice. If Photographer must cancel for any reason within Photographer's control, Client will receive a full refund of all amounts paid, or the option to reschedule at no additional cost.`,
+      body: `If Client cancels the session for any reason, the retainer is forfeited per the Retainer section above. If cancellation occurs less than {{cancellationNoticeDays}} days before the session date, the full remaining balance is also due and non-refundable, as Photographer will likely be unable to rebook the date on short notice. If Photographer must cancel for any reason within Photographer's control, Client will receive a full refund of all amounts paid, or the option to reschedule at no additional cost.`,
       enabled: true,
     },
     {
       id: "rescheduling",
       title: "RESCHEDULING POLICY",
-      body: `Client may reschedule the session date once at no additional charge, provided the request is made at least [7] days before the original session date and a new date is confirmed within [90] days. Rescheduling requests made with less notice, or additional reschedule requests beyond the first, may incur a rescheduling fee of $[amount]. If Client and Photographer cannot agree on a new date within [90] days, the session is treated as a cancellation under the Cancellation Policy above.`,
+      body: `Client may reschedule the session date once at no additional charge, provided the request is made at least {{rescheduleNoticeDays}} days before the original session date and a new date is confirmed within {{rescheduleWindowDays}} days. Rescheduling requests made with less notice, or additional reschedule requests beyond the first, may incur a rescheduling fee of \${{rescheduleFee}}. If Client and Photographer cannot agree on a new date within {{rescheduleWindowDays}} days, the session is treated as a cancellation under the Cancellation Policy above.`,
       enabled: true,
     },
     {
       id: "weather",
       title: "WEATHER & FORCE MAJEURE",
-      body: `If weather conditions materially compromise the session (e.g., unsafe conditions, heavy rain or smoke, extreme heat or cold), Photographer may propose rescheduling at no additional cost, as a mutual accommodation rather than a fault-based cancellation. Neither party is liable for failure to perform due to causes beyond reasonable control, including but not limited to natural disaster, government order, wildfire smoke, road closures, or other events of force majeure. In such cases, the parties will reschedule in good faith; if no mutually agreeable date is found within [90] days, either party may treat the session as cancelled, with the retainer refunded to Client in full given neither party was at fault.`,
+      body: `If weather conditions materially compromise the session (e.g., unsafe conditions, heavy rain or smoke, extreme heat or cold), Photographer may propose rescheduling at no additional cost, as a mutual accommodation rather than a fault-based cancellation. Neither party is liable for failure to perform due to causes beyond reasonable control, including but not limited to natural disaster, government order, wildfire smoke, road closures, or other events of force majeure. In such cases, the parties will reschedule in good faith; if no mutually agreeable date is found within {{rescheduleWindowDays}} days, either party may treat the session as cancelled, with the retainer refunded to Client in full given neither party was at fault.`,
       enabled: true,
     },
     {
       id: "turnaround",
       title: "TURNAROUND TIME & DELIVERY",
-      body: `Client will receive a minimum of [X] professionally edited, high-resolution digital images via private online gallery within [14] business days of the session date. Rush delivery (within [3] business days) is available for an additional fee of $[amount], subject to availability. Online galleries remain active for [90] days from delivery; Client is responsible for downloading and backing up images before expiration. Additional images beyond the stated minimum, if delivered, are a courtesy and not a guaranteed part of this Agreement.`,
+      body: `Client will receive a minimum of {{deliverableMinPhotos}} professionally edited, high-resolution digital images via private online gallery within {{deliveryDays}} business days of the session date. Rush delivery (within {{rushDeliveryDays}} business days) is available for an additional fee of \${{rushDeliveryFee}}, subject to availability. Online galleries remain active for {{galleryExpiryDays}} days from delivery; Client is responsible for downloading and backing up images before expiration. Additional images beyond the stated minimum, if delivered, are a courtesy and not a guaranteed part of this Agreement.`,
       enabled: true,
     },
     {
@@ -82,13 +131,13 @@ export function defaultClauses(state: ContractState): Clause[] {
     {
       id: "second-photographer",
       title: "SECOND PHOTOGRAPHER / ASSISTANTS",
-      body: `Sessions booked under packages that include a second photographer or assistant will be staffed accordingly; Client will be notified in advance of who will be present. If Client prefers a single photographer only, Client must notify Photographer at least [7] days before the session.`,
+      body: `Sessions booked under packages that include a second photographer or assistant will be staffed accordingly; Client will be notified in advance of who will be present. If Client prefers a single photographer only, Client must notify Photographer at least {{secondShooterNoticeDays}} days before the session.`,
       enabled: true,
     },
     {
       id: "travel-overtime",
       title: "TRAVEL & OVERTIME",
-      body: `Session pricing includes travel within [X] miles of [city/base location]. Travel beyond this radius is billed at $[rate]/mile or a flat fee of $[amount], as agreed in advance. Sessions running beyond the contracted time due to Client delay or request will be billed at $[rate]/[15-minute increment or hour], payable at the time of the session.`,
+      body: `Session pricing includes travel within {{travelRadiusMiles}} miles of {{baseLocation}}. Travel beyond this radius is billed at \${{travelRatePerMile}}/mile or a flat fee of \${{travelFlatFee}}, as agreed in advance. Sessions running beyond the contracted time due to Client delay or request will be billed at \${{overtimeRatePerHour}}/hour, payable at the time of the session.`,
       enabled: true,
     },
     {
@@ -106,7 +155,7 @@ export function defaultClauses(state: ContractState): Clause[] {
     {
       id: "dispute-resolution",
       title: "DISPUTE RESOLUTION",
-      body: `Before initiating formal legal action, the parties agree to attempt to resolve any dispute arising from this Agreement through good-faith informal negotiation for at least [14] days. Nothing in this section prevents either party from pursuing a claim in small claims court.`,
+      body: `Before initiating formal legal action, the parties agree to attempt to resolve any dispute arising from this Agreement through good-faith informal negotiation for at least {{negotiationPeriodDays}} days. Nothing in this section prevents either party from pursuing a claim in small claims court.`,
       enabled: true,
     },
     {
@@ -124,9 +173,9 @@ export function defaultClauses(state: ContractState): Clause[] {
   ];
 }
 
-export function flattenClauses(clauses: Clause[]): string {
+export function flattenClauses(clauses: Clause[], values: Record<string, string> = {}): string {
   return clauses
     .filter((c) => c.enabled)
-    .map((c) => `${c.title}\n${c.body}`)
+    .map((c) => `${c.title}\n${substitute(c.body, values)}`)
     .join("\n\n");
 }
