@@ -1,3 +1,5 @@
+import type { Clause } from "@/lib/contract-clauses";
+
 export interface CODBConfig {
   id?: string;
   user_id?: string;
@@ -179,6 +181,39 @@ export interface Invoice {
   notes?: string;
   due_date?: string;
   status: "draft" | "sent" | "paid";
+  created_at?: string;
+}
+
+export interface ContractTemplate {
+  id?: string;
+  user_id?: string;
+  name: string;
+  state: "OR" | "WA" | "general";
+  clauses: Clause[];
+  created_at?: string;
+}
+
+export interface Contract {
+  id?: string;
+  user_id?: string;
+  contract_number?: string;
+  client_name: string;
+  client_email: string;
+  package_name?: string;
+  session_date?: string;
+  session_location?: string;
+  group_size?: number;
+  price: number;
+  deposit_amount?: number;
+  deliverable_min_photos?: number;
+  delivery_days?: number;
+  terms_text: string;
+  status: "draft" | "sent" | "signed";
+  share_token?: string;
+  signature_image?: string | null;
+  signer_typed_name?: string | null;
+  signed_at?: string | null;
+  signer_ip?: string | null;
   created_at?: string;
 }
 

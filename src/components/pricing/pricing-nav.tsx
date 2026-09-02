@@ -11,6 +11,7 @@ const navItems = [
   { href: "/pricing/sessions", label: "Sessions" },
   { href: "/pricing/quotes", label: "Quotes" },
   { href: "/pricing/invoices", label: "Invoices" },
+  { href: "/pricing/contracts", label: "Contracts" },
   { href: "/pricing/planner", label: "Planner" },
 ];
 
@@ -19,6 +20,7 @@ const pageTitles: Record<string, string> = {
   "/pricing/sessions": "Sessions",
   "/pricing/quotes": "Quotes",
   "/pricing/invoices": "Invoices",
+  "/pricing/contracts": "Contracts",
   "/pricing/planner": "Planner",
   "/pricing/settings": "Settings",
   "/pricing": "Price My Work",

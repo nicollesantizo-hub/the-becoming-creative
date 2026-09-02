@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-// Uses raw admin client (service role key) to bypass RLS — no user session available in webhook context
-import { createClient as createSupabaseAdmin } from "@supabase/supabase-js";
+import { createAdminClient as createSupabaseAdmin } from "@/lib/supabase-admin";
 
 export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -25,10 +24,7 @@ export async function POST(request: Request) {
     const userId = session.client_reference_id;
 
     if (userId) {
-      const supabase = createSupabaseAdmin(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      );
+      const supabase = createSupabaseAdmin();
 
       await supabase
         .from("profiles")
@@ -45,10 +41,7 @@ export async function POST(request: Request) {
     const email = customer.email;
 
     if (email) {
-      const supabase = createSupabaseAdmin(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      );
+      const supabase = createSupabaseAdmin();
 
       const { data: profile } = await supabase
         .from("profiles")
