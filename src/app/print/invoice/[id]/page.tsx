@@ -34,6 +34,8 @@ export default async function InvoicePrintPage({
   const isPro = biz?.tier === "pro";
   const lineItems = (inv.line_items ?? []).filter((i) => i.description?.trim());
   const total = lineItems.reduce((s, i) => s + (Number(i.amount) || 0), 0);
+  const depositAmount = inv.deposit_amount ?? 0;
+  const balanceDue = Math.max(0, total - depositAmount);
   const fmt = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
 
   const businessHeader = biz?.business_name || biz?.contact_name || user.email;
@@ -316,9 +318,23 @@ export default async function InvoicePrintPage({
 
         {/* Total */}
         <div className="total-row">
-          <span className="total-label">Total Due</span>
+          <span className="total-label">{depositAmount > 0 ? "Total" : "Total Due"}</span>
           <span className="total-amount">{fmt(total)}</span>
         </div>
+
+        {/* Deposit + balance */}
+        {depositAmount > 0 && (
+          <div className="due-row">
+            <span className="due-label">Deposit received</span>
+            <span className="due-date">{fmt(depositAmount)}</span>
+          </div>
+        )}
+        {depositAmount > 0 && (
+          <div className="due-row" style={{ background: "transparent", padding: "10px 16px 0" }}>
+            <span className="due-label" style={{ opacity: 0.6 }}>Balance due</span>
+            <span className="due-date" style={{ opacity: 1, fontWeight: 600 }}>{fmt(balanceDue)}</span>
+          </div>
+        )}
 
         {/* Due date */}
         {formattedDue && (

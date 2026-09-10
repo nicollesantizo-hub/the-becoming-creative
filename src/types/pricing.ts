@@ -178,6 +178,7 @@ export interface Invoice {
   client_email: string;
   session_name: string;
   line_items: { description: string; amount: number }[];
+  deposit_amount?: number;
   notes?: string;
   due_date?: string;
   status: "draft" | "sent" | "paid";

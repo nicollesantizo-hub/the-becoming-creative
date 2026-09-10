@@ -24,6 +24,8 @@ export async function POST(request: Request) {
   const businessName = biz?.business_name || biz?.contact_name || user.email;
   const lineItems = (inv.line_items ?? []).filter((i) => i.description?.trim());
   const total = lineItems.reduce((s, i) => s + (Number(i.amount) || 0), 0);
+  const depositAmount = inv.deposit_amount ?? 0;
+  const balanceDue = Math.max(0, total - depositAmount);
   const fmt = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
 
   const formattedDue = inv.due_date
@@ -57,9 +59,20 @@ export async function POST(request: Request) {
         </table>
 
         <div style="margin-top: 16px; padding-top: 16px; border-top: 1.5px solid #111111; display: flex; justify-content: space-between; align-items: baseline;">
-          <span style="font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; opacity: 0.35;">Total Due</span>
+          <span style="font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; opacity: 0.35;">${depositAmount > 0 ? "Total" : "Total Due"}</span>
           <span style="font-family: Georgia, serif; font-size: 34px; font-style: italic; font-weight: 400; color: #111111; line-height: 1;">${fmt(total)}</span>
         </div>
+
+        ${depositAmount > 0 ? `
+          <div style="margin-top: 12px; padding: 10px 16px; background: #f5f5f5; font-size: 12px; display: flex; justify-content: space-between;">
+            <span style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.4;">Deposit received</span>
+            <span style="font-weight: 500; opacity: 0.7;">${fmt(depositAmount)}</span>
+          </div>
+          <div style="margin-top: 6px; padding: 0 16px; font-size: 12px; display: flex; justify-content: space-between;">
+            <span style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.5;">Balance due</span>
+            <span style="font-weight: 600;">${fmt(balanceDue)}</span>
+          </div>
+        ` : ""}
 
         ${formattedDue ? `
           <div style="margin-top: 12px; padding: 10px 16px; background: #f5f5f5; font-size: 12px; display: flex; justify-content: space-between;">

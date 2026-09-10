@@ -42,6 +42,7 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
   const [clientEmail, setClientEmail] = useState("");
   const [sessionName, setSessionName] = useState("");
   const [lineItems, setLineItems] = useState([emptyLine()]);
+  const [depositAmount, setDepositAmount] = useState(0);
   const [notes, setNotes] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [invoiceNumber, setInvoiceNumber] = useState(genInvoiceNumber());
@@ -52,6 +53,7 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
   const [error, setError] = useState("");
 
   const total = lineItems.reduce((s, i) => s + (Number(i.amount) || 0), 0);
+  const balanceDue = Math.max(0, total - depositAmount);
   const fmt = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
 
   function resetForm() {
@@ -60,6 +62,7 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
     setClientEmail("");
     setSessionName("");
     setLineItems([emptyLine()]);
+    setDepositAmount(0);
     setNotes("");
     setDueDate("");
     setInvoiceNumber(genInvoiceNumber());
@@ -79,6 +82,7 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
     setClientEmail(inv.client_email);
     setSessionName(inv.session_name);
     setLineItems(inv.line_items.length > 0 ? inv.line_items : [emptyLine()]);
+    setDepositAmount(inv.deposit_amount ?? 0);
     setNotes(inv.notes ?? "");
     setDueDate(inv.due_date ?? "");
     setInvoiceNumber(inv.invoice_number ?? genInvoiceNumber());
@@ -115,6 +119,7 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
       client_email: clientEmail,
       session_name: sessionName,
       line_items: lineItems.filter((i) => i.description.trim()),
+      deposit_amount: depositAmount || 0,
       notes,
       due_date: dueDate || null,
       status,
@@ -361,6 +366,37 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
             )}
           </div>
 
+          {/* Deposit already received */}
+          <div className="flex flex-col gap-1 max-w-xs">
+            <label style={labelStyle}>Deposit already received <span style={{ opacity: 0.4 }}>(optional)</span></label>
+            <input
+              type="number"
+              value={depositAmount || ""}
+              onChange={(e) => setDepositAmount(parseFloat(e.target.value) || 0)}
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+              className="px-4 py-3 border outline-none text-sm"
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Balance due preview */}
+          {depositAmount > 0 && total > 0 && (
+            <div
+              className="flex justify-between items-baseline px-4 py-3"
+              style={{ backgroundColor: "var(--paper, #f5f5f5)" }}
+            >
+              <span className="text-xs uppercase tracking-widest opacity-40" style={{ fontFamily: "var(--font-body)" }}>Balance due</span>
+              <span
+                className="text-xl font-light italic"
+                style={{ fontFamily: "var(--font-heading)", color: "var(--charcoal)" }}
+              >
+                {fmt(balanceDue)}
+              </span>
+            </div>
+          )}
+
           {/* Notes */}
           <div className="flex flex-col gap-1">
             <label style={labelStyle}>Notes</label>
@@ -496,17 +532,29 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
                     className="text-xs opacity-40 truncate"
                     style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
                   >
-                    {[inv.invoice_number, inv.session_name, dueFmt ? `Due ${dueFmt}` : null].filter(Boolean).join("  ·  ")}
+                    {[
+                      inv.invoice_number,
+                      inv.session_name,
+                      dueFmt ? `Due ${dueFmt}` : null,
+                      inv.deposit_amount ? `${fmt(inv.deposit_amount)} deposit received` : null,
+                    ].filter(Boolean).join("  ·  ")}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-4 flex-shrink-0">
-                  <span
-                    className="text-base font-light"
-                    style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)", fontStyle: "italic" }}
-                  >
-                    {fmt(lineTotal)}
-                  </span>
+                  <div className="flex flex-col items-end">
+                    <span
+                      className="text-base font-light"
+                      style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)", fontStyle: "italic" }}
+                    >
+                      {fmt(inv.deposit_amount ? Math.max(0, lineTotal - inv.deposit_amount) : lineTotal)}
+                    </span>
+                    {!!inv.deposit_amount && (
+                      <span className="text-[10px] uppercase tracking-widest opacity-35" style={{ fontFamily: "var(--font-body)" }}>
+                        balance due
+                      </span>
+                    )}
+                  </div>
                   <div className="flex gap-3">
                     <button
                       onClick={() => openEdit(inv)}
