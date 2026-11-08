@@ -1,4 +1,13 @@
 import type { Clause } from "@/lib/contract-clauses";
+import type { QuoteSection } from "@/lib/quote-sections";
+
+export interface QuoteAddon {
+  label: string;
+  price: number;
+  // Optional add-ons stay out of the total until the client chooses them on the proposal.
+  optional?: boolean;
+  description?: string;
+}
 
 export interface CODBConfig {
   id?: string;
@@ -70,7 +79,7 @@ export interface Quote {
   suggested_price: number;
   final_price: number;
   notes: string;
-  addons: { label: string; price: number }[];
+  addons: QuoteAddon[];
   payment_terms?: string;
   marketing_cost?: number;
   lodging_cost?: number;
@@ -83,6 +92,12 @@ export interface Quote {
   share_token?: string;
   base_override?: number | null;
   included_items?: { text: string; price?: number | null }[] | null;
+  sections?: QuoteSection[] | null;
+  cover_image_url?: string | null;
+  selected_addons?: { label: string; price: number }[] | null;
+  accepted_at?: string | null;
+  accepted_name?: string | null;
+  accepted_total?: number | null;
   created_at?: string;
 }
 
@@ -207,6 +222,9 @@ export interface Contract {
   group_size?: number;
   price: number;
   deposit_amount?: number;
+  amount_paid?: number;
+  session_time?: string | null;
+  balance_due_date?: string | null;
   deliverable_min_photos?: number;
   delivery_days?: number;
   terms_text: string;

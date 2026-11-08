@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase";
 import { fmt } from "@/lib/pricing";
 import { defaultClauses, defaultVariableValues, flattenClauses, type Clause } from "@/lib/contract-clauses";
 import { VariableFields } from "@/components/pricing/variable-fields";
+import { applyPaymentWording, balanceDueDateFrom, contractPayments, formatContractDate } from "@/lib/contract-payments";
 import type { Contract, ContractTemplate } from "@/types/pricing";
 
 interface Props {
@@ -56,6 +57,11 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
   const [groupSize, setGroupSize] = useState(1);
   const [price, setPrice] = useState(0);
   const [depositAmount, setDepositAmount] = useState(0);
+  const [amountPaid, setAmountPaid] = useState(0);
+  const [sessionTime, setSessionTime] = useState("");
+  const [balanceDueDate, setBalanceDueDate] = useState("");
+  // Once the due date is set by hand, stop recalculating it from the session date.
+  const [dueDateTouched, setDueDateTouched] = useState(false);
   const [deliverableMinPhotos, setDeliverableMinPhotos] = useState(0);
   const [deliveryDays, setDeliveryDays] = useState(14);
   const [termsText, setTermsText] = useState("");
@@ -79,6 +85,10 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
     setGroupSize(1);
     setPrice(0);
     setDepositAmount(0);
+    setAmountPaid(0);
+    setSessionTime("");
+    setBalanceDueDate("");
+    setDueDateTouched(false);
     setDeliverableMinPhotos(0);
     setDeliveryDays(14);
     setTermsText("");
@@ -106,6 +116,10 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
     setGroupSize(c.group_size ?? 1);
     setPrice(c.price);
     setDepositAmount(c.deposit_amount ?? 0);
+    setAmountPaid(c.amount_paid ?? 0);
+    setSessionTime(c.session_time ?? "");
+    setBalanceDueDate(c.balance_due_date ?? "");
+    setDueDateTouched(!!c.balance_due_date && c.balance_due_date !== balanceDueDateFrom(c.session_date ?? "", 7));
     setDeliverableMinPhotos(c.deliverable_min_photos ?? 0);
     setDeliveryDays(c.delivery_days ?? 14);
     setTermsText(c.terms_text || "");
@@ -126,17 +140,40 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
   // every relevant onChange rather than a useEffect, so it never fights with
   // hand-edits to the textarea — it only runs when something that should
   // regenerate the text actually changes.
-  function regenerate(clauses: Clause[], vars: Record<string, string>, opts?: { price?: number; deposit?: number; minPhotos?: number; days?: number }) {
-    const p = opts?.price ?? price;
-    const d = opts?.deposit ?? depositAmount;
+  function regenerate(
+    clauses: Clause[],
+    vars: Record<string, string>,
+    opts?: { price?: number; deposit?: number; paid?: number; dueDate?: string; minPhotos?: number; days?: number }
+  ) {
+    const money = {
+      price: opts?.price ?? price,
+      deposit_amount: opts?.deposit ?? depositAmount,
+      amount_paid: opts?.paid ?? amountPaid,
+      balance_due_date: opts?.dueDate ?? balanceDueDate,
+    };
+    const pay = contractPayments(money);
     const merged = {
       ...vars,
       deliverableMinPhotos: String(opts?.minPhotos ?? deliverableMinPhotos),
       deliveryDays: String(opts?.days ?? deliveryDays),
-      depositAmount: fmt(d),
-      balanceRemaining: fmt(Math.max(0, p - d)),
+      depositAmount: fmt(pay.deposit),
+      balanceRemaining: fmt(pay.balance),
     };
-    setTermsText(flattenClauses(clauses, merged));
+    setTermsText(applyPaymentWording(flattenClauses(clauses, merged), money));
+  }
+
+  // Days-before-session comes from the "Balance due" policy field (7 if no terms loaded yet).
+  function dueDaysSetting(vars: Record<string, string> = contractVariables) {
+    const n = parseInt(vars.balanceDueDays ?? "");
+    return Number.isFinite(n) ? n : 7;
+  }
+
+  function changeSessionDate(value: string) {
+    setSessionDate(value);
+    if (dueDateTouched) return;
+    const due = balanceDueDateFrom(value, dueDaysSetting());
+    setBalanceDueDate(due);
+    if (activeClauses) regenerate(activeClauses, contractVariables, { dueDate: due });
   }
 
   function selectPackage(name: string) {
@@ -169,7 +206,12 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
   function updateVariable(id: string, value: string) {
     const next = { ...contractVariables, [id]: value };
     setContractVariables(next);
-    if (activeClauses) regenerate(activeClauses, next);
+    let due = balanceDueDate;
+    if (id === "balanceDueDays" && !dueDateTouched && sessionDate) {
+      due = balanceDueDateFrom(sessionDate, dueDaysSetting(next));
+      setBalanceDueDate(due);
+    }
+    if (activeClauses) regenerate(activeClauses, next, { dueDate: due });
   }
 
   async function duplicateContract(c: Contract) {
@@ -187,6 +229,9 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
         group_size: c.group_size,
         price: c.price,
         deposit_amount: c.deposit_amount,
+        amount_paid: 0,
+        session_time: c.session_time ?? null,
+        balance_due_date: null,
         deliverable_min_photos: c.deliverable_min_photos,
         delivery_days: c.delivery_days,
         terms_text: c.terms_text,
@@ -213,6 +258,9 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
       group_size: groupSize,
       price,
       deposit_amount: depositAmount,
+      amount_paid: amountPaid,
+      session_time: sessionTime || null,
+      balance_due_date: balanceDueDate || null,
       deliverable_min_photos: deliverableMinPhotos,
       delivery_days: deliveryDays,
       terms_text: termsText,
@@ -283,6 +331,8 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
   function copyLink(token: string) {
     navigator.clipboard.writeText(`${window.location.origin}/c/${token}`);
   }
+
+  const pay = contractPayments({ price, deposit_amount: depositAmount, amount_paid: amountPaid, balance_due_date: balanceDueDate });
 
   const inputStyle = {
     fontFamily: "var(--font-body)",
@@ -380,7 +430,31 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
               <input
                 type="date"
                 value={sessionDate}
-                onChange={(e) => setSessionDate(e.target.value)}
+                onChange={(e) => changeSessionDate(e.target.value)}
+                className="px-4 py-3 border outline-none text-sm"
+                style={inputStyle}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label style={labelStyle}>Session time</label>
+              <input
+                type="time"
+                value={sessionTime}
+                onChange={(e) => setSessionTime(e.target.value)}
+                className="px-4 py-3 border outline-none text-sm"
+                style={inputStyle}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_8rem] gap-4">
+            <div className="flex flex-col gap-1">
+              <label style={labelStyle}>Location</label>
+              <input
+                type="text"
+                value={sessionLocation}
+                onChange={(e) => setSessionLocation(e.target.value)}
+                placeholder="e.g. Cannon Beach, OR"
                 className="px-4 py-3 border outline-none text-sm"
                 style={inputStyle}
               />
@@ -396,18 +470,6 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
                 style={inputStyle}
               />
             </div>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label style={labelStyle}>Location</label>
-            <input
-              type="text"
-              value={sessionLocation}
-              onChange={(e) => setSessionLocation(e.target.value)}
-              placeholder="e.g. Cannon Beach, OR"
-              className="px-4 py-3 border outline-none text-sm"
-              style={inputStyle}
-            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -444,6 +506,93 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
               />
             </div>
             <div className="flex flex-col gap-1">
+              <label style={labelStyle}>Already paid</label>
+              <input
+                type="number"
+                min={0}
+                step={0.01}
+                value={amountPaid || ""}
+                placeholder="0"
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value) || 0;
+                  setAmountPaid(v);
+                  if (activeClauses) regenerate(activeClauses, contractVariables, { paid: v });
+                }}
+                className="px-4 py-3 border outline-none text-sm"
+                style={inputStyle}
+              />
+            </div>
+          </div>
+
+          {/* Payment picture — what's been received and what's left */}
+          {price > 0 && (
+            <div className="flex flex-col gap-2 px-5 py-4" style={{ backgroundColor: "var(--sand, #f5f5f0)" }}>
+              <div className="flex justify-between text-sm" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                <span className="opacity-60">Session total</span>
+                <span>{fmt(price)}</span>
+              </div>
+              {pay.paid > 0 && (
+                <div className="flex justify-between text-sm" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                  <span className="opacity-60">Already received</span>
+                  <span>−{fmt(pay.paid)}</span>
+                </div>
+              )}
+              {pay.dueAtSigning > 0 && (
+                <div className="flex justify-between text-sm" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                  <span className="opacity-60">{pay.paid > 0 ? "Rest of retainer, due at signing" : "Retainer, due at signing"}</span>
+                  <span>{fmt(pay.dueAtSigning)}</span>
+                </div>
+              )}
+              <div
+                className="flex flex-wrap justify-between items-center gap-3 pt-2 mt-1"
+                style={{ borderTop: "1px solid var(--border)", color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+              >
+                <span className="text-sm font-medium">Left before the session</span>
+                <span className="text-xl font-light italic" style={{ fontFamily: "var(--font-heading)" }}>{fmt(pay.balance)}</span>
+              </div>
+              {pay.balance > 0 && (
+                <div className="flex flex-wrap items-center gap-3">
+                  <label style={labelStyle}>Due by</label>
+                  <input
+                    type="date"
+                    value={balanceDueDate}
+                    onChange={(e) => {
+                      setBalanceDueDate(e.target.value);
+                      setDueDateTouched(true);
+                      if (activeClauses) regenerate(activeClauses, contractVariables, { dueDate: e.target.value });
+                    }}
+                    className="px-3 py-2 border outline-none text-sm"
+                    style={inputStyle}
+                  />
+                  <span className="text-xs opacity-40" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                    {!sessionDate
+                      ? "Add a session date and this fills in for you"
+                      : dueDateTouched
+                      ? "Set by hand"
+                      : `${dueDaysSetting()} days before the session${balanceDueDate ? ` (${formatContractDate(balanceDueDate)})` : ""}`}
+                  </span>
+                  {dueDateTouched && sessionDate && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const due = balanceDueDateFrom(sessionDate, dueDaysSetting());
+                        setBalanceDueDate(due);
+                        setDueDateTouched(false);
+                        if (activeClauses) regenerate(activeClauses, contractVariables, { dueDate: due });
+                      }}
+                      className="text-xs opacity-40 hover:opacity-80 transition-opacity underline"
+                      style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                    >
+                      recalculate
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md">
+            <div className="flex flex-col gap-1">
               <label style={labelStyle}>Min. photos</label>
               <input
                 type="number"
@@ -458,9 +607,7 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
                 style={inputStyle}
               />
             </div>
-          </div>
-
-          <div className="flex flex-col gap-1 max-w-xs">
+          <div className="flex flex-col gap-1">
             <label style={labelStyle}>Delivery (days)</label>
             <input
               type="number"
@@ -474,6 +621,7 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
               className="px-4 py-3 border outline-none text-sm"
               style={inputStyle}
             />
+          </div>
           </div>
 
           {/* Terms */}
@@ -666,7 +814,12 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
                     className="text-xs opacity-40 truncate"
                     style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
                   >
-                    {[c.contract_number, c.package_name, dateFmt].filter(Boolean).join("  ·  ")}
+                    {[
+                      c.contract_number,
+                      c.package_name,
+                      dateFmt,
+                      (c.amount_paid ?? 0) > 0 ? `${fmt(contractPayments(c).balance)} left` : null,
+                    ].filter(Boolean).join("  ·  ")}
                   </p>
                 </div>
 

@@ -3,7 +3,10 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase";
 import { fmt, calcSessionPrice } from "@/lib/pricing";
-import type { SessionType, Quote, CODBResults } from "@/types/pricing";
+import { quoteTotals } from "@/lib/quote-math";
+import { defaultSections, normalizeSections, type QuoteSection } from "@/lib/quote-sections";
+import type { SessionType, Quote, QuoteAddon, CODBResults } from "@/types/pricing";
+import { ProposalSectionsEditor } from "./proposal-sections-editor";
 
 const STATUS_LABELS: Record<Quote["status"], string> = {
   draft: "Draft",
@@ -64,7 +67,9 @@ export function QuoteBuilder({
   const [eventEndDate, setEventEndDate] = useState("");
   const [notes, setNotes] = useState("");
   const [paymentTerms, setPaymentTerms] = useState(defaultPaymentTerms);
-  const [addons, setAddons] = useState<{ label: string; price: number }[]>([]);
+  const [addons, setAddons] = useState<QuoteAddon[]>([]);
+  const [sections, setSections] = useState<QuoteSection[]>(defaultSections);
+  const [coverImageUrl, setCoverImageUrl] = useState("");
   const [shareSlug, setShareSlug] = useState("");
   const [baseOverride, setBaseOverride] = useState<number | null>(null);
   const [editingBase, setEditingBase] = useState(false);
@@ -198,18 +203,21 @@ export function QuoteBuilder({
   const lodgCost = isMultiDay ? (lodgingCost || 0) : 0;
   const mlCost = isMultiDay ? (mealCost || 0) : 0;
   const personnelTotal = isEventSession ? additionalPersonnel.reduce((sum, p) => sum + (p.cost || 0), 0) : 0;
-  const addonsTotal = addons.reduce((sum, a) => sum + (a.price || 0), 0);
-  const taxAmount = (effectiveBase + mktCost + lodgCost + mlCost + personnelTotal + addonsTotal) * (taxRate / 100);
-  const subtotal = effectiveBase + mktCost + lodgCost + mlCost + personnelTotal + addonsTotal + taxAmount;
-
-  const discountAmount =
-    discountType === "percentage"
-      ? subtotal * (discountValue / 100)
-      : discountType === "flat"
-      ? discountValue
-      : 0;
-
-  const finalPrice = Math.max(0, subtotal - discountAmount);
+  // Optional add-ons stay out of the quoted total — the client chooses them on the proposal.
+  const requiredAddonsTotal = addons.filter((a) => !a.optional).reduce((sum, a) => sum + (a.price || 0), 0);
+  const optionalAddons = addons.filter((a) => a.optional && (a.label || a.price));
+  const totals = quoteTotals({
+    base: effectiveBase,
+    extras: mktCost + lodgCost + mlCost + personnelTotal,
+    requiredAddons: requiredAddonsTotal,
+    chosenOptionalAddons: 0,
+    taxRate,
+    discountType,
+    discountValue,
+  });
+  const taxAmount = totals.tax;
+  const discountAmount = totals.discount;
+  const finalPrice = totals.total;
 
   function resetForm() {
     setSelectedSessionId("");
@@ -237,6 +245,8 @@ export function QuoteBuilder({
     setNotes("");
     setPaymentTerms(defaultPaymentTerms);
     setAddons([]);
+    setSections(defaultSections());
+    setCoverImageUrl("");
     setQuoteName("");
     setShareSlug("");
     setBaseOverride(null);
@@ -271,6 +281,8 @@ export function QuoteBuilder({
     setDiscountValue(quote.discount_value ?? 0);
     setCustomTravel(quote.travel_miles ?? 0);
     setAddons(quote.addons ?? []);
+    setSections(normalizeSections(quote.sections));
+    setCoverImageUrl(quote.cover_image_url ?? "");
     setShareSlug(quote.share_token ?? "");
     setBaseOverride(quote.base_override ?? null);
     setIncludedItems(quote.included_items ?? []);
@@ -318,6 +330,8 @@ export function QuoteBuilder({
         notes: quote.notes,
         payment_terms: quote.payment_terms,
         addons: quote.addons ?? [],
+        sections: quote.sections ?? null,
+        cover_image_url: quote.cover_image_url ?? null,
         status: "draft",
       })
       .select()
@@ -334,7 +348,7 @@ export function QuoteBuilder({
     if (!hasIdentity) return;
     setSaving(true);
     const supabase = createClient();
-    const quote: Omit<Quote, "id" | "created_at"> = {
+    const quote: Omit<Quote, "id" | "created_at" | "status"> = {
       user_id: userId,
       session_type_id: selectedSessionId || null,
       quote_name: quoteName,
@@ -367,8 +381,9 @@ export function QuoteBuilder({
       included_items: includedItems.length > 0 ? includedItems : null,
       notes,
       payment_terms: paymentTerms || undefined,
-      addons,
-      status: "draft",
+      addons: addons.map((a) => (a.optional ? a : { label: a.label, price: a.price })),
+      sections,
+      cover_image_url: coverImageUrl || null,
     };
     if (editingQuoteId) {
       const updatedSlug = shareSlug.trim()
@@ -389,7 +404,7 @@ export function QuoteBuilder({
         : Math.random().toString(36).slice(2, 10);
       const { data, error } = await supabase
         .from("quotes")
-        .insert({ ...quote, share_token: slug })
+        .insert({ ...quote, status: "draft", share_token: slug })
         .select()
         .single();
       if (error) { setSaveError(error.message); setSaving(false); return; }
@@ -459,9 +474,18 @@ export function QuoteBuilder({
                     className="text-base font-medium shrink-0"
                     style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
                   >
-                    {fmt(quote.final_price)}
+                    {fmt(quote.accepted_total ?? quote.final_price)}
                   </span>
                 </div>
+
+                {quote.accepted_at && (
+                  <p className="text-xs -mt-2 leading-relaxed" style={{ color: "var(--sage)", fontFamily: "var(--font-body)" }}>
+                    Accepted by {quote.accepted_name} on{" "}
+                    {new Date(quote.accepted_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    {(quote.selected_addons ?? []).length > 0 &&
+                      ` · added ${(quote.selected_addons ?? []).map((a) => a.label).join(", ")}`}
+                  </p>
+                )}
 
                 {/* Controls */}
                 <div className="flex items-center gap-3 flex-wrap">
@@ -506,6 +530,17 @@ export function QuoteBuilder({
                   >
                     PDF
                   </a>
+                  {quote.share_token && (
+                    <a
+                      href={`/q/${quote.share_token}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs uppercase tracking-wider opacity-40 hover:opacity-80 transition-opacity"
+                      style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+                    >
+                      Preview
+                    </a>
+                  )}
                   {quote.share_token && (
                     <button
                       onClick={() => {
@@ -957,41 +992,73 @@ export function QuoteBuilder({
               >
                 Add-ons & extra charges
               </label>
+              <p className="text-xs opacity-30 -mt-1 leading-relaxed" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                Mark an add-on as optional and your client can choose it on the proposal. Their total updates as they go.
+              </p>
               {addons.map((addon, i) => (
-                <div key={i} className="flex gap-2 items-center">
-                  <input
-                    type="text"
-                    placeholder="e.g. Props, Rush delivery, Extra hour…"
-                    value={addon.label}
-                    onChange={(e) => {
-                      const updated = [...addons];
-                      updated[i] = { ...updated[i], label: e.target.value };
-                      setAddons(updated);
-                    }}
-                    className="flex-1 px-3 py-2 text-sm bg-white border outline-none"
-                    style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
-                  />
-                  <input
-                    type="number"
-                    placeholder="$"
-                    min={0}
-                    value={addon.price || ""}
-                    onChange={(e) => {
-                      const updated = [...addons];
-                      updated[i] = { ...updated[i], price: parseFloat(e.target.value) || 0 };
-                      setAddons(updated);
-                    }}
-                    className="w-24 px-3 py-2 text-sm bg-white border outline-none"
-                    style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setAddons(addons.filter((_, idx) => idx !== i))}
-                    className="text-xs opacity-30 hover:opacity-60 transition-opacity px-2"
-                    style={{ color: "var(--destructive)", fontFamily: "var(--font-body)" }}
-                  >
-                    ✕
-                  </button>
+                <div key={i} className="flex flex-col gap-2 pb-3 border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      placeholder="e.g. Props, Rush delivery, Extra hour…"
+                      value={addon.label}
+                      onChange={(e) => {
+                        const updated = [...addons];
+                        updated[i] = { ...updated[i], label: e.target.value };
+                        setAddons(updated);
+                      }}
+                      className="flex-1 px-3 py-2 text-sm bg-white border outline-none"
+                      style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                    />
+                    <input
+                      type="number"
+                      placeholder="$"
+                      min={0}
+                      value={addon.price || ""}
+                      onChange={(e) => {
+                        const updated = [...addons];
+                        updated[i] = { ...updated[i], price: parseFloat(e.target.value) || 0 };
+                        setAddons(updated);
+                      }}
+                      className="w-24 px-3 py-2 text-sm bg-white border outline-none"
+                      style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setAddons(addons.filter((_, idx) => idx !== i))}
+                      className="text-xs opacity-30 hover:opacity-60 transition-opacity px-2"
+                      style={{ color: "var(--destructive)", fontFamily: "var(--font-body)" }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <label className="flex items-center gap-2 text-xs opacity-60 cursor-pointer w-fit" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                    <input
+                      type="checkbox"
+                      checked={!!addon.optional}
+                      onChange={(e) => {
+                        const updated = [...addons];
+                        updated[i] = { ...updated[i], optional: e.target.checked };
+                        setAddons(updated);
+                      }}
+                      style={{ accentColor: "var(--clay)" }}
+                    />
+                    Optional, let my client choose
+                  </label>
+                  {addon.optional && (
+                    <input
+                      type="text"
+                      placeholder="A short line about it (optional), e.g. Twenty more edited images from your session"
+                      value={addon.description ?? ""}
+                      onChange={(e) => {
+                        const updated = [...addons];
+                        updated[i] = { ...updated[i], description: e.target.value };
+                        setAddons(updated);
+                      }}
+                      className="px-3 py-2 text-sm bg-white border outline-none"
+                      style={{ borderColor: "var(--border)", fontFamily: "var(--font-body)", color: "var(--charcoal)" }}
+                    />
+                  )}
                 </div>
               ))}
               <button
@@ -1402,6 +1469,17 @@ export function QuoteBuilder({
             </div>
           </div>
 
+          <div className="mb-8">
+            <ProposalSectionsEditor
+              userId={userId}
+              sections={sections}
+              onSectionsChange={setSections}
+              coverImageUrl={coverImageUrl}
+              onCoverChange={setCoverImageUrl}
+              isEvent={!!isEventSession}
+            />
+          </div>
+
           {/* Quote summary */}
           {codb && (
             <div
@@ -1522,7 +1600,7 @@ export function QuoteBuilder({
                     </span>
                   </div>
                 ))}
-                {addons.filter(a => a.label || a.price).map((addon, i) => (
+                {addons.filter(a => !a.optional && (a.label || a.price)).map((addon, i) => (
                   <div key={i} className="flex justify-between">
                     <span className="text-sm opacity-60" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
                       {addon.label || "Add-on"}
@@ -1532,16 +1610,6 @@ export function QuoteBuilder({
                     </span>
                   </div>
                 ))}
-                {taxRate > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-sm opacity-60" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
-                      Sales tax ({taxRate}%)
-                    </span>
-                    <span className="text-sm" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
-                      {fmt(taxAmount)}
-                    </span>
-                  </div>
-                )}
                 {discountAmount > 0 && (
                   <div className="flex justify-between">
                     <span className="text-sm opacity-60" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
@@ -1549,6 +1617,16 @@ export function QuoteBuilder({
                     </span>
                     <span className="text-sm" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
                       −{fmt(discountAmount)}
+                    </span>
+                  </div>
+                )}
+                {taxRate > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-sm opacity-60" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                      Sales tax ({taxRate}%)
+                    </span>
+                    <span className="text-sm" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                      {fmt(taxAmount)}
                     </span>
                   </div>
                 )}
@@ -1569,6 +1647,23 @@ export function QuoteBuilder({
                     {fmt(finalPrice)}
                   </span>
                 </div>
+                {optionalAddons.length > 0 && (
+                  <div className="flex flex-col gap-1.5 pt-3" style={{ borderTop: "1px dashed rgba(255,255,255,0.15)" }}>
+                    <span className="text-xs uppercase tracking-widest opacity-40" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                      Client may add
+                    </span>
+                    {optionalAddons.map((a, i) => (
+                      <div key={i} className="flex justify-between">
+                        <span className="text-sm opacity-50" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                          {a.label || "Optional add-on"}
+                        </span>
+                        <span className="text-sm opacity-50" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                          +{fmt(a.price)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1647,7 +1742,7 @@ export function QuoteBuilder({
                 setMarketingCost(0); setLodgingCost(0); setMealCost(0); setAdditionalPersonnel([]); setCoverageItems([]); setGalleryTurnaround(""); setQuoteEventDays(1); setEventEndDate(""); setSelectedSessionId(""); setTaxRate(0);
                 setDiscountType("none"); setDiscountValue(0); setNotes(""); setPaymentTerms(defaultPaymentTerms);
                 setCustomTravel(0); setCustomTravelRate(0.67); setCustomMargin(30);
-                setAddons([]);
+                setAddons([]); setSections(defaultSections()); setCoverImageUrl("");
                 setBaseOverride(null); setEditingBase(false); setIncludedItems([]);
               }}
               className="px-6 py-3 text-sm uppercase tracking-wider opacity-40 hover:opacity-70 transition-opacity"

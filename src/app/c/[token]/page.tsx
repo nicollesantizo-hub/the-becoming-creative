@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase-admin";
 import type { Contract } from "@/types/pricing";
 import { fmt } from "@/lib/pricing";
+import { formatSessionTime } from "@/lib/contract-payments";
+import { ContractPaymentLines } from "@/components/pricing/contract-payment-lines";
 import { SignaturePad } from "./signature-pad";
 import { SavePdfButton } from "./save-button";
 
@@ -108,7 +110,7 @@ export default async function ContractSignPage({
 
         <h1 className="contract-title">Photography Services Agreement</h1>
         <p className="client-meta">
-          {[c.client_name, c.package_name, sessionDateDisplay, c.session_location].filter(Boolean).join("  ·  ")}
+          {[c.client_name, c.package_name, sessionDateDisplay, formatSessionTime(c.session_time), c.session_location].filter(Boolean).join("  ·  ")}
         </p>
 
         {c.status === "signed" && (
@@ -126,6 +128,7 @@ export default async function ContractSignPage({
             {sessionDateDisplay && (
               <div className="info-item"><strong>Date</strong>{sessionDateDisplay}</div>
             )}
+            {c.session_time && <div className="info-item"><strong>Time</strong>{formatSessionTime(c.session_time)}</div>}
             {c.session_location && (
               <div className="info-item"><strong>Location</strong>{c.session_location}</div>
             )}
@@ -143,16 +146,7 @@ export default async function ContractSignPage({
 
         <div className="section">
           <p className="section-label">Investment</p>
-          <div className="line">
-            <span className="line-label">{c.package_name || "Photography session"}</span>
-            <span className="line-value">{fmt(c.price)}</span>
-          </div>
-          {!!c.deposit_amount && (
-            <div className="line">
-              <span className="line-label">Deposit due at booking</span>
-              <span className="line-value">{fmt(c.deposit_amount)}</span>
-            </div>
-          )}
+          <ContractPaymentLines c={c} packageName={c.package_name} />
           <div className="line-total">
             <span className="total-label">Total</span>
             <span className="total-value">{fmt(c.price)}</span>

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase-server";
 import { getResend, FROM } from "@/lib/resend";
 import { fmt } from "@/lib/pricing";
+import { contractPayments, formatContractDate, formatSessionTime } from "@/lib/contract-payments";
 import type { Contract } from "@/types/pricing";
 
 export async function POST(request: Request) {
@@ -24,6 +25,14 @@ export async function POST(request: Request) {
   const biz = profile as { business_name: string | null; contact_name: string | null; phone: string | null; website: string | null } | null;
 
   const businessName = biz?.business_name || biz?.contact_name || user.email;
+  const pay = contractPayments(c);
+  const sessionWhen = c.session_date
+    ? ` — session on ${formatContractDate(c.session_date)}${c.session_time ? ` at ${formatSessionTime(c.session_time)}` : ""}`
+    : "";
+  const paymentNote = [
+    pay.paid > 0 ? `Thank you for your payment of ${fmt(pay.paid)}.` : "",
+    pay.balance > 0 ? `Your remaining balance of ${fmt(pay.balance)} is due ${pay.dueDate ? `by ${formatContractDate(pay.dueDate)}` : "before your session"}.` : "",
+  ].filter(Boolean).join(" ");
   const signLink = `${process.env.NEXT_PUBLIC_SITE_URL}/c/${c.share_token}`;
 
   const resend = getResend();
@@ -40,7 +49,7 @@ export async function POST(request: Request) {
         <p style="font-size: 12px; opacity: 0.4; margin-bottom: 32px;">${[c.contract_number, c.package_name].filter(Boolean).join("  ·  ") || "&nbsp;"}</p>
 
         <p style="font-size: 14px; line-height: 1.7; opacity: 0.8; margin-bottom: 28px;">
-          Please review and sign your contract for ${fmt(c.price)}${c.session_date ? ` — session on ${new Date(c.session_date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}` : ""}. No printing or scanning needed, just sign right in your browser.
+          Please review and sign your contract for ${fmt(c.price)}${sessionWhen}. No printing or scanning needed, just sign right in your browser.${paymentNote ? `<br /><br />${paymentNote}` : ""}
         </p>
 
         <a href="${signLink}" style="display: inline-block; background: #111111; color: #ffffff; text-decoration: none; padding: 14px 32px; font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; font-family: 'DM Sans', sans-serif;">
