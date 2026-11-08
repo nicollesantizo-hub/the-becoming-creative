@@ -39,6 +39,8 @@ export async function POST(request: Request) {
   await resend.emails.send({
     from: FROM,
     to: c.client_email,
+    // letters@ has no inbox — client replies go straight to the photographer.
+    replyTo: user.email,
     subject: `Contract from ${businessName}${c.contract_number ? ` — ${c.contract_number}` : ""}`,
     html: `
       <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; padding: 40px 24px; color: #2c2c2c;">

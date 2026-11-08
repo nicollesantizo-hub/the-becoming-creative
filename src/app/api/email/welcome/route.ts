@@ -16,6 +16,7 @@ export async function POST() {
     resend.emails.send({
       from: FROM,
       to: user.email!,
+      replyTo: ADMIN_EMAIL,
       subject: "You made it.",
       html: `
         <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; padding: 40px 24px; color: #2c2c2c;">

@@ -66,6 +66,7 @@ export async function POST(request: Request) {
       await getResend().emails.send({
         from: FROM,
         to,
+        ...(q.client_email?.trim() ? { replyTo: q.client_email.trim() } : {}),
         subject: `${acceptedName} accepted ${title}`,
         html: `
           <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; padding: 40px 24px; color: #2c2c2c;">
