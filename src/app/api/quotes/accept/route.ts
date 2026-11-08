@@ -22,6 +22,11 @@ export async function POST(request: Request) {
   if (!quoteData) return NextResponse.json({ error: "We couldn't find this proposal." }, { status: 404 });
   const q = quoteData as Quote;
 
+  const { data: owner } = await supabase.from("profiles").select("tier").eq("id", q.user_id!).single();
+  if (owner?.tier !== "pro") {
+    return NextResponse.json({ error: "Please reply to your photographer's email to accept." }, { status: 403 });
+  }
+
   // Recompute from the saved quote — the browser only tells us which add-ons were chosen.
   const money = quoteMoney(q);
   const picks = new Set<number>(Array.isArray(selected) ? selected.filter((n) => Number.isInteger(n)) : []);

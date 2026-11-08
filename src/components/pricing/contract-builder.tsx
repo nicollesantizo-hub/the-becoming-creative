@@ -7,11 +7,15 @@ import { defaultClauses, defaultVariableValues, flattenClauses, type Clause } fr
 import { VariableFields } from "@/components/pricing/variable-fields";
 import { applyPaymentWording, balanceDueDateFrom, contractPayments, formatContractDate } from "@/lib/contract-payments";
 import type { Contract, ContractTemplate } from "@/types/pricing";
+import { ProTag, UsageNote, friendlyPlanError } from "@/components/pricing/plan-note";
+import { remainingThisMonth } from "@/lib/plan";
 
 interface Props {
   savedContracts: Contract[];
   savedTemplates: ContractTemplate[];
   userId: string;
+  isPro: boolean;
+  usedThisMonth: number;
 }
 
 const PACKAGES: { name: string; price: number; minPhotos: number }[] = [
@@ -43,8 +47,10 @@ const STATUS_COLORS: Record<Contract["status"], string> = {
   signed: "#4a7c59",
 };
 
-export function ContractBuilder({ savedContracts, savedTemplates, userId }: Props) {
+export function ContractBuilder({ savedContracts, savedTemplates, userId, isPro, usedThisMonth }: Props) {
   const [contracts, setContracts] = useState<Contract[]>(savedContracts);
+  const [used, setUsed] = useState(usedThisMonth);
+  const atLimit = remainingThisMonth("contracts", used, isPro) <= 0;
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -240,10 +246,12 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
       })
       .select()
       .single();
-    if (!err && data) setContracts((prev) => [data, ...prev]);
+    if (err) { alert(friendlyPlanError(err.message)); return; }
+    if (data) { setContracts((prev) => [data, ...prev]); setUsed((u) => u + 1); }
   }
 
   async function saveContract(nextStatus: Contract["status"]): Promise<Contract | null> {
+    if (!editingId && atLimit) { setError(friendlyPlanError("free_plan_limit")); return null; }
     setSaving(true);
     setError("");
     const supabase = createClient();
@@ -286,8 +294,9 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
         .insert({ ...payload, share_token: token })
         .select()
         .single();
-      if (err) { setError(err.message); setSaving(false); return null; }
+      if (err) { setError(friendlyPlanError(err.message)); setSaving(false); return null; }
       result = data as Contract;
+      setUsed((u) => u + 1);
       setContracts((prev) => [result!, ...prev]);
       setEditingId(result.id ?? null);
       setShareToken(result.share_token ?? null);
@@ -631,7 +640,12 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
               Editable per client. This is a starting template, not legal advice — have a lawyer review before relying on it.
             </p>
 
-            {savedTemplates.length > 0 ? (
+            {!isPro ? (
+              <p className="text-xs opacity-50 mb-2" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                Oregon &amp; Washington starters and saved templates fill this in for you with one click.
+                <ProTag />
+              </p>
+            ) : savedTemplates.length > 0 ? (
               <select
                 defaultValue=""
                 onChange={(e) => { if (e.target.value) loadTemplate(e.target.value); }}
@@ -755,6 +769,8 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
           </div>
         </div>
       ) : (
+        <div className="flex flex-col gap-4">
+        <UsageNote tool="contracts" used={used} isPro={isPro} />
         <button
           onClick={openNew}
           className="px-8 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80 self-start"
@@ -767,6 +783,7 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId }: Prop
         >
           + New Contract
         </button>
+        </div>
       )}
 
       {/* Contract list */}

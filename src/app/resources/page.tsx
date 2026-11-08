@@ -67,6 +67,73 @@ export default function ResourcesPage() {
             Photography
           </p>
           <div className="grid md:grid-cols-2 gap-6">
+            {/* Price My Work — the client studio */}
+            <div className="md:col-span-2 flex flex-col gap-8 p-8 md:p-10" style={{ backgroundColor: "var(--charcoal)" }}>
+              <div className="max-w-2xl">
+                <span
+                  className="text-xs uppercase tracking-widest opacity-30 mb-3 block"
+                  style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}
+                >
+                  The main studio
+                </span>
+                <h2
+                  className="text-3xl md:text-4xl font-light italic mb-3"
+                  style={{ color: "var(--cream)", fontFamily: "var(--font-heading)" }}
+                >
+                  Price My Work
+                </h2>
+                <p
+                  className="text-sm leading-relaxed opacity-60"
+                  style={{ color: "var(--cream)", fontFamily: "var(--font-body)", fontWeight: 300 }}
+                >
+                  From knowing your worth to getting paid for it. Price from your real costs, send a proposal
+                  your client can say yes to, have them sign in the browser, and invoice beautifully, all with
+                  your name on it.
+                </p>
+              </div>
+
+              <ol className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>
+                {[
+                  { n: "01", title: "Price", href: "/pricing/calculator", body: "Cost of doing business calculator and session pricing built from your real expenses." },
+                  { n: "02", title: "Propose", href: "/pricing/quotes", body: "Editorial proposals with your cover photo. Clients choose add-ons and accept online." },
+                  { n: "03", title: "Contract", href: "/pricing/contracts", body: "Oregon & Washington starter terms, signed right in the browser. No printing." },
+                  { n: "04", title: "Invoice", href: "/pricing/invoices", body: "Branded invoices with a Stripe pay button, and monthly ones that send themselves." },
+                ].map((step) => (
+                  <li key={step.n} className="list-none" style={{ backgroundColor: "var(--charcoal)" }}>
+                    <Link href={step.href} className="group flex flex-col gap-2 p-5 h-full transition-colors hover:bg-white/5">
+                      <span className="text-xs tracking-widest opacity-30" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                        {step.n}
+                      </span>
+                      <span className="text-xl font-light italic" style={{ color: "var(--cream)", fontFamily: "var(--font-heading)" }}>
+                        {step.title} <span className="not-italic text-sm opacity-0 group-hover:opacity-60 transition-opacity">→</span>
+                      </span>
+                      <span className="text-xs leading-relaxed opacity-50" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                        {step.body}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+
+              <div className="flex flex-wrap items-center gap-4">
+                <Link
+                  href="/pricing"
+                  className="px-6 py-3 text-sm uppercase tracking-widest whitespace-nowrap transition-opacity hover:opacity-80"
+                  style={{
+                    backgroundColor: "var(--clay)",
+                    color: "var(--cream)",
+                    fontFamily: "var(--font-body)",
+                    letterSpacing: "0.15em",
+                  }}
+                >
+                  Open the studio →
+                </Link>
+                <span className="text-xs opacity-40" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
+                  Free to start · <Link href="/pricing/upgrade" className="underline hover:opacity-80">Pro</Link> for unlimited, your logo, and the automation
+                </span>
+              </div>
+            </div>
+
             {/* Gallery Delivery Estimator */}
             <div
               className="flex flex-col gap-6 p-8 border"
@@ -115,7 +182,7 @@ export default function ResourcesPage() {
               <div className="flex items-center gap-4 mt-auto">
                 <Link
                   href="/resources/delivery"
-                  className="px-6 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80"
+                  className="px-6 py-3 text-sm uppercase tracking-widest whitespace-nowrap transition-opacity hover:opacity-80"
                   style={{
                     backgroundColor: "var(--charcoal)",
                     color: "var(--cream)",
@@ -134,78 +201,9 @@ export default function ResourcesPage() {
               </div>
             </div>
 
-            {/* Price My Work — the main tool */}
-            <div
-              className="flex flex-col gap-6 p-8"
-              style={{ backgroundColor: "var(--charcoal)" }}
-            >
-              <div>
-                <span
-                  className="text-xs uppercase tracking-widest opacity-30 mb-3 block"
-                  style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}
-                >
-                  Photography Tool
-                </span>
-                <h2
-                  className="text-3xl font-light italic mb-3"
-                  style={{ color: "var(--cream)", fontFamily: "var(--font-heading)" }}
-                >
-                  Price My Work
-                </h2>
-                <p
-                  className="text-sm leading-relaxed opacity-60"
-                  style={{ color: "var(--cream)", fontFamily: "var(--font-body)", fontWeight: 300 }}
-                >
-                  Calculate your true cost of doing business, build session
-                  pricing from your actual expenses, and generate professional
-                  quotes for clients — all in one place.
-                </p>
-              </div>
-
-              <ul className="flex flex-col gap-2">
-                {[
-                  "Cost of doing business calculator",
-                  "Session type builder with live pricing",
-                  "Client quote generator",
-                  "Travel, tax & discount support",
-                  "Saves your numbers between sessions",
-                ].map((feature) => (
-                  <li
-                    key={feature}
-                    className="flex items-center gap-2 text-sm opacity-60"
-                    style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}
-                  >
-                    <span className="opacity-60">—</span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-
-              <div className="flex items-center gap-4 mt-auto">
-                <Link
-                  href="/pricing"
-                  className="px-6 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80"
-                  style={{
-                    backgroundColor: "var(--clay)",
-                    color: "var(--cream)",
-                    fontFamily: "var(--font-body)",
-                    letterSpacing: "0.15em",
-                  }}
-                >
-                  Open tool →
-                </Link>
-                <span
-                  className="text-xs opacity-30"
-                  style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}
-                >
-                  Free to start
-                </span>
-              </div>
-            </div>
-
             {/* Photographer Planner */}
             <div
-              className="md:col-span-2 flex flex-col gap-6 p-8 border"
+              className="flex flex-col gap-6 p-8 border"
               style={{ borderColor: "var(--border)", backgroundColor: "white" }}
             >
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -226,19 +224,18 @@ export default function ResourcesPage() {
                     className="text-sm leading-relaxed opacity-50 max-w-lg"
                     style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 300 }}
                   >
-                    Plan your shoots, track your client pipeline, manage editing deadlines, and schedule content — your whole photography business in one place. Includes PDF export and a downloadable digital template for Pro members.
+                    Plan your shoots, track your pipeline, keep editing deadlines, and schedule content, your whole photography week in one place.
                   </p>
                 </div>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-x-12 gap-y-2">
+              <div className="flex flex-col gap-2">
                 {[
                   "Shoot day planner with shot lists & timelines",
                   "Booking & revenue pipeline tracker",
                   "Editing & delivery workflow with status tracking",
                   "Content & marketing calendar",
                   "PDF export of your full planner",
-                  "Downloadable digital template (Pro)",
                 ].map((feature) => (
                   <li
                     key={feature}
@@ -254,7 +251,7 @@ export default function ResourcesPage() {
               <div className="flex items-center gap-4 mt-auto">
                 <Link
                   href="/pricing/planner"
-                  className="px-6 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80"
+                  className="px-6 py-3 text-sm uppercase tracking-widest whitespace-nowrap transition-opacity hover:opacity-80"
                   style={{
                     backgroundColor: "var(--charcoal)",
                     color: "var(--cream)",
@@ -295,7 +292,7 @@ export default function ResourcesPage() {
                   className="text-sm opacity-40 mt-1"
                   style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 300 }}
                 >
-                  Contract templates, client guides, tax estimators, and more.
+                  Client guides, tax estimators, and tools for every kind of creative.
                 </p>
               </div>
               <Link

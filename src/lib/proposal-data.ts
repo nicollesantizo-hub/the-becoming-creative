@@ -46,6 +46,7 @@ export interface ProposalData {
   discountValue: number;
   paymentTerms: string | null;
   shareToken: string | null;
+  canAccept: boolean; // online acceptance is a Pro feature
   accepted: { name: string; at: string; total: number; selected: string[] } | null;
   business: ProposalBusiness;
 }
@@ -186,7 +187,7 @@ export function buildProposal(q: Quote, biz: BizRow | null, sessionType: Session
     breakdown,
     lines,
     requiredAddons: money.requiredAddons,
-    optionalAddons: money.optionalAddons,
+    optionalAddons: isPro ? money.optionalAddons : [],
     base: money.base,
     extras: money.extras,
     taxRate: q.tax_rate ?? 0,
@@ -194,6 +195,7 @@ export function buildProposal(q: Quote, biz: BizRow | null, sessionType: Session
     discountValue: q.discount_value ?? 0,
     paymentTerms: q.payment_terms?.trim() || biz?.payment_terms?.trim() || null,
     shareToken: q.share_token ?? null,
+    canAccept: isPro,
     accepted: q.accepted_at
       ? {
           name: q.accepted_name ?? "",

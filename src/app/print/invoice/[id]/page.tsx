@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation";
+import { LogoSeal, sealPadding } from "@/components/pricing/logo-seal";
+import { paymentMethodLabel, payButtonLabel, safeLink } from "@/lib/payment-methods";
 import { createClient } from "@/lib/supabase-server";
 import type { Invoice } from "@/types/pricing";
 import { PrintTrigger } from "./print-trigger";
@@ -32,6 +34,9 @@ export default async function InvoicePrintPage({
   } | null;
 
   const isPro = biz?.tier === "pro";
+  const logoUrl = isPro ? biz?.logo_url ?? null : null;
+  const payMethod = paymentMethodLabel(inv.payment_method);
+  const payLink = isPro ? safeLink(inv.payment_link) : null;
   const lineItems = (inv.line_items ?? []).filter((i) => i.description?.trim());
   const total = lineItems.reduce((s, i) => s + (Number(i.amount) || 0), 0);
   const depositAmount = inv.deposit_amount ?? 0;
@@ -108,10 +113,20 @@ export default async function InvoicePrintPage({
         .meta-date { font-size: 11px; color: rgba(255,255,255,0.45); }
 
         .page {
+          position: relative;
           max-width: 660px;
           margin: 0 auto;
           padding: 28px 40px 36px;
         }
+        .page.has-seal { padding-top: ${sealPadding(88)}px; }
+        .header-band.has-seal { padding-bottom: 52px; }
+
+        .pay { margin-top: 24px; padding: 18px 20px; border: 1px solid rgba(17,17,17,0.12); }
+        .pay-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+        .pay-method { font-size: 13px; font-weight: 500; color: #111111; }
+        .pay-body { font-size: 12px; color: rgba(17,17,17,0.6); line-height: 1.6; white-space: pre-wrap; }
+        .pay-btn { display: inline-block; margin-top: 12px; background: #111111; color: #ffffff; text-decoration: none; padding: 11px 22px; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; }
+        .pay-url { display: block; margin-top: 8px; font-size: 10px; color: rgba(17,17,17,0.45); word-break: break-all; }
 
         .back {
           display: inline-block;
@@ -273,7 +288,7 @@ export default async function InvoicePrintPage({
       `}</style>
 
       {/* Dark header band */}
-      <div className="header-band">
+      <div className={`header-band ${logoUrl ? "has-seal" : ""}`}>
         <div className="header-inner">
           <div>
             <p className="biz-name">{businessHeader}</p>
@@ -290,7 +305,8 @@ export default async function InvoicePrintPage({
         </div>
       </div>
 
-      <div className="page">
+      <div className={`page ${logoUrl ? "has-seal" : ""}`}>
+        {logoUrl && <LogoSeal src={logoUrl} alt={businessHeader ?? ""} size={88} />}
         <a href="/pricing/invoices" className="back">← Back to invoices</a>
 
         {/* Title + client */}
@@ -344,6 +360,23 @@ export default async function InvoicePrintPage({
           </div>
         )}
 
+        {/* How to pay */}
+        {(payMethod || payLink || inv.payment_instructions?.trim()) && (
+          <div className="pay">
+            <div className="pay-head">
+              <p className="section-label" style={{ margin: 0 }}>How to pay</p>
+              {payMethod && <span className="pay-method">{payMethod}</span>}
+            </div>
+            {inv.payment_instructions?.trim() && <p className="pay-body">{inv.payment_instructions}</p>}
+            {payLink && (
+              <>
+                <a href={payLink} className="pay-btn">{payButtonLabel(inv.payment_method)}</a>
+                <span className="pay-url">{payLink}</span>
+              </>
+            )}
+          </div>
+        )}
+
         {/* Notes */}
         {inv.notes?.trim() && (
           <div className="notes">
@@ -352,16 +385,6 @@ export default async function InvoicePrintPage({
           </div>
         )}
 
-        {/* Logo */}
-        {isPro && biz?.logo_url && (
-          <div style={{ textAlign: "center", marginTop: "28px" }}>
-            <img
-              src={biz.logo_url}
-              alt="Logo"
-              style={{ maxHeight: "44px", maxWidth: "150px", objectFit: "contain", opacity: 0.7, display: "inline-block" }}
-            />
-          </div>
-        )}
 
         <p className="footer">{businessHeader}</p>
       </div>

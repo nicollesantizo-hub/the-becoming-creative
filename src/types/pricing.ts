@@ -197,6 +197,31 @@ export interface Invoice {
   notes?: string;
   due_date?: string;
   status: "draft" | "sent" | "paid";
+  series_id?: string | null;
+  payment_method?: string | null;
+  payment_link?: string | null;
+  payment_instructions?: string | null;
+  created_at?: string;
+}
+
+export interface InvoiceSeries {
+  id?: string;
+  user_id?: string;
+  client_name: string;
+  client_business?: string | null;
+  client_email: string;
+  title: string; // may contain {month}
+  line_items: { description: string; amount: number }[];
+  notes?: string;
+  payment_method?: string | null;
+  payment_link?: string | null;
+  payment_instructions?: string | null;
+  day_of_month: number;
+  due_days: number;
+  auto_send: boolean;
+  active: boolean;
+  next_run_date: string;
+  last_issued_at?: string | null;
   created_at?: string;
 }
 

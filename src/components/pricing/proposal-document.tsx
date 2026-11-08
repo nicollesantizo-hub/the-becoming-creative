@@ -118,7 +118,7 @@ export function ProposalDocument({ data, mode }: { data: ProposalData; mode: "sh
         ))}
 
         {/* Acceptance */}
-        {mode === "share" && data.shareToken && (
+        {mode === "share" && data.shareToken && (data.canAccept || acceptedInfo) && (
           <section className={`pp-accept ${acceptedInfo ? "done" : ""}`} id="accept">
             {acceptedInfo ? (
               <>
@@ -159,9 +159,9 @@ export function ProposalDocument({ data, mode }: { data: ProposalData; mode: "sh
           </section>
         )}
 
-        {mode === "print" && (
+        {(mode === "print" || !data.canAccept) && !acceptedInfo && (
           <p className="pp-print-close">
-            {data.shareToken
+            {data.shareToken && data.canAccept
               ? `To accept, visit thebecomingcreative.com/q/${data.shareToken}`
               : "To accept this proposal, simply reply to this email."}
           </p>

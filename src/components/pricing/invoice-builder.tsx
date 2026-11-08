@@ -2,22 +2,40 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase";
-import type { Invoice } from "@/types/pricing";
+import { fillMonth, genInvoiceNumber, nextMonthlyDate, todayPacific, addDays } from "@/lib/invoices";
+import { PaymentFields, type PaymentValue } from "@/components/pricing/payment-fields";
+import { RecurringInvoicesPanel, ScheduleFields } from "@/components/pricing/recurring-invoices-panel";
+import type { Invoice, InvoiceSeries } from "@/types/pricing";
+import { ProTag, UsageNote, friendlyPlanError } from "@/components/pricing/plan-note";
+import { remainingThisMonth } from "@/lib/plan";
 
 interface Props {
   savedInvoices: Invoice[];
+  savedSeries: InvoiceSeries[];
   userId: string;
   isPro: boolean;
+  usedThisMonth: number;
 }
 
 const emptyLine = () => ({ description: "", amount: 0 });
 
-function genInvoiceNumber() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const rand = String(Math.floor(Math.random() * 900) + 100);
-  return `INV-${y}${m}-${rand}`;
+// Start a new invoice with whatever payment method was used last.
+function lastPayment(invoices: Invoice[]): PaymentValue {
+  const last = invoices.find((i) => i.payment_method);
+  return {
+    method: last?.payment_method ?? "",
+    link: last?.payment_link ?? "",
+    instructions: last?.payment_instructions ?? "",
+  };
+}
+
+// First date on `day` that falls in a later month than today — the current month's
+// invoice is the one being sent now.
+function firstRunAfterThisMonth(day: number) {
+  const today = todayPacific();
+  const [y, m] = today.split("-").map(Number);
+  const lastOfMonth = new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
+  return nextMonthlyDate(lastOfMonth, day);
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -32,8 +50,17 @@ const STATUS_COLORS: Record<string, string> = {
   paid: "#4a7c59",
 };
 
-export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
+export function InvoiceBuilder({ savedInvoices, savedSeries, userId, isPro, usedThisMonth }: Props) {
   const [invoices, setInvoices] = useState<Invoice[]>(savedInvoices);
+  const [used, setUsed] = useState(usedThisMonth);
+  const atLimit = remainingThisMonth("invoices", used, isPro) <= 0;
+  const [series, setSeries] = useState<InvoiceSeries[]>(savedSeries);
+  const [payment, setPayment] = useState<PaymentValue>(() => lastPayment(savedInvoices));
+  const [editingSeriesId, setEditingSeriesId] = useState<string | null>(null);
+  const [repeat, setRepeat] = useState(false);
+  const [repeatDay, setRepeatDay] = useState(1);
+  const [repeatDueDays, setRepeatDueDays] = useState(14);
+  const [repeatAutoSend, setRepeatAutoSend] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -66,6 +93,12 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
     setNotes("");
     setDueDate("");
     setInvoiceNumber(genInvoiceNumber());
+    setPayment(lastPayment(invoices));
+    setEditingSeriesId(null);
+    setRepeat(false);
+    setRepeatDay(1);
+    setRepeatDueDays(14);
+    setRepeatAutoSend(true);
     setEditingId(null);
     setError("");
     setSendSuccess(false);
@@ -86,6 +119,9 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
     setNotes(inv.notes ?? "");
     setDueDate(inv.due_date ?? "");
     setInvoiceNumber(inv.invoice_number ?? genInvoiceNumber());
+    setPayment({ method: inv.payment_method ?? "", link: inv.payment_link ?? "", instructions: inv.payment_instructions ?? "" });
+    setEditingSeriesId(inv.series_id ?? null);
+    setRepeat(false);
     setEditingId(inv.id ?? null);
     setError("");
     setSendSuccess(false);
@@ -108,21 +144,27 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
   }
 
   async function saveInvoice(status: "draft" | "sent"): Promise<Invoice | null> {
+    if (!editingId && atLimit) { setError(friendlyPlanError("free_plan_limit")); return null; }
     setSaving(true);
     setError("");
     const supabase = createClient();
+    const today = todayPacific();
+    const makeSeries = isPro && repeat && !editingId && !editingSeriesId;
     const payload = {
       user_id: userId,
       invoice_number: invoiceNumber,
       client_name: clientName,
       client_business: clientBusiness || null,
       client_email: clientEmail,
-      session_name: sessionName,
+      session_name: fillMonth(sessionName, today),
       line_items: lineItems.filter((i) => i.description.trim()),
       deposit_amount: depositAmount || 0,
       notes,
-      due_date: dueDate || null,
+      due_date: dueDate || (makeSeries ? addDays(today, repeatDueDays) : null),
       status,
+      payment_method: payment.method || null,
+      payment_link: payment.link.trim() || null,
+      payment_instructions: payment.instructions.trim() || null,
     };
 
     let result: Invoice | null = null;
@@ -142,8 +184,41 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
         .insert(payload)
         .select()
         .single();
-      if (err) { setError(err.message); setSaving(false); return null; }
+      if (err) { setError(friendlyPlanError(err.message)); setSaving(false); return null; }
       result = data as Invoice;
+      setUsed((u) => u + 1);
+      if (makeSeries) {
+        const { data: created, error: seriesErr } = await supabase
+          .from("invoice_series")
+          .insert({
+            user_id: userId,
+            client_name: clientName,
+            client_business: clientBusiness || null,
+            client_email: clientEmail,
+            title: sessionName,
+            line_items: payload.line_items,
+            notes,
+            payment_method: payload.payment_method,
+            payment_link: payload.payment_link,
+            payment_instructions: payload.payment_instructions,
+            day_of_month: repeatDay,
+            due_days: repeatDueDays,
+            auto_send: repeatAutoSend,
+            active: true,
+            next_run_date: firstRunAfterThisMonth(repeatDay),
+          })
+          .select()
+          .single();
+        if (seriesErr || !created) {
+          setError(`Invoice saved, but the monthly repeat couldn't be set up: ${seriesErr?.message ?? "unknown error"}`);
+        } else {
+          setSeries((prev) => [...prev, created as InvoiceSeries]);
+          await supabase.from("invoices").update({ series_id: created.id }).eq("id", result.id!);
+          result = { ...result, series_id: created.id };
+          setEditingSeriesId(created.id);
+          setRepeat(false);
+        }
+      }
       setInvoices((prev) => [result!, ...prev]);
       setEditingId(result.id ?? null);
     }
@@ -397,6 +472,49 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
             </div>
           )}
 
+          {/* Payment */}
+          <PaymentFields value={payment} onChange={setPayment} isPro={isPro} />
+
+          {/* Repeat monthly */}
+          {editingSeriesId ? (
+            <p className="text-xs opacity-50 px-4 py-3" style={{ backgroundColor: "var(--paper, #f5f5f5)", color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+              Part of a monthly invoice. To change future months (like a new rate), use Monthly invoices below.
+            </p>
+          ) : !editingId && (
+            <div className="flex flex-col gap-4 px-5 py-4 border" style={{ borderColor: repeat ? "var(--charcoal)" : "var(--border)" }}>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={repeat}
+                  disabled={!isPro}
+                  onChange={(e) => setRepeat(e.target.checked)}
+                  className="mt-1 w-4 h-4"
+                  style={{ accentColor: "var(--clay)" }}
+                />
+                <span style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                  <span className="text-sm">Repeat monthly{!isPro && <ProTag />}</span>
+                  <span className="block text-xs opacity-40 mt-0.5">
+                    This invoice goes out now, then the same one every month until you change or pause it.
+                  </span>
+                </span>
+              </label>
+              {repeat && (
+                <>
+                  <ScheduleFields
+                    day={repeatDay}
+                    dueDays={repeatDueDays}
+                    autoSend={repeatAutoSend}
+                    onChange={(v) => { setRepeatDay(v.day); setRepeatDueDays(v.dueDays); setRepeatAutoSend(v.autoSend); }}
+                  />
+                  <p className="text-xs opacity-40 leading-relaxed" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                    Tip: put <strong>{"{month}"}</strong> in the Session / Event title, like &ldquo;Marketing support — {"{month}"}&rdquo;, and each invoice fills in its own month.
+                    {sessionName.includes("{") && ` This one will read “${fillMonth(sessionName, todayPacific())}”.`}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+
           {/* Notes */}
           <div className="flex flex-col gap-1">
             <label style={labelStyle}>Notes</label>
@@ -467,6 +585,8 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
           </div>
         </div>
       ) : (
+        <div className="flex flex-col gap-4">
+        <UsageNote tool="invoices" used={used} isPro={isPro} />
         <button
           onClick={openNew}
           className="px-8 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80 self-start"
@@ -479,7 +599,14 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
         >
           + New Invoice
         </button>
+        </div>
       )}
+
+      <RecurringInvoicesPanel
+        series={series}
+        onSeriesChange={setSeries}
+        onInvoiceIssued={(inv) => setInvoices((prev) => [inv, ...prev])}
+      />
 
       {/* Invoice list */}
       {invoices.length > 0 && (
@@ -527,6 +654,11 @@ export function InvoiceBuilder({ savedInvoices, userId, isPro }: Props) {
                     >
                       {STATUS_LABELS[inv.status]}
                     </span>
+                    {inv.series_id && (
+                      <span className="text-[9px] uppercase tracking-widest opacity-40" style={{ fontFamily: "var(--font-body)" }}>
+                        ↻ Monthly
+                      </span>
+                    )}
                   </div>
                   <p
                     className="text-xs opacity-40 truncate"

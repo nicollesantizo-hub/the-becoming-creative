@@ -1,16 +1,20 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase-server";
 import { ContractBuilder } from "@/components/pricing/contract-builder";
+import { monthStartIso } from "@/lib/plan";
 
 export default async function ContractsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/signin");
 
-  const [{ data: contracts }, { data: templates }] = await Promise.all([
+  const [{ data: contracts }, { data: templates }, { data: profile }] = await Promise.all([
     supabase.from("contracts").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
     supabase.from("contract_templates").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+    supabase.from("profiles").select("tier").eq("id", user.id).single(),
   ]);
+  const isPro = profile?.tier === "pro";
+  const usedThisMonth = (contracts ?? []).filter((c) => c.created_at && c.created_at >= monthStartIso()).length;
 
   return (
     <div className="px-5 md:px-8 py-10 md:py-12">
@@ -37,13 +41,15 @@ export default async function ContractsPage() {
         className="inline-block text-xs uppercase tracking-widest opacity-50 hover:opacity-80 transition-opacity mb-10"
         style={{ color: "var(--clay)", fontFamily: "var(--font-body)" }}
       >
-        Manage templates →
+        Manage templates →{!isPro && " (Pro)"}
       </a>
 
       <ContractBuilder
         savedContracts={contracts ?? []}
         savedTemplates={templates ?? []}
         userId={user.id}
+        isPro={isPro}
+        usedThisMonth={usedThisMonth}
       />
     </div>
   );

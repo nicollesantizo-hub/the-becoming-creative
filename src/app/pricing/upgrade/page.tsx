@@ -2,6 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { FREE_MONTHLY_LIMITS, PRO_FEATURES } from "@/lib/plan";
+
+const FREE_FEATURES = [
+  "Cost of doing business calculator",
+  "Gallery delivery estimator",
+  "1 session type",
+  `${FREE_MONTHLY_LIMITS.quotes} proposals a month, with a share link`,
+  `${FREE_MONTHLY_LIMITS.contracts} contracts a month, signed in the browser`,
+  `${FREE_MONTHLY_LIMITS.invoices} invoices a month`,
+  "Planner: Shoot Day",
+];
 
 const MONTHLY_PRICE_ID = "price_1TV6M7GEeCINMO292iKYGVP5";
 const ANNUAL_PRICE_ID = "price_1TV6OiGEeCINMO29A6bGucrR";
@@ -43,7 +54,8 @@ export default function UpgradePage() {
         className="text-base opacity-50 mb-12 leading-relaxed"
         style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 300 }}
       >
-        Unlock unlimited sessions, full quote history, and everything we build next.
+        You&apos;ve done the hard part, the art. Pro carries the rest: proposals your clients can say yes to,
+        contracts they sign in a moment, and invoices that arrive on their own, all with your name on them.
       </p>
 
       <div className="grid md:grid-cols-2 gap-5">
@@ -82,19 +94,34 @@ export default function UpgradePage() {
         </div>
       </div>
 
-      <ul className="flex flex-col gap-3 mt-10">
-        {[
-          "Unlimited session types",
-          "Full quote history & exports",
-          "Edit, duplicate & delete quotes",
-          "Everything we add in the future",
-        ].map((f) => (
-          <li key={f} className="flex items-center gap-3 text-sm opacity-60" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
-            <span style={{ color: "var(--clay)" }}>—</span>
-            {f}
-          </li>
-        ))}
-      </ul>
+      <div className="grid md:grid-cols-2 gap-8 mt-12">
+        <div>
+          <p className="text-xs uppercase tracking-widest opacity-40 mb-4" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+            Free, always
+          </p>
+          <ul className="flex flex-col gap-3">
+            {FREE_FEATURES.map((f) => (
+              <li key={f} className="flex gap-3 text-sm opacity-60 leading-snug" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                <span className="opacity-40">—</span>
+                {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <p className="text-xs uppercase tracking-widest mb-4" style={{ color: "var(--clay)", fontFamily: "var(--font-body)" }}>
+            Pro adds
+          </p>
+          <ul className="flex flex-col gap-3">
+            {[...PRO_FEATURES, "Everything we build next"].map((f) => (
+              <li key={f} className="flex gap-3 text-sm leading-snug" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+                <span style={{ color: "var(--clay)" }}>—</span>
+                <span className="opacity-80">{f}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }

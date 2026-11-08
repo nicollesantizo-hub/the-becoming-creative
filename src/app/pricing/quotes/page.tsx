@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase-server";
 import { QuoteBuilder } from "@/components/pricing/quote-builder";
 import { calculateCODB } from "@/lib/pricing";
+import { monthStartIso } from "@/lib/plan";
 
 export default async function QuotesPage() {
   const supabase = await createClient();
@@ -22,6 +23,7 @@ export default async function QuotesPage() {
       supabase.from("profiles").select("tier, payment_terms").eq("id", user.id).single(),
     ]);
 
+  const usedThisMonth = (quotes ?? []).filter((q) => q.created_at && q.created_at >= monthStartIso()).length;
   const codb = codbConfig ? calculateCODB(codbConfig) : null;
   const isPro = profile?.tier === "pro";
 
@@ -53,6 +55,7 @@ export default async function QuotesPage() {
         userId={user.id}
         codb={codb}
         isPro={isPro}
+        usedThisMonth={usedThisMonth}
         defaultPaymentTerms={profile?.payment_terms ?? ""}
       />
     </div>

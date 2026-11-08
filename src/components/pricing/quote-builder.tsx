@@ -7,6 +7,8 @@ import { quoteTotals } from "@/lib/quote-math";
 import { defaultSections, normalizeSections, type QuoteSection } from "@/lib/quote-sections";
 import type { SessionType, Quote, QuoteAddon, CODBResults } from "@/types/pricing";
 import { ProposalSectionsEditor } from "./proposal-sections-editor";
+import { ProTag, UsageNote, friendlyPlanError } from "./plan-note";
+import { remainingThisMonth } from "@/lib/plan";
 
 const STATUS_LABELS: Record<Quote["status"], string> = {
   draft: "Draft",
@@ -28,6 +30,7 @@ export function QuoteBuilder({
   userId,
   codb,
   isPro,
+  usedThisMonth = 0,
   defaultPaymentTerms = "",
 }: {
   savedQuotes: Quote[];
@@ -35,9 +38,12 @@ export function QuoteBuilder({
   userId: string;
   codb: CODBResults | null;
   isPro: boolean;
+  usedThisMonth?: number;
   defaultPaymentTerms?: string;
 }) {
   const [quotes, setQuotes] = useState<Quote[]>(savedQuotes);
+  const [used, setUsed] = useState(usedThisMonth);
+  const atLimit = remainingThisMonth("quotes", used, isPro) <= 0;
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -336,12 +342,13 @@ export function QuoteBuilder({
       })
       .select()
       .single();
-    if (!error && data) setQuotes((prev) => [data, ...prev]);
+    if (error) { alert(friendlyPlanError(error.message)); return; }
+    if (data) { setQuotes((prev) => [data, ...prev]); setUsed((u) => u + 1); }
   }
 
   async function handleSave() {
-    if (!isPro) {
-      // Free users can generate but not save
+    if (!editingQuoteId && atLimit) {
+      setSaveError(friendlyPlanError("free_plan_limit"));
       return;
     }
     const hasIdentity = clientName.trim() || (isEventSession && (clientBusiness.trim() || pointOfContact.trim()));
@@ -407,8 +414,8 @@ export function QuoteBuilder({
         .insert({ ...quote, status: "draft", share_token: slug })
         .select()
         .single();
-      if (error) { setSaveError(error.message); setSaving(false); return; }
-      if (data) setQuotes((prev) => [data, ...prev]);
+      if (error) { setSaveError(friendlyPlanError(error.message)); setSaving(false); return; }
+      if (data) { setQuotes((prev) => [data, ...prev]); setUsed((u) => u + 1); }
     }
     setSaving(false);
     setSaveError("");
@@ -439,7 +446,9 @@ export function QuoteBuilder({
       )}
 
       {/* Quote history (pro only) */}
-      {isPro && quotes.length > 0 && !showForm && (
+      {!showForm && <div className="mb-6"><UsageNote tool="quotes" used={used} isPro={isPro} /></div>}
+
+      {quotes.length > 0 && !showForm && (
         <div className="mb-10">
           <h2
             className="text-xl font-light italic mb-5"
@@ -568,28 +577,6 @@ export function QuoteBuilder({
               </div>
             ))}
           </div>
-        </div>
-      )}
-
-      {!isPro && quotes.length === 0 && (
-        <div
-          className="p-5 mb-8 border-l-2"
-          style={{ borderColor: "var(--clay)", backgroundColor: "var(--sand)" }}
-        >
-          <p
-            className="text-sm opacity-70"
-            style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
-          >
-            Free plan: generate quotes and view the breakdown, but quote history requires{" "}
-            <a
-              href="/pricing/upgrade"
-              className="underline opacity-100 hover:opacity-70 transition-opacity"
-              style={{ color: "var(--clay)" }}
-            >
-              Pro
-            </a>
-            .
-          </p>
         </div>
       )}
 
@@ -1036,6 +1023,7 @@ export function QuoteBuilder({
                     <input
                       type="checkbox"
                       checked={!!addon.optional}
+                      disabled={!isPro}
                       onChange={(e) => {
                         const updated = [...addons];
                         updated[i] = { ...updated[i], optional: e.target.checked };
@@ -1044,6 +1032,7 @@ export function QuoteBuilder({
                       style={{ accentColor: "var(--clay)" }}
                     />
                     Optional, let my client choose
+                    {!isPro && <ProTag />}
                   </label>
                   {addon.optional && (
                     <input
@@ -1679,7 +1668,7 @@ export function QuoteBuilder({
             </div>
           )}
 
-          {isPro && (
+          {(
             <div className="flex flex-col gap-1.5 mb-4">
               <label className="text-xs uppercase tracking-wider opacity-50" style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
                 Custom link  <span className="normal-case opacity-60">thebecomingcreative.com/q/</span>
@@ -1696,11 +1685,10 @@ export function QuoteBuilder({
           )}
 
           <div className="flex gap-3">
-            {isPro ? (
               <div className="flex flex-col gap-2">
                 <button
                   onClick={handleSave}
-                  disabled={saving || !(clientName.trim() || (isEventSession && (clientBusiness.trim() || pointOfContact.trim()))) || !codb}
+                  disabled={saving || (!editingQuoteId && atLimit) || !(clientName.trim() || (isEventSession && (clientBusiness.trim() || pointOfContact.trim()))) || !codb}
                   className="px-8 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80 disabled:opacity-40"
                   style={{ backgroundColor: "var(--clay)", color: "var(--cream)", fontFamily: "var(--font-body)", letterSpacing: "0.15em" }}
                 >
@@ -1708,7 +1696,7 @@ export function QuoteBuilder({
                 </button>
                 {saveError && (
                   <p className="text-xs" style={{ color: "var(--destructive)", fontFamily: "var(--font-body)" }}>
-                    Error: {saveError}
+                    {saveError}
                   </p>
                 )}
                 {!(clientName.trim() || (isEventSession && (clientBusiness.trim() || pointOfContact.trim()))) && (
@@ -1717,24 +1705,6 @@ export function QuoteBuilder({
                   </p>
                 )}
               </div>
-            ) : (
-              <div className="flex flex-col gap-2">
-                <p
-                  className="text-xs opacity-50"
-                  style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
-                >
-                  Saving quotes requires{" "}
-                  <a
-                    href="/pricing/upgrade"
-                    className="underline opacity-100 hover:opacity-70 transition-opacity"
-                    style={{ color: "var(--clay)" }}
-                  >
-                    Pro
-                  </a>
-                  . You can use the summary above for reference.
-                </p>
-              </div>
-            )}
             <button
               onClick={() => {
                 setClientName(""); setClientEmail(""); setSessionDate("");
