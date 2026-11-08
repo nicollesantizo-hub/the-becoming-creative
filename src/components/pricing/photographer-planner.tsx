@@ -186,7 +186,7 @@ function ProGate() {
         </p>
       </div>
       <a
-        href="/pricing/upgrade"
+        href="/studio/upgrade"
         className="px-6 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80"
         style={{ backgroundColor: "var(--clay)", color: "var(--cream)", fontFamily: "var(--font-body)", letterSpacing: "0.15em" }}
       >

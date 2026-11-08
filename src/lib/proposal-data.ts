@@ -210,7 +210,7 @@ export function buildProposal(q: Quote, biz: BizRow | null, sessionType: Session
       phone: biz?.phone ?? null,
       website: biz?.website ?? null,
       logoUrl: isPro ? biz?.logo_url ?? null : null,
-      footer: `${isPro && biz?.website ? biz.website : "thebecomingcreative.com"} · Price My Work`,
+      footer: `${isPro && biz?.website ? biz.website : "thebecomingcreative.com"} · The Becoming Creative`,
     },
   };
 }

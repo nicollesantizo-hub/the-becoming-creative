@@ -7,23 +7,23 @@ import { Logo } from "@/components/logo";
 import type { UserProfile } from "@/types/pricing";
 
 const navItems = [
-  { href: "/pricing/calculator", label: "Calculator" },
-  { href: "/pricing/sessions", label: "Sessions" },
-  { href: "/pricing/quotes", label: "Quotes" },
-  { href: "/pricing/invoices", label: "Invoices" },
-  { href: "/pricing/contracts", label: "Contracts" },
-  { href: "/pricing/planner", label: "Planner" },
+  { href: "/studio/calculator", label: "Calculator" },
+  { href: "/studio/sessions", label: "Sessions" },
+  { href: "/studio/quotes", label: "Proposals" },
+  { href: "/studio/contracts", label: "Contracts" },
+  { href: "/studio/invoices", label: "Invoices" },
+  { href: "/studio/planner", label: "Planner" },
 ];
 
 const pageTitles: Record<string, string> = {
-  "/pricing/calculator": "Calculator",
-  "/pricing/sessions": "Sessions",
-  "/pricing/quotes": "Quotes",
-  "/pricing/invoices": "Invoices",
-  "/pricing/contracts": "Contracts",
-  "/pricing/planner": "Planner",
-  "/pricing/settings": "Settings",
-  "/pricing": "Price My Work",
+  "/studio/calculator": "Calculator",
+  "/studio/sessions": "Sessions",
+  "/studio/quotes": "Proposals",
+  "/studio/invoices": "Invoices",
+  "/studio/contracts": "Contracts",
+  "/studio/planner": "Planner",
+  "/studio/settings": "Settings",
+  "/studio": "The Studio",
 };
 
 export function PricingNav({ profile }: { profile: UserProfile | null }) {
@@ -37,7 +37,7 @@ export function PricingNav({ profile }: { profile: UserProfile | null }) {
     router.refresh();
   }
 
-  const pageTitle = pageTitles[pathname] ?? "Price My Work";
+  const pageTitle = pageTitles[pathname] ?? "The Studio";
 
   return (
     <>
@@ -60,7 +60,7 @@ export function PricingNav({ profile }: { profile: UserProfile | null }) {
           {pageTitle}
         </span>
         <Link
-          href="/pricing/settings"
+          href="/studio/settings"
           className="text-xs uppercase tracking-wider opacity-30 hover:opacity-60 transition-opacity"
           style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}
         >
@@ -111,12 +111,12 @@ export function PricingNav({ profile }: { profile: UserProfile | null }) {
             );
           })}
           <Link
-            href="/pricing/settings"
+            href="/studio/settings"
             className="px-3 py-2 text-sm rounded-sm transition-colors"
             style={{
               fontFamily: "var(--font-body)",
-              color: pathname === "/pricing/settings" ? "var(--cream)" : "rgba(255,255,255,0.45)",
-              backgroundColor: pathname === "/pricing/settings" ? "rgba(255,255,255,0.1)" : "transparent",
+              color: pathname === "/studio/settings" ? "var(--cream)" : "rgba(255,255,255,0.45)",
+              backgroundColor: pathname === "/studio/settings" ? "rgba(255,255,255,0.1)" : "transparent",
             }}
           >
             Settings
@@ -165,7 +165,7 @@ export function PricingNav({ profile }: { profile: UserProfile | null }) {
                 Upgrade for unlimited sessions, quote history &amp; exports.
               </p>
               <Link
-                href="/pricing/upgrade"
+                href="/studio/upgrade"
                 className="text-xs uppercase tracking-widest transition-opacity hover:opacity-80 text-center py-2"
                 style={{ backgroundColor: "var(--clay)", color: "var(--cream)", fontFamily: "var(--font-body)" }}
               >
@@ -206,7 +206,7 @@ export function PricingNav({ profile }: { profile: UserProfile | null }) {
         })}
         {profile?.tier !== "pro" && (
           <Link
-            href="/pricing/upgrade"
+            href="/studio/upgrade"
             className="flex flex-col items-center px-3 py-1 rounded-sm"
             style={{ fontFamily: "var(--font-body)", color: "var(--cream)", backgroundColor: "var(--clay)" }}
           >

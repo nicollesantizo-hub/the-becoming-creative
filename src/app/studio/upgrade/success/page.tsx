@@ -22,7 +22,7 @@ export default function UpgradeSuccessPage() {
         Your account has been upgraded. Unlimited sessions, full quote history — all yours.
       </p>
       <Link
-        href="/pricing"
+        href="/studio"
         className="px-8 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80"
         style={{ backgroundColor: "var(--clay)", color: "var(--cream)", fontFamily: "var(--font-body)", letterSpacing: "0.15em" }}
       >

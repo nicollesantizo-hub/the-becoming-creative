@@ -67,20 +67,20 @@ export default function ResourcesPage() {
             Photography
           </p>
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Price My Work — the client studio */}
+            {/* The Studio — the client workflow */}
             <div className="md:col-span-2 flex flex-col gap-8 p-8 md:p-10" style={{ backgroundColor: "var(--charcoal)" }}>
               <div className="max-w-2xl">
                 <span
                   className="text-xs uppercase tracking-widest opacity-30 mb-3 block"
                   style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}
                 >
-                  The main studio
+                  Signed in · Free to start
                 </span>
                 <h2
                   className="text-3xl md:text-4xl font-light italic mb-3"
                   style={{ color: "var(--cream)", fontFamily: "var(--font-heading)" }}
                 >
-                  Price My Work
+                  The Studio
                 </h2>
                 <p
                   className="text-sm leading-relaxed opacity-60"
@@ -94,10 +94,10 @@ export default function ResourcesPage() {
 
               <ol className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>
                 {[
-                  { n: "01", title: "Price", href: "/pricing/calculator", body: "Cost of doing business calculator and session pricing built from your real expenses." },
-                  { n: "02", title: "Propose", href: "/pricing/quotes", body: "Editorial proposals with your cover photo. Clients choose add-ons and accept online." },
-                  { n: "03", title: "Contract", href: "/pricing/contracts", body: "Oregon & Washington starter terms, signed right in the browser. No printing." },
-                  { n: "04", title: "Invoice", href: "/pricing/invoices", body: "Branded invoices with a Stripe pay button, and monthly ones that send themselves." },
+                  { n: "01", title: "Price", href: "/studio/calculator", body: "Price My Work: a cost of doing business calculator and session pricing from your real expenses." },
+                  { n: "02", title: "Propose", href: "/studio/quotes", body: "Editorial proposals with your cover photo. Clients choose add-ons and accept online." },
+                  { n: "03", title: "Contract", href: "/studio/contracts", body: "Oregon & Washington starter terms, signed right in the browser. No printing." },
+                  { n: "04", title: "Invoice", href: "/studio/invoices", body: "Branded invoices with a Stripe pay button, and monthly ones that send themselves." },
                 ].map((step) => (
                   <li key={step.n} className="list-none" style={{ backgroundColor: "var(--charcoal)" }}>
                     <Link href={step.href} className="group flex flex-col gap-2 p-5 h-full transition-colors hover:bg-white/5">
@@ -117,7 +117,7 @@ export default function ResourcesPage() {
 
               <div className="flex flex-wrap items-center gap-4">
                 <Link
-                  href="/pricing"
+                  href="/studio"
                   className="px-6 py-3 text-sm uppercase tracking-widest whitespace-nowrap transition-opacity hover:opacity-80"
                   style={{
                     backgroundColor: "var(--clay)",
@@ -129,7 +129,7 @@ export default function ResourcesPage() {
                   Open the studio →
                 </Link>
                 <span className="text-xs opacity-40" style={{ color: "var(--cream)", fontFamily: "var(--font-body)" }}>
-                  Free to start · <Link href="/pricing/upgrade" className="underline hover:opacity-80">Pro</Link> for unlimited, your logo, and the automation
+                  Free to start · <Link href="/studio/upgrade" className="underline hover:opacity-80">Pro</Link> for unlimited, your logo, and the automation
                 </span>
               </div>
             </div>
@@ -250,7 +250,7 @@ export default function ResourcesPage() {
 
               <div className="flex items-center gap-4 mt-auto">
                 <Link
-                  href="/pricing/planner"
+                  href="/studio/planner"
                   className="px-6 py-3 text-sm uppercase tracking-widest whitespace-nowrap transition-opacity hover:opacity-80"
                   style={{
                     backgroundColor: "var(--charcoal)",

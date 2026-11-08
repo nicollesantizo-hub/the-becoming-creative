@@ -24,7 +24,7 @@ export default function SignInPage() {
       return;
     }
 
-    window.location.href = "/pricing";
+    window.location.href = "/studio";
   }
 
   return (

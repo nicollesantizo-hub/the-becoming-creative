@@ -92,7 +92,7 @@ export async function POST(request: Request) {
             <p style="font-size: 14px; line-height: 1.7; opacity: 0.8; margin: 20px 0 28px;">
               A lovely moment to send their contract and retainer while the excitement is fresh.
             </p>
-            <a href="${process.env.NEXT_PUBLIC_SITE_URL}/pricing/contracts" style="display: inline-block; background: #111111; color: #ffffff; text-decoration: none; padding: 14px 32px; font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; font-family: 'DM Sans', sans-serif;">
+            <a href="${process.env.NEXT_PUBLIC_SITE_URL}/studio/contracts?fromQuote=${q.id}" style="display: inline-block; background: #111111; color: #ffffff; text-decoration: none; padding: 14px 32px; font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; font-family: 'DM Sans', sans-serif;">
               Prepare their contract
             </a>
           </div>

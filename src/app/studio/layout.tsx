@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase-server";
 import { PricingNav } from "@/components/pricing/pricing-nav";
 
 export const metadata = {
-  title: "Price My Work — The Becoming Creative",
+  title: "The Studio — The Becoming Creative",
   description: "Photography pricing and quoting tool for working photographers.",
 };
 

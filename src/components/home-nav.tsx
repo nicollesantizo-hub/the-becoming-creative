@@ -61,7 +61,7 @@ export function HomeNav() {
           </a>
           {loggedIn ? (
             <>
-              <a href="/pricing/settings" className="text-sm uppercase transition-opacity hover:opacity-60" style={linkStyle}>
+              <a href="/studio/settings" className="text-sm uppercase transition-opacity hover:opacity-60" style={linkStyle}>
                 Settings
               </a>
               {isAdmin && (
@@ -119,7 +119,7 @@ export function HomeNav() {
           </a>
           {loggedIn ? (
             <>
-              <a href="/pricing/settings" className="text-2xl uppercase tracking-widest"
+              <a href="/studio/settings" className="text-2xl uppercase tracking-widest"
                 style={{ color: "var(--paper)", fontFamily: "var(--font-body)", opacity: 0.75 }}>
                 Settings
               </a>

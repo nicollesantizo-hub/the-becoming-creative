@@ -110,7 +110,7 @@ export async function issueFromSeries(
                   : "Give it a look and send it whenever it feels right."
               }
             </p>
-            <a href="${site}/pricing/invoices" style="display: inline-block; background: #111111; color: #ffffff; text-decoration: none; padding: 14px 32px; font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; font-family: 'DM Sans', sans-serif;">
+            <a href="${site}/studio/invoices" style="display: inline-block; background: #111111; color: #ffffff; text-decoration: none; padding: 14px 32px; font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; font-family: 'DM Sans', sans-serif;">
               ${sent ? "View invoices" : "Review & send"}
             </a>
           </div>

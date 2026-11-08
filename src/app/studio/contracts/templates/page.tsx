@@ -42,7 +42,7 @@ export default async function ContractTemplatesPage() {
             Templates are part of Pro. Start every contract from Oregon or Washington starter terms, fill in your policies once, and reuse them with a click.
           </p>
           <a
-            href="/pricing/upgrade"
+            href="/studio/upgrade"
             className="inline-block px-6 py-3 text-xs uppercase tracking-widest hover:opacity-80"
             style={{ backgroundColor: "var(--clay)", color: "var(--cream)", fontFamily: "var(--font-body)", letterSpacing: "0.15em" }}
           >

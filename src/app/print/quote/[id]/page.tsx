@@ -24,7 +24,7 @@ export default async function QuotePrintPage({
       .single(),
   ]);
 
-  if (!quote) redirect("/pricing/quotes");
+  if (!quote) redirect("/studio/quotes");
   const q = quote as Quote;
 
   let sessionType: SessionType | null = null;

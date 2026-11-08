@@ -2,62 +2,79 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase-server";
 
-export default async function PricingDashboard() {
+export default async function StudioDashboard() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth/signin");
 
-  const [{ data: codb }, { data: sessions }, { count: quoteCount }] =
+  const [{ data: codb }, { data: sessions }, { data: quotes }, { data: contracts }, { data: invoices }] =
     await Promise.all([
-      supabase
-        .from("codb_config")
-        .select("shoots_per_year")
-        .eq("user_id", user.id)
-        .single(),
-      supabase
-        .from("session_types")
-        .select("id")
-        .eq("user_id", user.id),
-      supabase
-        .from("quotes")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", user.id),
+      supabase.from("codb_config").select("shoots_per_year").eq("user_id", user.id).single(),
+      supabase.from("session_types").select("id").eq("user_id", user.id),
+      supabase.from("quotes").select("status").eq("user_id", user.id),
+      supabase.from("contracts").select("status").eq("user_id", user.id),
+      supabase.from("invoices").select("status").eq("user_id", user.id),
     ]);
 
   const hasSetupCODB = !!codb;
   const sessionCount = sessions?.length ?? 0;
+  const count = (rows: { status: string }[] | null, status?: string) =>
+    (rows ?? []).filter((r) => !status || r.status === status).length;
+  const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
+  const awaitingYes = count(quotes, "sent");
+  const awaitingSignature = count(contracts, "sent");
+  const unpaid = count(invoices, "sent");
 
   const cards = [
     {
       num: "01",
-      href: "/pricing/calculator",
-      title: "Calculator",
-      desc: hasSetupCODB
-        ? "Your costs are configured"
-        : "Set up your annual costs & minimum rate",
-      cta: hasSetupCODB ? "Update →" : "Set up now →",
+      href: hasSetupCODB ? "/studio/sessions" : "/studio/calculator",
+      title: "Price",
+      desc: !hasSetupCODB
+        ? "Start with your costs to find your true minimum rate."
+        : sessionCount > 0
+        ? `Costs set · ${plural(sessionCount, "session type")} priced`
+        : "Costs set. Now build your session types.",
+      cta: hasSetupCODB ? "Sessions →" : "Set up now →",
     },
     {
       num: "02",
-      href: "/pricing/sessions",
-      title: "Sessions",
+      href: "/studio/quotes",
+      title: "Propose",
       desc:
-        sessionCount > 0
-          ? `${sessionCount} session type${sessionCount > 1 ? "s" : ""} saved`
-          : "Build reusable session types with pricing",
-      cta: sessionCount > 0 ? "Manage →" : "Build now →",
+        count(quotes) === 0
+          ? "Send a proposal your client can say yes to."
+          : awaitingYes > 0
+          ? `${plural(awaitingYes, "proposal")} waiting on a yes`
+          : `${plural(count(quotes), "proposal")} · ${count(quotes, "accepted")} accepted`,
+      cta: "Proposals →",
     },
     {
       num: "03",
-      href: "/pricing/quotes",
-      title: "Quotes",
+      href: "/studio/contracts",
+      title: "Contract",
       desc:
-        quoteCount && quoteCount > 0
-          ? `${quoteCount} quote${quoteCount > 1 ? "s" : ""} generated`
-          : "Generate quotes to send to clients",
-      cta: "Open →",
+        count(contracts) === 0
+          ? "Terms they sign right in the browser."
+          : awaitingSignature > 0
+          ? `${plural(awaitingSignature, "contract")} waiting for a signature`
+          : `${plural(count(contracts, "signed"), "signed contract")}`,
+      cta: "Contracts →",
+    },
+    {
+      num: "04",
+      href: "/studio/invoices",
+      title: "Invoice",
+      desc:
+        count(invoices) === 0
+          ? "Branded invoices, paid with a click."
+          : unpaid > 0
+          ? `${plural(unpaid, "invoice")} out, not yet paid`
+          : "All caught up. Every invoice is paid.",
+      cta: "Invoices →",
     },
   ];
 
@@ -67,7 +84,7 @@ export default async function PricingDashboard() {
         className="text-xs uppercase tracking-widest opacity-40 mb-4"
         style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
       >
-        Price My Work
+        The Studio
       </p>
       <h1
         className="text-5xl md:text-6xl font-light italic mb-3 leading-tight"
@@ -81,8 +98,8 @@ export default async function PricingDashboard() {
         className="text-base opacity-50 mb-14 leading-relaxed"
         style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 300 }}
       >
-        Your one-stop tool for pricing sessions, calculating costs, and quoting
-        clients.
+        Price it, propose it, contract it, get paid. Everything between you and your
+        clients, in one calm place.
       </p>
 
       {!hasSetupCODB && (
@@ -104,7 +121,7 @@ export default async function PricingDashboard() {
             per-session rate. Everything else builds from there.
           </p>
           <Link
-            href="/pricing/calculator"
+            href="/studio/calculator"
             className="text-sm uppercase tracking-wider"
             style={{ color: "var(--clay)", fontFamily: "var(--font-body)" }}
           >
@@ -113,7 +130,7 @@ export default async function PricingDashboard() {
         </div>
       )}
 
-      <div className="grid md:grid-cols-3 gap-5">
+      <div className="grid sm:grid-cols-2 gap-5">
         {cards.map((card) => (
           <Link
             key={card.href}
@@ -147,6 +164,14 @@ export default async function PricingDashboard() {
           </Link>
         ))}
       </div>
+
+      <Link
+        href="/studio/planner"
+        className="mt-8 inline-block text-xs uppercase tracking-widest opacity-50 hover:opacity-80 transition-opacity"
+        style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
+      >
+        Planner: shoots, editing, content →
+      </Link>
     </div>
   );
 }

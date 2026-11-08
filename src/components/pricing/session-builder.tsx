@@ -214,7 +214,7 @@ export function SessionBuilder({
           >
             Free plan includes 1 session type.{" "}
             <a
-              href="/pricing/upgrade"
+              href="/studio/upgrade"
               className="underline opacity-100 hover:opacity-70 transition-opacity"
               style={{ color: "var(--clay)" }}
             >

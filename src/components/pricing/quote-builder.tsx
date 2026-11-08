@@ -516,6 +516,17 @@ export function QuoteBuilder({
                       </option>
                     ))}
                   </select>
+                  <a
+                    href={`/studio/contracts?fromQuote=${quote.id}`}
+                    className="text-xs uppercase tracking-wider transition-opacity hover:opacity-80"
+                    style={{
+                      color: quote.status === "accepted" ? "var(--clay)" : "var(--charcoal)",
+                      opacity: quote.status === "accepted" ? 1 : 0.4,
+                      fontFamily: "var(--font-body)",
+                    }}
+                  >
+                    Create contract →
+                  </a>
                   <button
                     onClick={() => loadQuoteIntoForm(quote)}
                     className="text-xs uppercase tracking-wider opacity-40 hover:opacity-80 transition-opacity"

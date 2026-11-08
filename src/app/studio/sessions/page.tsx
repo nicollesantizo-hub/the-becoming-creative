@@ -30,7 +30,7 @@ export default async function SessionsPage() {
         className="text-xs uppercase tracking-widest opacity-40 mb-4"
         style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
       >
-        Step 2
+        01 · Price
       </p>
       <h1
         className="text-4xl md:text-5xl font-light italic mb-2"

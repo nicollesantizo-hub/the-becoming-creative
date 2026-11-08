@@ -7,7 +7,7 @@ const NOUNS: Record<LimitedTool, string> = { quotes: "proposals", contracts: "co
 export function ProTag() {
   return (
     <a
-      href="/pricing/upgrade"
+      href="/studio/upgrade"
       className="inline-block ml-1.5 px-1.5 py-0.5 text-[9px] uppercase tracking-widest align-middle hover:opacity-70"
       style={{ ...body, backgroundColor: "var(--clay)", color: "var(--cream)", letterSpacing: "0.14em" }}
     >
@@ -29,7 +29,7 @@ export function UsageNote({ tool, used, isPro }: { tool: LimitedTool; used: numb
           ? `${left} of ${limit} ${many} left this month on the free plan.`
           : `You've used all ${limit} free ${many} this month. They refresh on the 1st.`}{" "}
       </span>
-      <a href="/pricing/upgrade" className="underline hover:opacity-70" style={{ color: "var(--clay)" }}>
+      <a href="/studio/upgrade" className="underline hover:opacity-70" style={{ color: "var(--clay)" }}>
         Go Pro for unlimited
       </a>
     </div>

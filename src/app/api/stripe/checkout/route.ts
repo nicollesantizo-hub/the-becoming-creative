@@ -22,8 +22,8 @@ export async function POST(request: Request) {
     line_items: [{ price: priceId, quantity: 1 }],
     client_reference_id: user.id,
     customer_email: user.email,
-    success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/pricing/upgrade/success`,
-    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/pricing`,
+    success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/studio/upgrade/success`,
+    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/studio`,
   });
 
   return NextResponse.json({ url: session.url });

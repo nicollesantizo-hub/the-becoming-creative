@@ -55,11 +55,11 @@ export default function DeliveryPage() {
             Want to price that shoot too?
           </p>
           <Link
-            href="/pricing"
+            href="/studio"
             className="text-xs uppercase tracking-widest transition-opacity hover:opacity-70 shrink-0"
             style={{ color: "var(--clay)", fontFamily: "var(--font-body)" }}
           >
-            Try Price My Work →
+            Open The Studio →
           </Link>
         </div>
       </div>

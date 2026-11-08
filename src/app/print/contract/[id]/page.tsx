@@ -22,7 +22,7 @@ export default async function ContractPrintPage({
     supabase.from("profiles").select("business_name, contact_name, phone, website, logo_url, tier").eq("id", user.id).single(),
   ]);
 
-  if (!contract) redirect("/pricing/contracts");
+  if (!contract) redirect("/studio/contracts");
 
   const c = contract as Contract;
   const biz = profile as { business_name: string | null; contact_name: string | null; phone: string | null; website: string | null; logo_url: string | null; tier: string | null } | null;
@@ -103,7 +103,7 @@ export default async function ContractPrintPage({
 
       <div className={`page ${logoUrl ? "has-seal" : ""}`}>
         {logoUrl && <LogoSeal src={logoUrl} alt={businessHeader ?? ""} size={88} />}
-        <a href="/pricing/contracts" className="back">← Back to contracts</a>
+        <a href="/studio/contracts" className="back">← Back to contracts</a>
 
         <h1 className="contract-title">Photography Services Agreement</h1>
         <p className="client-meta">

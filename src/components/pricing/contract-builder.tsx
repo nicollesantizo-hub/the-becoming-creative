@@ -10,12 +10,23 @@ import type { Contract, ContractTemplate } from "@/types/pricing";
 import { ProTag, UsageNote, friendlyPlanError } from "@/components/pricing/plan-note";
 import { remainingThisMonth } from "@/lib/plan";
 
+export interface ContractPrefill {
+  sourceLabel: string;
+  client_name: string;
+  client_email: string;
+  package_name: string;
+  session_date: string;
+  session_location: string;
+  price: number;
+}
+
 interface Props {
   savedContracts: Contract[];
   savedTemplates: ContractTemplate[];
   userId: string;
   isPro: boolean;
   usedThisMonth: number;
+  prefill?: ContractPrefill | null;
 }
 
 const PACKAGES: { name: string; price: number; minPhotos: number }[] = [
@@ -47,25 +58,26 @@ const STATUS_COLORS: Record<Contract["status"], string> = {
   signed: "#4a7c59",
 };
 
-export function ContractBuilder({ savedContracts, savedTemplates, userId, isPro, usedThisMonth }: Props) {
+export function ContractBuilder({ savedContracts, savedTemplates, userId, isPro, usedThisMonth, prefill }: Props) {
   const [contracts, setContracts] = useState<Contract[]>(savedContracts);
   const [used, setUsed] = useState(usedThisMonth);
   const atLimit = remainingThisMonth("contracts", used, isPro) <= 0;
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(!!prefill);
+  const [startedFrom, setStartedFrom] = useState(prefill?.sourceLabel ?? "");
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const [contractNumber, setContractNumber] = useState(genContractNumber());
-  const [clientName, setClientName] = useState("");
-  const [clientEmail, setClientEmail] = useState("");
-  const [packageName, setPackageName] = useState("");
-  const [sessionDate, setSessionDate] = useState("");
-  const [sessionLocation, setSessionLocation] = useState("");
+  const [clientName, setClientName] = useState(prefill?.client_name ?? "");
+  const [clientEmail, setClientEmail] = useState(prefill?.client_email ?? "");
+  const [packageName, setPackageName] = useState(prefill?.package_name ?? "");
+  const [sessionDate, setSessionDate] = useState(prefill?.session_date ?? "");
+  const [sessionLocation, setSessionLocation] = useState(prefill?.session_location ?? "");
   const [groupSize, setGroupSize] = useState(1);
-  const [price, setPrice] = useState(0);
+  const [price, setPrice] = useState(prefill?.price ?? 0);
   const [depositAmount, setDepositAmount] = useState(0);
   const [amountPaid, setAmountPaid] = useState(0);
   const [sessionTime, setSessionTime] = useState("");
-  const [balanceDueDate, setBalanceDueDate] = useState("");
+  const [balanceDueDate, setBalanceDueDate] = useState(prefill?.session_date ? balanceDueDateFrom(prefill.session_date, 7) : "");
   // Once the due date is set by hand, stop recalculating it from the session date.
   const [dueDateTouched, setDueDateTouched] = useState(false);
   const [deliverableMinPhotos, setDeliverableMinPhotos] = useState(0);
@@ -82,6 +94,7 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId, isPro,
   const [error, setError] = useState("");
 
   function resetForm() {
+    setStartedFrom("");
     setContractNumber(genContractNumber());
     setClientName("");
     setClientEmail("");
@@ -380,6 +393,14 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId, isPro,
             </button>
           </div>
 
+          {startedFrom && (
+            <p className="text-xs px-4 py-3" style={{ backgroundColor: "var(--sand, #f5f5f0)", color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+              <span className="opacity-60">Started from your proposal: </span>
+              <strong className="font-medium">{startedFrom}</strong>
+              <span className="opacity-60">. Add the deposit and terms below, then send.</span>
+            </p>
+          )}
+
           {/* Contract number */}
           <div className="flex flex-col gap-1">
             <label style={labelStyle}>Contract #</label>
@@ -427,6 +448,9 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId, isPro,
               style={inputStyle}
             >
               <option value="">— Custom —</option>
+              {packageName && !PACKAGES.some((p) => p.name === packageName) && (
+                <option value={packageName}>{packageName}</option>
+              )}
               {PACKAGES.map((p) => (
                 <option key={p.name} value={p.name}>{p.name} — {fmt(p.price)}</option>
               ))}
@@ -676,7 +700,7 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId, isPro,
                   Use Washington starter
                 </button>
                 <a
-                  href="/pricing/contracts/templates"
+                  href="/studio/contracts/templates"
                   className="text-xs uppercase tracking-wider opacity-40 hover:opacity-70 transition-opacity"
                   style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
                 >
@@ -755,6 +779,15 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId, isPro,
                 }}
               >
                 View PDF
+              </a>
+            )}
+            {editingId && status === "signed" && (
+              <a
+                href={`/studio/invoices?fromContract=${editingId}`}
+                className="px-6 py-3 text-sm uppercase tracking-widest transition-opacity hover:opacity-80"
+                style={{ backgroundColor: "var(--clay)", color: "var(--cream)", fontFamily: "var(--font-body)", letterSpacing: "0.15em" }}
+              >
+                Create invoice →
               </a>
             )}
             {shareToken && (
@@ -855,6 +888,17 @@ export function ContractBuilder({ savedContracts, savedTemplates, userId, isPro,
                     >
                       Edit
                     </button>
+                    <a
+                      href={`/studio/invoices?fromContract=${c.id}`}
+                      className="text-xs uppercase tracking-wider transition-opacity hover:opacity-80"
+                      style={{
+                        color: c.status === "signed" ? "var(--clay)" : "var(--charcoal)",
+                        opacity: c.status === "signed" ? 1 : 0.3,
+                        fontFamily: "var(--font-body)",
+                      }}
+                    >
+                      Invoice →
+                    </a>
                     {c.share_token && (
                       <button
                         onClick={() => copyLink(c.share_token!)}

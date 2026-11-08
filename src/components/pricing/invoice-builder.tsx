@@ -9,12 +9,23 @@ import type { Invoice, InvoiceSeries } from "@/types/pricing";
 import { ProTag, UsageNote, friendlyPlanError } from "@/components/pricing/plan-note";
 import { remainingThisMonth } from "@/lib/plan";
 
+export interface InvoicePrefill {
+  sourceLabel: string;
+  client_name: string;
+  client_email: string;
+  session_name: string;
+  line_items: { description: string; amount: number }[];
+  deposit_amount: number;
+  due_date: string;
+}
+
 interface Props {
   savedInvoices: Invoice[];
   savedSeries: InvoiceSeries[];
   userId: string;
   isPro: boolean;
   usedThisMonth: number;
+  prefill?: InvoicePrefill | null;
 }
 
 const emptyLine = () => ({ description: "", amount: 0 });
@@ -50,7 +61,7 @@ const STATUS_COLORS: Record<string, string> = {
   paid: "#4a7c59",
 };
 
-export function InvoiceBuilder({ savedInvoices, savedSeries, userId, isPro, usedThisMonth }: Props) {
+export function InvoiceBuilder({ savedInvoices, savedSeries, userId, isPro, usedThisMonth, prefill }: Props) {
   const [invoices, setInvoices] = useState<Invoice[]>(savedInvoices);
   const [used, setUsed] = useState(usedThisMonth);
   const atLimit = remainingThisMonth("invoices", used, isPro) <= 0;
@@ -61,17 +72,18 @@ export function InvoiceBuilder({ savedInvoices, savedSeries, userId, isPro, used
   const [repeatDay, setRepeatDay] = useState(1);
   const [repeatDueDays, setRepeatDueDays] = useState(14);
   const [repeatAutoSend, setRepeatAutoSend] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(!!prefill);
+  const [startedFrom, setStartedFrom] = useState(prefill?.sourceLabel ?? "");
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const [clientName, setClientName] = useState("");
+  const [clientName, setClientName] = useState(prefill?.client_name ?? "");
   const [clientBusiness, setClientBusiness] = useState("");
-  const [clientEmail, setClientEmail] = useState("");
-  const [sessionName, setSessionName] = useState("");
-  const [lineItems, setLineItems] = useState([emptyLine()]);
-  const [depositAmount, setDepositAmount] = useState(0);
+  const [clientEmail, setClientEmail] = useState(prefill?.client_email ?? "");
+  const [sessionName, setSessionName] = useState(prefill?.session_name ?? "");
+  const [lineItems, setLineItems] = useState(prefill?.line_items.length ? prefill.line_items : [emptyLine()]);
+  const [depositAmount, setDepositAmount] = useState(prefill?.deposit_amount ?? 0);
   const [notes, setNotes] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [dueDate, setDueDate] = useState(prefill?.due_date ?? "");
   const [invoiceNumber, setInvoiceNumber] = useState(genInvoiceNumber());
 
   const [saving, setSaving] = useState(false);
@@ -84,6 +96,7 @@ export function InvoiceBuilder({ savedInvoices, savedSeries, userId, isPro, used
   const fmt = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
 
   function resetForm() {
+    setStartedFrom("");
     setClientName("");
     setClientBusiness("");
     setClientEmail("");
@@ -299,6 +312,14 @@ export function InvoiceBuilder({ savedInvoices, savedSeries, userId, isPro, used
               Cancel
             </button>
           </div>
+
+          {startedFrom && (
+            <p className="text-xs px-4 py-3" style={{ backgroundColor: "var(--paper, #f5f5f5)", color: "var(--charcoal)", fontFamily: "var(--font-body)" }}>
+              <span className="opacity-60">Started from contract </span>
+              <strong className="font-medium">{startedFrom}</strong>
+              <span className="opacity-60">. What&apos;s already been paid is filled in, so the balance is ready to send.</span>
+            </p>
+          )}
 
           {/* Invoice number */}
           <div className="flex flex-col gap-1">

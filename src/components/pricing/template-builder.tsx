@@ -146,7 +146,7 @@ export function TemplateBuilder({ savedTemplates, userId }: Props) {
   return (
     <div className="flex flex-col gap-10">
       <a
-        href="/pricing/contracts"
+        href="/studio/contracts"
         className="text-xs uppercase tracking-widest opacity-40 hover:opacity-70 transition-opacity"
         style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
       >

@@ -33,20 +33,19 @@ export default async function QuotesPage() {
         className="text-xs uppercase tracking-widest opacity-40 mb-4"
         style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)" }}
       >
-        Step 3
+        02 · Propose
       </p>
       <h1
         className="text-4xl md:text-5xl font-light italic mb-2"
         style={{ color: "var(--charcoal)", fontFamily: "var(--font-heading)" }}
       >
-        Quotes
+        Proposals
       </h1>
       <p
         className="text-base opacity-50 mb-10 leading-relaxed max-w-lg"
         style={{ color: "var(--charcoal)", fontFamily: "var(--font-body)", fontWeight: 300 }}
       >
-        Generate a quote for any client in seconds. Add discounts, sales tax,
-        and custom notes.
+        Price a session, shape the proposal, and send a link your client can say yes to.
       </p>
 
       <QuoteBuilder

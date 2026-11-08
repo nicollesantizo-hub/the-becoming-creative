@@ -20,7 +20,7 @@ export default async function InvoicePrintPage({
     supabase.from("profiles").select("business_name, contact_name, phone, website, tier, logo_url, payment_terms").eq("id", user.id).single(),
   ]);
 
-  if (!invoice) redirect("/pricing/invoices");
+  if (!invoice) redirect("/studio/invoices");
 
   const inv = invoice as Invoice;
   const biz = profile as {
@@ -307,7 +307,7 @@ export default async function InvoicePrintPage({
 
       <div className={`page ${logoUrl ? "has-seal" : ""}`}>
         {logoUrl && <LogoSeal src={logoUrl} alt={businessHeader ?? ""} size={88} />}
-        <a href="/pricing/invoices" className="back">← Back to invoices</a>
+        <a href="/studio/invoices" className="back">← Back to invoices</a>
 
         {/* Title + client */}
         <h1 className="invoice-title">{inv.session_name || inv.client_name || "Invoice"}</h1>
