@@ -76,19 +76,14 @@ export function ProposalDocument({ data, mode }: { data: ProposalData; mode: "sh
       <style>{STYLES}</style>
 
       {/* Cover */}
-      <header className={`pp-cover ${data.coverImageUrl ? "has-image" : ""}`}>
+      <header className={`pp-cover ${data.coverImageUrl ? "has-image" : ""} ${data.business.logoUrl ? "has-seal" : ""}`}>
         {data.coverImageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={data.coverImageUrl} alt="" className="pp-cover-img" />
         )}
         <div className="pp-cover-inner">
           <div className="pp-brand">
-            {data.business.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={data.business.logoUrl} alt={data.business.name} className="pp-logo" />
-            ) : (
-              <span>{data.business.name}</span>
-            )}
+            <span>{data.business.name}</span>
           </div>
           <div>
             <p className="pp-eyebrow">A proposal</p>
@@ -98,7 +93,14 @@ export function ProposalDocument({ data, mode }: { data: ProposalData; mode: "sh
         </div>
       </header>
 
-      <main className="pp-page">
+      <main className={`pp-page ${data.business.logoUrl ? "has-seal" : ""}`}>
+        {/* Logo seal — sits on the seam between cover and page, like a letterhead mark */}
+        {data.business.logoUrl && (
+          <div className="pp-seal">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={data.business.logoUrl} alt={data.business.name} />
+          </div>
+        )}
         {mode === "share" && (
           <button type="button" onClick={() => window.print()} className="pp-save no-print">
             Save PDF
@@ -350,13 +352,16 @@ html, body { background: #f3f1ee; }
 .pp-cover.has-image::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.6) 100%); }
 .pp-cover-inner { position: relative; z-index: 1; width: 100%; max-width: 760px; margin: 0 auto; padding: 32px 40px 44px; display: flex; flex-direction: column; justify-content: space-between; gap: 48px; }
 .pp-brand { font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.85); }
-.pp-logo { max-height: 44px; max-width: 150px; object-fit: contain; filter: brightness(0) invert(1); }
 .pp-eyebrow { font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-bottom: 12px; }
 .pp-eyebrow.dark { color: var(--faint); }
 .pp-title { font-family: 'DM Serif Display', Georgia, serif; font-weight: 400; font-size: clamp(36px, 6vw, 60px); line-height: 1.05; letter-spacing: -0.01em; }
 .pp-client { margin-top: 14px; font-size: 13px; letter-spacing: 0.06em; color: rgba(255,255,255,0.75); }
 
 .pp-page { position: relative; max-width: 760px; margin: 0 auto; background: var(--paper); padding: 64px 72px 56px; }
+.pp-page.has-seal { padding-top: 104px; }
+.pp-cover.has-seal .pp-cover-inner { padding-bottom: 88px; }
+.pp-seal { position: absolute; z-index: 2; top: -60px; left: 50%; transform: translateX(-50%); width: 120px; height: 120px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; padding: 9px; box-shadow: 0 0 0 1px rgba(20,20,20,0.06), 0 10px 30px -12px rgba(0,0,0,0.25); }
+.pp-seal img { width: 100%; height: 100%; object-fit: contain; }
 .pp-save { position: absolute; top: 20px; right: 24px; font: inherit; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; background: none; border: 1px solid var(--rule); color: var(--soft); padding: 8px 14px; cursor: pointer; }
 .pp-save:hover { color: var(--ink); border-color: var(--ink); }
 
@@ -433,6 +438,8 @@ html, body { background: #f3f1ee; }
   .pp-cover-inner { padding: 24px 20px 32px; }
   .pp-page { padding: 48px 20px 40px; }
   .pp-save { top: 12px; right: 16px; }
+  .pp-page.has-seal { padding-top: 80px; }
+  .pp-seal { width: 92px; height: 92px; top: -46px; padding: 7px; }
   .pp-details { grid-template-columns: 1fr; }
   .pp-accept { margin: 8px -20px 0; padding: 44px 20px; }
   .pp-accept-row { flex-direction: column; }
@@ -448,6 +455,8 @@ html, body { background: #f3f1ee; }
   .pp-cover { min-height: 220px !important; }
   .pp-cover.has-image { min-height: 300px !important; }
   .pp-page { padding: 36px 8px 24px; max-width: none; }
+  .pp-page.has-seal { padding-top: 76px; }
+  .pp-seal { width: 96px; height: 96px; top: -48px; box-shadow: 0 0 0 1px rgba(20,20,20,0.08); }
   .pp-section { padding-bottom: 28px; }
   .pp-section-head { break-after: avoid; }
   .pp-line, .pp-addon, .pp-list li, .pp-details > div, .pp-total { break-inside: avoid; }

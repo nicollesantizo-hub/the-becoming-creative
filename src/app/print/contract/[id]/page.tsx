@@ -4,6 +4,7 @@ import type { Contract } from "@/types/pricing";
 import { fmt } from "@/lib/pricing";
 import { formatSessionTime } from "@/lib/contract-payments";
 import { ContractPaymentLines } from "@/components/pricing/contract-payment-lines";
+import { LogoSeal, sealPadding } from "@/components/pricing/logo-seal";
 import { PrintTrigger } from "./print-trigger";
 
 export default async function ContractPrintPage({
@@ -18,13 +19,14 @@ export default async function ContractPrintPage({
 
   const [{ data: contract }, { data: profile }] = await Promise.all([
     supabase.from("contracts").select("*").eq("id", id).eq("user_id", user.id).single(),
-    supabase.from("profiles").select("business_name, contact_name, phone, website").eq("id", user.id).single(),
+    supabase.from("profiles").select("business_name, contact_name, phone, website, logo_url, tier").eq("id", user.id).single(),
   ]);
 
   if (!contract) redirect("/pricing/contracts");
 
   const c = contract as Contract;
-  const biz = profile as { business_name: string | null; contact_name: string | null; phone: string | null; website: string | null } | null;
+  const biz = profile as { business_name: string | null; contact_name: string | null; phone: string | null; website: string | null; logo_url: string | null; tier: string | null } | null;
+  const logoUrl = biz?.tier === "pro" ? biz.logo_url : null;
 
   const businessHeader = biz?.business_name || biz?.contact_name || user.email;
   const contactLine = [biz?.contact_name, biz?.phone].filter(Boolean).join("  ·  ");
@@ -58,7 +60,9 @@ export default async function ContractPrintPage({
         .header-inner { max-width: 660px; margin: 0 auto; }
         .biz-name { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: #ffffff; margin-bottom: 3px; }
         .biz-contact { font-size: 11px; color: rgba(255,255,255,0.45); line-height: 1.6; }
-        .page { max-width: 660px; margin: 0 auto; padding: 28px 40px 36px; }
+        .page { position: relative; max-width: 660px; margin: 0 auto; padding: 28px 40px 36px; }
+        .page.has-seal { padding-top: ${sealPadding(88)}px; }
+        .header-band.has-seal { padding-bottom: 52px; }
         .back { display: inline-block; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #111111; opacity: 0.3; text-decoration: none; margin-bottom: 20px; }
         .back:hover { opacity: 0.6; }
         .contract-title { font-family: 'DM Serif Display', Georgia, serif; font-size: 30px; font-style: italic; font-weight: 400; color: #111111; line-height: 1.1; margin-bottom: 6px; }
@@ -87,7 +91,7 @@ export default async function ContractPrintPage({
         }
       `}</style>
 
-      <div className="header-band">
+      <div className={`header-band ${logoUrl ? "has-seal" : ""}`}>
         <div className="header-inner">
           <p className="biz-name">{businessHeader}</p>
           <p className="biz-contact">
@@ -97,7 +101,8 @@ export default async function ContractPrintPage({
         </div>
       </div>
 
-      <div className="page">
+      <div className={`page ${logoUrl ? "has-seal" : ""}`}>
+        {logoUrl && <LogoSeal src={logoUrl} alt={businessHeader ?? ""} size={88} />}
         <a href="/pricing/contracts" className="back">← Back to contracts</a>
 
         <h1 className="contract-title">Photography Services Agreement</h1>

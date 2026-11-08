@@ -5,6 +5,7 @@ import { fmt } from "@/lib/pricing";
 import { formatSessionTime } from "@/lib/contract-payments";
 import { ContractPaymentLines } from "@/components/pricing/contract-payment-lines";
 import { SignaturePad } from "./signature-pad";
+import { LogoSeal, sealPadding } from "@/components/pricing/logo-seal";
 import { SavePdfButton } from "./save-button";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +29,7 @@ export default async function ContractSignPage({
 
   const { data: profileData } = await supabase
     .from("profiles")
-    .select("business_name, contact_name, phone, website")
+    .select("business_name, contact_name, phone, website, logo_url, tier")
     .eq("id", c.user_id!)
     .single();
 
@@ -37,7 +38,10 @@ export default async function ContractSignPage({
     contact_name: string | null;
     phone: string | null;
     website: string | null;
+    logo_url: string | null;
+    tier: string | null;
   } | null;
+  const logoUrl = biz?.tier === "pro" ? biz.logo_url : null;
 
   const businessHeader = biz?.business_name || biz?.contact_name || "";
 
@@ -68,7 +72,9 @@ export default async function ContractSignPage({
         .header-inner { max-width: 660px; margin: 0 auto; }
         .biz-name { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; color: #fff; margin-bottom: 4px; }
         .biz-contact { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.8; }
-        .page { max-width: 660px; margin: 0 auto; padding: 48px 48px 80px; background: #fff; min-height: 100vh; }
+        .page { position: relative; max-width: 660px; margin: 0 auto; padding: 48px 48px 80px; background: #fff; min-height: 100vh; }
+        .page.has-seal { padding-top: ${sealPadding(112)}px; }
+        .header-band.has-seal { padding-bottom: 72px; }
         .contract-title { font-family: 'DM Serif Display', Georgia, serif; font-size: 28px; font-weight: 400; color: #111111; margin-bottom: 6px; }
         .client-meta { font-size: 12px; color: rgba(17,17,17,0.45); letter-spacing: 0.04em; margin-bottom: 32px; }
         .section { margin-bottom: 32px; }
@@ -94,7 +100,7 @@ export default async function ContractSignPage({
         }
       `}</style>
 
-      <div className="header-band">
+      <div className={`header-band ${logoUrl ? "has-seal" : ""}`}>
         <div className="header-inner">
           <p className="biz-name">{businessHeader}</p>
           <p className="biz-contact">
@@ -105,7 +111,8 @@ export default async function ContractSignPage({
         </div>
       </div>
 
-      <div className="page">
+      <div className={`page ${logoUrl ? "has-seal" : ""}`}>
+        {logoUrl && <LogoSeal src={logoUrl} alt={businessHeader} size={112} />}
         {c.status === "signed" && <SavePdfButton />}
 
         <h1 className="contract-title">Photography Services Agreement</h1>
