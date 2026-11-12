@@ -51,7 +51,7 @@ export function RecurringInvoicesPanel({
 
   async function sendNow(s: InvoiceSeries) {
     const who = s.client_business || s.client_name;
-    if (!confirm(`Create this month's invoice for ${who} now${s.auto_send ? " and email it" : ""}?`)) return;
+    if (s.auto_send && !confirm(`Create this month's invoice for ${who} and email it now?`)) return;
     setBusy(s.id!);
     setMessage("");
     const res = await fetch("/api/invoices/series/send-now", {
@@ -69,7 +69,7 @@ export function RecurringInvoicesPanel({
     // Refresh the series to pick up its new next date.
     const { data } = await createClient().from("invoice_series").select("*").eq("id", s.id!).single();
     if (data) onSeriesChange(series.map((x) => (x.id === s.id ? (data as InvoiceSeries) : x)));
-    setMessage(json.sent ? `Sent to ${s.client_email}.` : "Created as a draft below, ready for you to send.");
+    setMessage(json.sent ? `Sent to ${s.client_email}.` : "This month's invoice is ready above. Give it a look and click Send to client.");
   }
 
   async function remove(s: InvoiceSeries) {
@@ -136,7 +136,7 @@ export function RecurringInvoicesPanel({
                   {[
                     s.title.replace(/\{month\}/gi, "[month]"),
                     s.active ? `Next: ${formatLongDate(s.next_run_date)}` : null,
-                    s.auto_send ? "sends automatically" : "drafts for review",
+                    s.auto_send ? "sends automatically" : "ready for you to send",
                     paymentMethodLabel(s.payment_method),
                   ]
                     .filter(Boolean)
@@ -155,7 +155,7 @@ export function RecurringInvoicesPanel({
                   Edit / change rate
                 </button>
                 <button onClick={() => sendNow(s)} disabled={busy === s.id} className={quiet} style={body}>
-                  {busy === s.id ? "Working…" : "Send now"}
+                  {busy === s.id ? "Working…" : s.auto_send ? "Send now" : "Prepare this month's"}
                 </button>
                 <button onClick={() => toggleActive(s)} className={quiet} style={body}>
                   {s.active ? "Pause" : "Resume"}
@@ -316,8 +316,8 @@ export function ScheduleFields({
       </div>
       <div className="flex flex-col gap-1.5">
         {[
-          { v: true, label: "Send it to them automatically", sub: "You'll get a quick email each time it goes out." },
-          { v: false, label: "Prepare a draft for me to review first", sub: "You'll get an email when it's ready to send." },
+          { v: false, label: "Have it ready for me to send", sub: "Each month a fresh copy waits as a draft and you get a reminder. Nothing goes out until you click Send." },
+          { v: true, label: "Send it to them automatically", sub: "Goes straight to your client. You'll get a quick note each time." },
         ].map((o) => (
           <label key={String(o.v)} className="flex items-start gap-2 cursor-pointer" style={body}>
             <input

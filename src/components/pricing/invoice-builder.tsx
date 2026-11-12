@@ -71,7 +71,7 @@ export function InvoiceBuilder({ savedInvoices, savedSeries, userId, isPro, used
   const [repeat, setRepeat] = useState(false);
   const [repeatDay, setRepeatDay] = useState(1);
   const [repeatDueDays, setRepeatDueDays] = useState(14);
-  const [repeatAutoSend, setRepeatAutoSend] = useState(true);
+  const [repeatAutoSend, setRepeatAutoSend] = useState(false);
   const [showForm, setShowForm] = useState(!!prefill);
   const [startedFrom, setStartedFrom] = useState(prefill?.sourceLabel ?? "");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -111,7 +111,7 @@ export function InvoiceBuilder({ savedInvoices, savedSeries, userId, isPro, used
     setRepeat(false);
     setRepeatDay(1);
     setRepeatDueDays(14);
-    setRepeatAutoSend(true);
+    setRepeatAutoSend(false);
     setEditingId(null);
     setError("");
     setSendSuccess(false);
@@ -626,7 +626,11 @@ export function InvoiceBuilder({ savedInvoices, savedSeries, userId, isPro, used
       <RecurringInvoicesPanel
         series={series}
         onSeriesChange={setSeries}
-        onInvoiceIssued={(inv) => setInvoices((prev) => [inv, ...prev])}
+        onInvoiceIssued={(inv) => {
+          setInvoices((prev) => [inv, ...prev]);
+          // A prepared draft opens right away so it's one click to send.
+          if (inv.status === "draft") openEdit(inv);
+        }}
       />
 
       {/* Invoice list */}
